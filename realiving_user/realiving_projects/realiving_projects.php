@@ -40,26 +40,15 @@ $category_labels = [
       classes can't be swapped in/out with arbitrary calc() values as
       cleanly as a couple of hand-written rules can.
     */
+    /* Base layout — always 3-per-row, no expand/shrink by default.
+       The expand/shrink hover effect is added back ONLY for real
+       mouse+desktop devices in the (hover: hover) block below, so
+       tablets, Nest Hub-type displays, and touch devices always get
+       this same clean, non-shifting 3-column grid. */
     .proj-card-wrapper {
       flex: 0 1 calc(33.333% - 18px);
       max-width: calc(33.333% - 18px);
       transition: flex .4s cubic-bezier(.25,.46,.45,.94), max-width .4s cubic-bezier(.25,.46,.45,.94);
-    }
-
-    .proj-card-wrapper.is-hovered {
-      flex: 0 1 calc(50% - 18px);
-      max-width: calc(50% - 18px);
-    }
-
-    .proj-card-wrapper.is-shrunk {
-      flex: 0 1 calc(25% - 18px);
-      max-width: calc(25% - 18px);
-    }
-
-    .proj-card-wrapper.solo-row.is-hovered,
-    .proj-card-wrapper.solo-row.is-shrunk {
-      flex: 0 1 calc(33.333% - 18px);
-      max-width: calc(33.333% - 18px);
     }
 
     @media (max-width: 1024px) {
@@ -67,49 +56,73 @@ $category_labels = [
         flex: 0 1 calc(50% - 18px);
         max-width: calc(50% - 18px);
       }
-      .proj-card-wrapper.is-hovered {
-        flex: 0 1 calc(60% - 18px);
-        max-width: calc(60% - 18px);
-      }
-      .proj-card-wrapper.is-shrunk {
-        flex: 0 1 calc(40% - 18px);
-        max-width: calc(40% - 18px);
-      }
     }
 
     @media (max-width: 767px) {
-      .proj-card-wrapper,
-      .proj-card-wrapper.is-hovered,
-      .proj-card-wrapper.is-shrunk {
+      .proj-card-wrapper {
         flex: none;
         max-width: 100%;
         width: 100%;
       }
     }
 
-    /* Content reveal on hover — mirrors the slideUp animation from all-projects.css */
+    /* Content is always visible by default (no hover-reveal animation)
+       so tablets/touch devices see titles and locations right away. */
     .proj-reveal {
-      opacity: 0;
-      transform: translateY(18px);
-      transition: opacity .5s cubic-bezier(.25,.46,.45,.94), transform .5s cubic-bezier(.25,.46,.45,.94);
-    }
-    .proj-card-wrapper:hover .proj-reveal {
       opacity: 1;
       transform: translateY(0);
     }
-    .proj-reveal.delay-1 { transition-delay: .06s; }
-    .proj-reveal.delay-2 { transition-delay: .12s; }
 
-    @media (max-width: 767px) {
+    .proj-hover-img { opacity: 0; }
+
+    /* ===== DESKTOP-ONLY HOVER EFFECTS =====
+       (hover: hover) and (pointer: fine) only matches devices with a
+       real mouse — this excludes tablets, phones, and touch displays
+       like Nest Hub Max regardless of their screen width. */
+    @media (hover: hover) and (pointer: fine) {
+      .proj-card-wrapper.is-hovered {
+        flex: 0 1 calc(50% - 18px);
+        max-width: calc(50% - 18px);
+      }
+
+      .proj-card-wrapper.is-shrunk {
+        flex: 0 1 calc(25% - 18px);
+        max-width: calc(25% - 18px);
+      }
+
+      .proj-card-wrapper.solo-row.is-hovered,
+      .proj-card-wrapper.solo-row.is-shrunk {
+        flex: 0 1 calc(33.333% - 18px);
+        max-width: calc(33.333% - 18px);
+      }
+
+      @media (max-width: 1024px) {
+        .proj-card-wrapper.is-hovered {
+          flex: 0 1 calc(60% - 18px);
+          max-width: calc(60% - 18px);
+        }
+        .proj-card-wrapper.is-shrunk {
+          flex: 0 1 calc(40% - 18px);
+          max-width: calc(40% - 18px);
+        }
+      }
+
+      /* Content reveal on hover — mirrors the slideUp animation from all-projects.css */
       .proj-reveal {
+        opacity: 0;
+        transform: translateY(18px);
+        transition: opacity .5s cubic-bezier(.25,.46,.45,.94), transform .5s cubic-bezier(.25,.46,.45,.94);
+      }
+      .proj-card-wrapper:hover .proj-reveal {
         opacity: 1;
         transform: translateY(0);
       }
-    }
+      .proj-reveal.delay-1 { transition-delay: .06s; }
+      .proj-reveal.delay-2 { transition-delay: .12s; }
 
-    .proj-hover-img { opacity: 0; }
-    .proj-card-wrapper:hover .proj-default-img { opacity: 0; }
-    .proj-card-wrapper:hover .proj-hover-img { opacity: 1; }
+      .proj-card-wrapper:hover .proj-default-img { opacity: 0; }
+      .proj-card-wrapper:hover .proj-hover-img { opacity: 1; }
+    }
 
     /*
       Lock the shared sidebar (#sidebar, from realiving_sidebar.php) to its
@@ -170,63 +183,43 @@ $category_labels = [
 
   <div class="main-content">
 
-    <!-- ═══════════════════════════════
-       PAGE BANNER
-    ═══════════════════════════════ -->
-    <section class="relative h-[30vh] min-h-[200px] sm:h-[38vh] sm:min-h-[260px] md:h-[42vh] md:min-h-[280px] w-full overflow-hidden">
-      <img src="<?= CLIENT_ASSET ?>/images/background-image.jpg" alt="Realiving Projects"
-        class="absolute inset-0 h-full w-full object-cover object-center scale-105">
-      <div class="pointer-events-none absolute inset-0 bg-black/40"></div>
-      <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#0e0704]/90 via-[#0e0704]/30 to-[#0e0704]/10"></div>
-
-      <div class="relative z-10 flex h-full w-full flex-col items-center justify-center px-6 text-center text-white">
-        <span class="mb-3 md:mb-4 text-[9px] sm:text-[10px] font-semibold uppercase tracking-[3px] text-white/80 md:tracking-[6px]">
-          Our Portfolio
-        </span>
-        <h1 class="max-w-3xl font-normal leading-[1.15] text-2xl sm:text-3xl md:text-5xl"
-          style="font-family: 'Cormorant Garamond', serif;">
-          Spaces We've Brought to Life
-        </h1>
-      </div>
-    </section>
-    <!-- ═══════════════════════════════
-       END PAGE BANNER
-    ═══════════════════════════════ -->
-
 
     <!-- ═══════════════════════════════
        FILTER + SEARCH BAR (sticky)
     ═══════════════════════════════ -->
-    <section class="sticky top-0 z-30 bg-[#faf8f6]/95 backdrop-blur-sm border-b border-[#c4905c]/20 shadow-[0_2px_10px_rgba(47,18,0,0.05)]">
-      <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4 justify-between">
+    <section class="sticky top-0 z-20 bg-[#faf8f6]/95 backdrop-blur-sm border-b border-[#c4905c]/20 shadow-[0_2px_10px_rgba(47,18,0,0.05)]">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex flex-row items-center gap-2 sm:gap-4 justify-between">
 
-        <!-- Category Pills — horizontal scroll strip on mobile, no wrapping -->
-        <div class="cat-scroll flex md:flex-wrap flex-nowrap overflow-x-auto md:overflow-visible justify-start md:justify-center gap-2 -mx-3 px-3 md:mx-0 md:px-0" id="categoryLinks">
-          <a href="#" data-category="all"
-            class="category-link flex-shrink-0 inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-montserrat text-[10px] sm:text-[11px] font-semibold uppercase tracking-[1.5px] border whitespace-nowrap transition-all duration-300
-                   <?= $selected_category === 'all' ? 'bg-[#2f1200] text-white border-[#2f1200]' : 'bg-white text-[#2f1200] border-[#e3d6c5] hover:border-[#c4905c]' ?>">
-            All
-          </a>
-          <a href="#" data-category="site"
-            class="category-link flex-shrink-0 inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-montserrat text-[10px] sm:text-[11px] font-semibold uppercase tracking-[1.5px] border whitespace-nowrap transition-all duration-300
-                   <?= $selected_category === 'site' ? 'bg-[#2f1200] text-white border-[#2f1200]' : 'bg-white text-[#2f1200] border-[#e3d6c5] hover:border-[#c4905c]' ?>">
-            Site Projects
-          </a>
-          <a href="#" data-category="residential"
-            class="category-link flex-shrink-0 inline-flex items-center px-4 sm:px-5 py-2 sm:py-2.5 rounded-full font-montserrat text-[10px] sm:text-[11px] font-semibold uppercase tracking-[1.5px] border whitespace-nowrap transition-all duration-300
-                   <?= $selected_category === 'residential' ? 'bg-[#2f1200] text-white border-[#2f1200]' : 'bg-white text-[#2f1200] border-[#e3d6c5] hover:border-[#c4905c]' ?>">
-            Individual Projects
-          </a>
+        <!-- Filters Button + Dropdown Panel -->
+        <div class="relative z-[100] flex-shrink-0" id="filtersWrapper">
+          <button type="button" id="filtersBtn"
+            class="inline-flex items-center gap-2 px-5 py-2 sm:py-2.5 rounded-full border border-[#e3d6c5] bg-white font-montserrat text-[11px] sm:text-[12px] font-semibold uppercase tracking-[1px] text-[#2f1200] hover:border-[#c4905c] transition-colors duration-300 cursor-pointer whitespace-nowrap">
+            <i class="ri-equalizer-line text-[#c4905c] text-base"></i>
+            Filters
+          </button>
+
+          <div id="filtersPanel"
+            class="hidden absolute top-[calc(100%+8px)] left-0 w-52 bg-white rounded-xl border border-[#e3d6c5] shadow-[0_16px_40px_rgba(47,18,0,0.14)] z-[100] overflow-hidden">
+            <button type="button" data-category="all" class="filter-option w-full text-left px-4 py-3 font-montserrat text-[12px] font-semibold uppercase tracking-[1px] text-[#2f1200] hover:bg-[#faf8f6] transition-colors duration-200 <?= $selected_category === 'all' ? 'bg-[#faf8f6] text-[#c4905c]' : '' ?>">
+              All
+            </button>
+            <button type="button" data-category="site" class="filter-option w-full text-left px-4 py-3 font-montserrat text-[12px] font-semibold uppercase tracking-[1px] text-[#2f1200] hover:bg-[#faf8f6] transition-colors duration-200 border-t border-[#f0ebe4] <?= $selected_category === 'site' ? 'bg-[#faf8f6] text-[#c4905c]' : '' ?>">
+              Site Projects
+            </button>
+            <button type="button" data-category="residential" class="filter-option w-full text-left px-4 py-3 font-montserrat text-[12px] font-semibold uppercase tracking-[1px] text-[#2f1200] hover:bg-[#faf8f6] transition-colors duration-200 border-t border-[#f0ebe4] <?= $selected_category === 'residential' ? 'bg-[#faf8f6] text-[#c4905c]' : '' ?>">
+              Individual Projects
+            </button>
+          </div>
         </div>
 
         <!-- Search -->
-        <div class="relative w-full md:w-72">
+        <div class="relative z-[100] flex-1 md:w-72">
           <input type="text" id="projectSearch" autocomplete="off" placeholder="Search by name or location..."
             class="w-full pl-4 pr-10 py-2 sm:py-2.5 rounded-full border border-[#e3d6c5] font-montserrat text-[13px] text-[#2f1200] placeholder:text-gray-400 outline-none focus:border-[#c4905c] transition-colors duration-300">
           <i class="ri-search-line absolute right-4 top-1/2 -translate-y-1/2 text-[#c4905c] text-base pointer-events-none"></i>
 
           <div id="searchSuggestions"
-            class="hidden absolute top-[calc(100%+8px)] left-0 right-0 bg-white rounded-xl border border-[#e3d6c5] shadow-[0_16px_40px_rgba(47,18,0,0.14)] max-h-[400px] overflow-y-auto z-40">
+            class="hidden absolute top-[calc(100%+8px)] right-0 w-[min(90vw,340px)] sm:w-full bg-white rounded-xl border border-[#e3d6c5] shadow-[0_16px_40px_rgba(47,18,0,0.14)] max-h-[400px] overflow-y-auto z-[110] pb-1">
           </div>
         </div>
 
@@ -392,7 +385,9 @@ $category_labels = [
     let currentCategory = <?= json_encode($selected_category) ?>;
 
     // ===== SELECTORS =====
-    const categoryLinks = document.querySelectorAll('.category-link');
+    const filtersBtn = document.getElementById('filtersBtn');
+    const filtersPanel = document.getElementById('filtersPanel');
+    const filterOptions = document.querySelectorAll('.filter-option');
     const titleCategory = document.getElementById('project-title-category');
     const projectsContainer = document.getElementById('projectsContainer');
     const searchInput = document.getElementById('projectSearch');
@@ -540,7 +535,15 @@ $category_labels = [
 
     let hoverTimeout = null;
 
+    // Only real mouse + desktop devices get the expand/shrink hover
+    // behavior. Tablets, touch screens, and large touch displays
+    // (e.g. Nest Hub Max) fail this check and simply keep the plain
+    // 3-column grid with no JS hover listeners attached at all.
+    const supportsDesktopHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     function initCardHover() {
+      if (!supportsDesktopHover) return;
+
       buildRowGroups();
       const visible = getAllWrappers().filter(w => w.style.display !== 'none');
 
@@ -581,23 +584,31 @@ $category_labels = [
 
     window.addEventListener('resize', buildRowGroups);
 
-    // ===== CATEGORY =====
-    categoryLinks.forEach(link => {
-      link.addEventListener('click', function (e) {
-        e.preventDefault();
-        categoryLinks.forEach(l => {
-          l.classList.remove('bg-[#2f1200]', 'text-white', 'border-[#2f1200]');
-          l.classList.add('bg-white', 'text-[#2f1200]', 'border-[#e3d6c5]');
-        });
-        this.classList.remove('bg-white', 'text-[#2f1200]', 'border-[#e3d6c5]');
-        this.classList.add('bg-[#2f1200]', 'text-white', 'border-[#2f1200]');
+    // ===== FILTERS BUTTON + PANEL =====
+    filtersBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      filtersPanel.classList.toggle('hidden');
+    });
 
+    document.addEventListener('click', function (e) {
+      if (!filtersPanel.contains(e.target) && !filtersBtn.contains(e.target)) {
+        filtersPanel.classList.add('hidden');
+      }
+    });
+
+    filterOptions.forEach(opt => {
+      opt.addEventListener('click', function () {
         currentCategory = this.dataset.category;
         currentPage = 1;
         activeSearch = false;
         searchInput.value = '';
         searchSuggestions.classList.add('hidden');
         titleCategory.textContent = categoryLabels[currentCategory];
+
+        filterOptions.forEach(o => o.classList.remove('bg-[#faf8f6]', 'text-[#c4905c]'));
+        this.classList.add('bg-[#faf8f6]', 'text-[#c4905c]');
+
+        filtersPanel.classList.add('hidden');
         render();
 
         const newUrl = new URL(window.location);
@@ -645,12 +656,15 @@ $category_labels = [
       searchSuggestions.innerHTML = matches.map(project => {
         const categoryLabel = project.category === 'site' ? 'Site Project' : 'Residential Interior';
         return `
-      <div class="suggestion-item flex items-center gap-4 px-4 py-3 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-[#faf8f6] transition-colors duration-200" data-link="${project.link}">
-        <img src="${project.image}" alt="${project.title}" class="w-14 h-14 object-cover rounded-lg flex-shrink-0">
-        <div class="flex-1 min-w-0">
-          <div class="font-montserrat text-sm text-[#2f1200] mb-1 truncate">${highlightMatch(project.title, searchTerm)}</div>
-          <div class="flex items-center gap-1 font-montserrat text-[11px] text-gray-500"><i class="ri-map-pin-line"></i> ${highlightMatch(project.location, searchTerm)}</div>
-          <span class="inline-block mt-1.5 font-montserrat text-[9px] font-bold tracking-[1.5px] uppercase text-[#c4905c]">${categoryLabel}</span>
+      <div class="suggestion-item flex items-start gap-3 px-3 sm:px-4 py-3.5 border-b border-gray-100 last:border-b-0 cursor-pointer hover:bg-[#faf8f6] transition-colors duration-200" data-link="${project.link}">
+        <img src="${project.image}" alt="${project.title}" class="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-lg flex-shrink-0">
+        <div class="flex-1 min-w-0 py-0.5">
+          <div class="font-montserrat text-[13px] sm:text-sm text-[#2f1200] mb-1.5 truncate">${highlightMatch(project.title, searchTerm)}</div>
+          <div class="flex items-start gap-1 font-montserrat text-[10px] sm:text-[11px] text-gray-500 mb-2">
+            <i class="ri-map-pin-line flex-shrink-0 mt-0.5"></i>
+            <span class="truncate">${highlightMatch(project.location, searchTerm)}</span>
+          </div>
+          <span class="inline-block font-montserrat text-[9px] font-bold tracking-[1.5px] uppercase text-[#c4905c]">${categoryLabel}</span>
         </div>
       </div>`;
       }).join('');
@@ -674,14 +688,10 @@ $category_labels = [
     window.addEventListener('popstate', function () {
       const urlParams = new URLSearchParams(window.location.search);
       currentCategory = urlParams.get('category') || 'all';
-      categoryLinks.forEach(link => {
-        const isActive = link.dataset.category === currentCategory;
-        link.classList.toggle('bg-[#2f1200]', isActive);
-        link.classList.toggle('text-white', isActive);
-        link.classList.toggle('border-[#2f1200]', isActive);
-        link.classList.toggle('bg-white', !isActive);
-        link.classList.toggle('text-[#2f1200]', !isActive);
-        link.classList.toggle('border-[#e3d6c5]', !isActive);
+      filterOptions.forEach(o => {
+        const isActive = o.dataset.category === currentCategory;
+        o.classList.toggle('bg-[#faf8f6]', isActive);
+        o.classList.toggle('text-[#c4905c]', isActive);
       });
       titleCategory.textContent = categoryLabels[currentCategory];
       currentPage = 1;
@@ -708,14 +718,10 @@ $category_labels = [
 
       const urlParams = new URLSearchParams(window.location.search);
       currentCategory = urlParams.get('category') || 'all';
-      categoryLinks.forEach(link => {
-        const isActive = link.dataset.category === currentCategory;
-        link.classList.toggle('bg-[#2f1200]', isActive);
-        link.classList.toggle('text-white', isActive);
-        link.classList.toggle('border-[#2f1200]', isActive);
-        link.classList.toggle('bg-white', !isActive);
-        link.classList.toggle('text-[#2f1200]', !isActive);
-        link.classList.toggle('border-[#e3d6c5]', !isActive);
+      filterOptions.forEach(o => {
+        const isActive = o.dataset.category === currentCategory;
+        o.classList.toggle('bg-[#faf8f6]', isActive);
+        o.classList.toggle('text-[#c4905c]', isActive);
       });
 
       render();

@@ -53,11 +53,14 @@ $includes = [
 // ══════════════════════════════════════════════════════
 $routes = [
   '' => 'realiving_user/realiving_mainpage/realiving_main.php',        // realivingdesigncenter.com/
-'index.php' => 'realiving_user/realiving_mainpage/realiving_main.php',        // /home
+  'index.php' => 'realiving_user/realiving_mainpage/realiving_main.php',        // /home
 
   //PROJECTS
   'projects' => 'realiving_user/realiving_projects/realiving_projects.php',
-  'view-projects' => 'realiving_user/projects/project-template-example.php',
+  'view-projects' => 'realiving_user/realiving_projects/realiving_projects_view.php',
+
+  //CONCEPTS
+  'concepts' => 'realiving_user/realiving_concepts/realiving_concepts.php',
 ];
 
 // ══════════════════════════════════════════════════════

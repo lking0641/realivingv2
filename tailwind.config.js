@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./realiving_admin/**/*.php",
     "./realiving_user/**/*.php",
+    "./loginpage/**/*.php",
     "./*.php",
   ],
   theme: {

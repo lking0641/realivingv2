@@ -10,9 +10,15 @@
 //   Montserrat  -> labels / body / uppercase eyebrows
 //   Cormorant Garamond -> display serif (same face used in the hero H1)
 //   Remixicon (ri-*) -> already loaded once in the page <head>, no extra icon font needed
+//
+// MOBILE NOTE: #mobileBottomNav (from realiving_sidebar.php) is a floating,
+// fixed-position island — it does NOT push page content, it just sits on
+// top of whatever's last on the page. So this footer reserves bottom
+// space for it (pb-[150px] on mobile, reset to pb-0 at md+ where the
+// floating nav is hidden) instead of relying on the sidebar file to do it.
 ?>
 
-<footer class="relative bg-[#f5f0e8] text-[#2f1200] overflow-hidden">
+<footer class="relative bg-[#f5f0e8] text-[#2f1200] overflow-hidden pb-[150px] md:pb-0">
 
   <!-- Diagonal cut at the top — same signature move used on the service-card
        media banners (clip-path polygon), carried into the footer so the
@@ -27,7 +33,7 @@
   <div class="relative max-w-7xl mx-auto px-6 sm:px-8 pt-20 sm:pt-24">
 
     <!-- ═══ CTA STRIP ═══ -->
-    <div class="flex flex-col items-center text-center pb-14 sm:pb-16 border-b-2 border-[#c4905c]/50">
+    <div class="flex flex-col items-center text-center pb-12 sm:pb-16 border-b-2 border-[#c4905c]/50">
       <span class="font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#c4905c] mb-4">
         Design &bull; Fabricate &bull; Install
       </span>
@@ -35,13 +41,13 @@
           style="font-family: 'Cormorant Garamond', serif;">
         Let's build a space that feels like you.
       </h2>
-      <div class="flex flex-col sm:flex-row items-center gap-4">
-        <a href="javascript:void(0);" class="openFormBtn inline-flex items-center gap-2 bg-[#2f1200] px-8 py-3.5
+      <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <a href="javascript:void(0);" class="openFormBtn inline-flex items-center justify-center gap-2 bg-[#2f1200] px-8 py-3.5 w-full sm:w-auto
                   text-[11px] font-montserrat font-semibold uppercase tracking-[2px] text-white
                   transition-all duration-300 hover:bg-[#c4905c] rounded-full">
           <i class="ri-send-plane-line text-[13px]"></i> Inquire Now
         </a>
-        <a href="tel:09851245929" class="inline-flex items-center gap-2 border-2 border-[#c4905c] px-8 py-3.5
+        <a href="tel:09851245929" class="inline-flex items-center justify-center gap-2 border-2 border-[#c4905c] px-8 py-3.5 w-full sm:w-auto
                   text-[11px] font-montserrat font-semibold uppercase tracking-[2px] text-[#2f1200]
                   transition-all duration-300 hover:bg-[#c4905c] hover:text-white rounded-full">
           <i class="ri-phone-line text-[13px]"></i> Call Us
@@ -49,11 +55,16 @@
       </div>
     </div>
 
-    <!-- ═══ MAIN GRID ═══ -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-8 py-14 sm:py-16">
+    <!-- ═══ MAIN GRID ═══
+         Mobile (<640px): 2 columns. Brand spans both (full-width intro
+         row), Explore + Store Hours sit side-by-side, Contact spans both
+         again (keeps the email/address from squeezing into ~150px).
+         sm (≥640px): same 2-col pairing, just wider.
+         lg (≥1024px): back to the original 4-across single row. -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10 sm:gap-x-8 sm:gap-y-10 lg:gap-8 py-12 sm:py-16">
 
       <!-- Brand -->
-      <div class="lg:col-span-1">
+      <div class="col-span-2 lg:col-span-1">
         <img src="<?= CLIENT_ASSET ?>/images/logo/logo.png" alt="Realiving Logo" class="h-11 w-auto mb-5">
         <p class="font-montserrat text-[13px] text-[#5a3520] leading-relaxed mb-6 max-w-xs">
           Crafting timeless interiors — from concept to fabrication to install — for spaces that are built to be lived in.
@@ -102,15 +113,15 @@
           Store Hours
         </p>
         <div class="flex flex-col font-montserrat text-[13px]">
-          <div class="flex justify-between py-2.5 border-b border-[#c4905c]/25">
+          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-0 py-2.5 border-b border-[#c4905c]/25">
             <span class="text-[#2f1200] font-medium">Mon – Fri</span>
             <span class="text-[#5a3520]">7:00 AM – 5:00 PM</span>
           </div>
-          <div class="flex justify-between py-2.5 border-b border-[#c4905c]/25">
+          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-0 py-2.5 border-b border-[#c4905c]/25">
             <span class="text-[#2f1200] font-medium">Saturday</span>
             <span class="text-[#5a3520]">8:00 AM – 12:00 PM</span>
           </div>
-          <div class="flex justify-between py-2.5">
+          <div class="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-0 py-2.5">
             <span class="text-[#2f1200] font-medium">Sunday</span>
             <span class="text-[#5a3520]">Closed</span>
           </div>
@@ -118,7 +129,7 @@
       </div>
 
       <!-- Contact -->
-      <div>
+      <div class="col-span-2 lg:col-span-1">
         <p class="font-montserrat text-[10px] font-bold tracking-[2px] uppercase text-[#c4905c] mb-6 pb-2.5 border-b-2 border-[#c4905c] inline-block">
           Get In Touch
         </p>

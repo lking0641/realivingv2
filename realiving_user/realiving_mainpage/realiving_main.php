@@ -36,6 +36,19 @@ $hero_result = $conn->query($hero_query);
       }
     }
 
+    :root{ --sb-current-offset: 280px; }
+@media (max-width: 767px){ :root{ --sb-current-offset: 0px; } }
+
+#heroSlider{
+  margin-left: calc(var(--sb-current-offset) * -1);
+  width: calc(100% + var(--sb-current-offset));
+}
+
+#heroSlider > .relative.z-10{
+  padding-left: var(--sb-current-offset);
+  box-sizing: border-box;
+}
+
     @media (max-width: 767px) {
       .hero-slide.is-active {
         animation: heroKenBurns 6s linear forwards;
@@ -296,8 +309,8 @@ $hero_result = $conn->query($hero_query);
           </div>
 
           <iframe data-src="https://kd20-realiving.yfcad.com/pano?id=56834458&uid=24597"
-  title="Realiving Design Center 360° Virtual Tour" allowfullscreen
-  allow="autoplay 'none'; fullscreen"
+  title="Realiving Design Center 360° Virtual Tour"
+  allow="fullscreen; autoplay"
   class="absolute inset-0 w-full h-full border-0"></iframe>
 
           <!-- Logo overlay — frosted glass, matches sidebar's frosted-glass language -->

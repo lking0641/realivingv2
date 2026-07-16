@@ -1,6 +1,8 @@
 <?php
 //connection.php
 
+require_once __DIR__ . '/../config/app_config.php';
+
 // Set PHP timezone to Philippine Time
 date_default_timezone_set('Asia/Manila');
 
@@ -60,10 +62,7 @@ if (isset($_SESSION['admin_id'])) {
             session_destroy();
             
             // Redirect to login with timeout message
-            $login_url = (strpos($_SERVER['HTTP_HOST'], 'localhost') !== false)
-    ? '/realivingv2/loginpage/index.php'
-    : '/loginpage/index.php';
-header("Location: {$login_url}?timeout=1");
+            header("Location: " . BASE_URL . "login?timeout=1");
             exit();
         }
     }

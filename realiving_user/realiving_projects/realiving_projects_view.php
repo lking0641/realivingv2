@@ -252,37 +252,11 @@ $badge_class = $badge_colors[$cat] ?? 'bg-gray-100 text-gray-600 border border-g
         .thin-scrollbar::-webkit-scrollbar { height: 5px; }
         .thin-scrollbar::-webkit-scrollbar-thumb { background: #c4905c; border-radius: 3px; }
 
-        /* Same sidebar white-lock as realiving_projects.php — this page has
-           no hero slider either, so skip the blurred/transparent scroll
-           behavior and just keep the shared sidebar solid white here too */
-        #sidebar, #sidebar.scrolled {
-            background: #ffffff !important;
-            border-right: 1px solid rgba(0,0,0,0.08) !important;
-            box-shadow: 2px 0 16px rgba(0,0,0,0.05) !important;
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-        }
-        #sidebar::before, #sidebar::after { display: none !important; }
-        #sidebar .sb-header { border-bottom-color: rgba(0,0,0,0.08) !important; }
-        #sidebar .sb-logo-mark { border-color: rgba(0,0,0,0.1) !important; }
-        #sidebar .sb-collapse-btn { border-color: rgba(0,0,0,0.2) !important; color: #2f1200 !important; }
-        #sidebar .sb-collapse-btn:hover { background: rgba(0,0,0,0.05) !important; }
-        #sidebar .sb-label { color: rgba(0,0,0,0.45) !important; }
-        #sidebar .sb-link { color: #2b2b2b !important; }
-        #sidebar .sb-link i { color: #8a8a8a !important; }
-        #sidebar .sb-link:hover { background: rgba(47,18,0,0.06) !important; }
-        #sidebar .sb-link:hover i { color: #2f1200 !important; }
-        #sidebar .sb-link.active { background: rgba(47,18,0,0.08) !important; }
-        #sidebar .sb-divider { background: rgba(0,0,0,0.08) !important; }
-        #sidebar .sb-footer { border-top-color: rgba(0,0,0,0.08) !important; }
-        #sidebar .sb-book-btn { border-color: #2f1200 !important; color: #2f1200 !important; }
-        #sidebar .sb-book-btn:hover { background: #2f1200 !important; color: #fff !important; }
-        #sbLogoWhite, #sbMarkWhite { display: none !important; }
-        #sbLogoDark, #sbMarkDark { display: block !important; }
+        
     </style>
 </head>
 
-<body class="font-montserrat bg-[#faf8f5]">
+<body class="font-montserrat bg-[#faf8f5] no-hero">
 
     <?php include $includes['header']; ?>
 

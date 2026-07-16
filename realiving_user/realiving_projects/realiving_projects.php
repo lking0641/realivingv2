@@ -124,49 +124,6 @@ $category_labels = [
       .proj-card-wrapper:hover .proj-hover-img { opacity: 1; }
     }
 
-    /*
-      Lock the shared sidebar (#sidebar, from realiving_sidebar.php) to its
-      solid-white style ONLY on this page. The blur/transparent-then-white
-      transition it does on scroll is tied to --hero-bg-image, which only
-      the homepage's slider sets — this page has no hero slider, so we skip
-      that behavior entirely and just keep the sidebar white all the time.
-      !important is used here on purpose: it needs to beat the shared
-      sidebar's own rules (including its .scrolled state) regardless of
-      cascade order, without editing realiving_sidebar.php itself so the
-      homepage keeps its original blurred-hero behavior untouched.
-    */
-    #sidebar,
-    #sidebar.scrolled {
-      background: #ffffff !important;
-      border-right: 1px solid rgba(0,0,0,0.08) !important;
-      box-shadow: 2px 0 16px rgba(0,0,0,0.05) !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-    #sidebar::before,
-    #sidebar::after { display: none !important; }
-
-    #sidebar .sb-header { border-bottom-color: rgba(0,0,0,0.08) !important; }
-    #sidebar .sb-logo-mark { border-color: rgba(0,0,0,0.1) !important; }
-    #sidebar .sb-collapse-btn { border-color: rgba(0,0,0,0.2) !important; color: #2f1200 !important; }
-    #sidebar .sb-collapse-btn:hover { background: rgba(0,0,0,0.05) !important; }
-    #sidebar .sb-label { color: rgba(0,0,0,0.45) !important; }
-    #sidebar .sb-link { color: #2b2b2b !important; }
-    #sidebar .sb-link i { color: #8a8a8a !important; }
-    #sidebar .sb-link:hover { background: rgba(47,18,0,0.06) !important; }
-    #sidebar .sb-link:hover i { color: #2f1200 !important; }
-    #sidebar .sb-link.active { background: rgba(47,18,0,0.08) !important; }
-    #sidebar .sb-divider { background: rgba(0,0,0,0.08) !important; }
-    #sidebar .sb-footer { border-top-color: rgba(0,0,0,0.08) !important; }
-    #sidebar .sb-book-btn { border-color: #2f1200 !important; color: #2f1200 !important; }
-    #sidebar .sb-book-btn:hover { background: #2f1200 !important; color: #fff !important; }
-
-    /* Force the dark/black logo variants since the sidebar never goes
-       transparent here (the JS otherwise swaps these based on scroll
-       position, which we're intentionally bypassing above) */
-    #sbLogoWhite, #sbMarkWhite { display: none !important; }
-    #sbLogoDark,  #sbMarkDark  { display: block !important; }
-
     /* Horizontal-scrolling category pill strip on mobile instead of
        wrapping into a cramped multi-line block */
     .cat-scroll {
@@ -174,10 +131,22 @@ $category_labels = [
       -ms-overflow-style: none;
     }
     .cat-scroll::-webkit-scrollbar { display: none; }
+
+    /* Ang #mobileTopBar (72px) ay fixed/floating sa ibabaw ng page, hindi
+       siya "pumupush" ng content pababa gaya ng normal na header — kaya
+       kailangan i-offset natin manually ang main-content at yung sticky
+       filter bar para hindi sila matakpan pag nasa taas ng page o pag
+       nag-scroll. Ganun din sa ibaba — floating lang ang bottom nav
+       island, kaya bigyan din ng puwang ang huling section. */
+    @media (max-width: 767px) {
+      .main-content { padding-top: 72px; }
+      #filterBar { top: 72px; }
+      #cabinet-cost { padding-bottom: 100px; }
+    }
   </style>
 </head>
 
-<body class="projects-page">
+<body class="projects-page no-hero">
 
   <?php include $includes['header']; ?>
 
@@ -187,7 +156,7 @@ $category_labels = [
     <!-- ═══════════════════════════════
        FILTER + SEARCH BAR (sticky)
     ═══════════════════════════════ -->
-    <section class="sticky top-0 z-20 bg-[#faf8f6]/95 backdrop-blur-sm border-b border-[#c4905c]/20 shadow-[0_2px_10px_rgba(47,18,0,0.05)]">
+    <section id="filterBar" class="sticky top-0 z-20 bg-[#faf8f6]/95 backdrop-blur-sm border-b border-[#c4905c]/20 shadow-[0_2px_10px_rgba(47,18,0,0.05)]">
       <div class="max-w-7xl mx-auto px-3 sm:px-6 py-3 sm:py-4 flex flex-row items-center gap-2 sm:gap-4 justify-between">
 
         <!-- Filters Button + Dropdown Panel -->

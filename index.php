@@ -3,49 +3,7 @@
 // ══════════════════════════════════════════════════════
 //  ENVIRONMENT DETECTION — localhost vs live
 // ══════════════════════════════════════════════════════
-$is_local = ($_SERVER['HTTP_HOST'] === 'localhost' || str_contains($_SERVER['HTTP_HOST'], '127.0.0.1'));
-
-if ($is_local) {
-  // Local: http://localhost/realiving/
-  define('BASE_URL', 'http://localhost/realivingv2/');
-  define('ROOT_PATH', 'C:/xampp/htdocs/realivingv2/');
-} else {
-  // Live: https://realivingdesigncenter.com/
-  define('BASE_URL', 'https://realivingdesigncenter.com/');
-  define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . '/');
-}
-
-// ══════════════════════════════════════════════════════
-//  ASSET & PAGE PATHS
-// ══════════════════════════════════════════════════════
-define('BASE_ASSET', BASE_URL . '');
-define('CLIENT_ASSET', BASE_URL . 'realiving_user');
-define('PAGES_PATH', ROOT_PATH . 'realiving_user/');
-
-$includes = [
-  //connection
-  'connection' => ROOT_PATH . 'connection/connection.php',
-
-  //recaptcha
-  'recaptcha' => PAGES_PATH . 'config/recaptcha_config.php',
-
-  //ads
-  'ads' => PAGES_PATH . 'ads/promo-banner.php',
-  'banner' => PAGES_PATH . 'ads/banner.php',
-  'banner2' => PAGES_PATH . 'ads/banner2.php',
-
-  //assignment_logic
-  'assignement_logic' => ROOT_PATH . 'connection/assignement_logic.php',
-
-  //inquiry
-  'inquiry' => PAGES_PATH . 'inquiry_form/concept_inquiry.php',
-
-  //navbar
-  'header' => PAGES_PATH . 'realiving_navbar/realiving_navbar.php',
-
-  //footer
-  'footer' => PAGES_PATH . 'footer/footer.php',
-];
+require_once __DIR__ . '/config/app_config.php';
 
 // ══════════════════════════════════════════════════════
 //  ROUTES — add more as needed
@@ -61,6 +19,48 @@ $routes = [
 
   //CONCEPTS
   'concepts' => 'realiving_user/realiving_concepts/realiving_concepts.php',
+
+  //ABOUT
+  'about' => 'realiving_user/realiving_about/realiving_about.php',
+
+  //SERVICES
+  'services' => 'realiving_user/realiving_services/realiving_services.php',
+
+  //MODULAR
+  'modular' => 'realiving_user/realiving_modular/realiving_modular.php',
+
+  //NEWS
+  'news' => 'realiving_user/realiving_news/realiving_news.php',
+  'news-view' => 'realiving_user/realiving_news/realiving_news_view.php',
+
+  //CONTACT
+  'contact' => 'realiving_user/realiving_contact/realiving_contact.php',
+
+  //APPOINTMENT
+  'appointment' => 'realiving_user/realiving_appointment/realiving_appointment.php',
+  'get-booked-dates' => 'realiving_user/realiving_appointment/get_booked_dates.php',
+  'submit-appointment' => 'realiving_user/realiving_appointment/submit_appointment.php',
+
+  //ADMIN
+
+  //AUTH
+  'login' => 'loginpage/index.php',
+  'logout' => 'loginpage/logout.php',
+
+  //SALES
+  //SALES DASHBOARD
+  'sales-dashboard' => 'realiving_admin/realiving_sales/home_management/sales_dashboard.php',
+
+  //HOME SETTINGS
+  'home-setting' => 'realiving_admin/realiving_sales/home-settings/home_settings_dashboard.php',
+  'hero-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_hero_view.php',
+
+
+
+  'sales-appointment' => 'realiving_sales/appointment/appointment_dashboard.php',
+  'sales-concept-inquiry' => 'realiving_sales/concept_inquiry/concept_inquiry_dashboard.php',
+  'sales-contact' => 'realiving_sales/contact/contact_dashboard.php',
+  'sales-project' => 'realiving_sales/project/project_dashboard.php',
 ];
 
 // ══════════════════════════════════════════════════════
@@ -90,6 +90,8 @@ $old_path_map = [
   'realiving_user/concept/concept.php' => 'concepts',
   'realiving_user/projects/all-projects.php' => 'projects',
   'realiving_user/modular/product-catalog.php' => 'modular',
+  'loginpage/index.php' => 'login',
+  'loginpage/logout.php' => 'logout',
   // Add more old paths here as needed
 ];
 

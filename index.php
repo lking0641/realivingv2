@@ -54,6 +54,18 @@ $routes = [
   //HOME SETTINGS
   'home-setting' => 'realiving_admin/realiving_sales/home-settings/home_settings_dashboard.php',
   'hero-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_hero_view.php',
+  'inquire-image' => 'realiving_admin/realiving_sales/home-settings/home_settings_inquire_view.php',
+  'ads-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_ads_view.php',
+  'services-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_services_view.php',
+  'ads-content-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_ads_content_view.php',
+
+  //PRODUCT MANAGEMENT
+  'choose' => 'realiving_admin/realiving_sales/product-management/choose.php',
+  'view-products' => 'realiving_admin/realiving_sales/product-management/view_products.php',
+  'add-product' => 'realiving_admin/realiving_sales/product-management/add_product.php',
+  'edit-product' => 'realiving_admin/realiving_sales/product-management/view_products_edit.php',
+  'add-details' => 'realiving_admin/realiving_sales/product-management/view_products_add_details.php',
+  'fixed-sized-setting' => 'realiving_admin/realiving_sales/product-management/view_products_fixed_size_settings.php',
 
 
 

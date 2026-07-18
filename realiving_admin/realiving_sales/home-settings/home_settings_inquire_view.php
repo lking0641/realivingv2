@@ -1,6 +1,6 @@
 <?php
-//home_settings_hero_view.php
-include $includes ['mainbody'];
+//home_settings_inquire_view.php
+include $includes['mainbody'];
 
 $success_message = "";
 $error_message = "";
@@ -8,9 +8,9 @@ $error_message = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     
-    if ($action === 'add_hero') {
+    if ($action === 'add_inquire') {
         $title = trim($_POST['title']);
-        $target_dir = ROOT_PATH . "realiving_user/images/hero_section/";
+        $target_dir = ROOT_PATH . "realiving_user/images/inquire_section/";
         
         if (!file_exists($target_dir)) {
             mkdir($target_dir, 0777, true);
@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 $file_name = uniqid() . '_' . time() . '.webp';
                 $target_file = $target_dir . $file_name;
-                $filepath = './images/hero_section/' . $file_name;
+                $filepath = './images/inquire_section/' . $file_name;
                 
                 // Convert image to WebP
                 $temp_file = $_FILES['image']['tmp_name'];
@@ -53,11 +53,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if (imagewebp($image, $target_file, 90)) {
                         imagedestroy($image);
                         
-                        $stmt = $conn->prepare("INSERT INTO hero_section (title, filepath, is_active) VALUES (?, ?, 1)");
+                        $stmt = $conn->prepare("INSERT INTO inquire_images (title, filepath, is_active) VALUES (?, ?, 0)");
                         $stmt->bind_param("ss", $title, $filepath);
                         
                         if ($stmt->execute()) {
-                            $success_message = "Hero image added and converted to WebP successfully!";
+                            $success_message = "Inquire image added and converted to WebP successfully!";
                         } else {
                             $error_message = "Database error: " . $conn->error;
                         }
@@ -75,18 +75,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
     
-    if ($action === 'toggle_status') {
+    if ($action === 'set_active') {
         $id = intval($_POST['id']);
-        $current_status = intval($_POST['current_status']);
-        $new_status = $current_status === 1 ? 0 : 1;
         
-        $stmt = $conn->prepare("UPDATE hero_section SET is_active = ? WHERE id = ?");
-        $stmt->bind_param("ii", $new_status, $id);
+        // Deactivate all first
+        $conn->query("UPDATE inquire_images SET is_active = 0");
+        
+        // Activate the selected one
+        $stmt = $conn->prepare("UPDATE inquire_images SET is_active = 1 WHERE id = ?");
+        $stmt->bind_param("i", $id);
         
         if ($stmt->execute()) {
-            $success_message = "Status updated successfully!";
+            $success_message = "Image set as active successfully!";
         } else {
             $error_message = "Failed to update status.";
+        }
+        $stmt->close();
+    }
+    
+    if ($action === 'deactivate') {
+        $id = intval($_POST['id']);
+        
+        $stmt = $conn->prepare("UPDATE inquire_images SET is_active = 0 WHERE id = ?");
+        $stmt->bind_param("i", $id);
+        
+        if ($stmt->execute()) {
+            $success_message = "Image deactivated successfully!";
+        } else {
+            $error_message = "Failed to deactivate.";
         }
         $stmt->close();
     }
@@ -95,11 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = intval($_POST['id']);
         $filepath = $_POST['filepath'];
         
-        $stmt = $conn->prepare("DELETE FROM hero_section WHERE id = ?");
+        $stmt = $conn->prepare("DELETE FROM inquire_images WHERE id = ?");
         $stmt->bind_param("i", $id);
         
         if ($stmt->execute()) {
-            $file_to_delete = ROOT_PATH . "realiving_user/images/hero_section/" . basename($filepath);
+            $file_to_delete = ROOT_PATH . "realiving_user/images/inquire_section/" . basename($filepath);
             if (file_exists($file_to_delete)) {
                 unlink($file_to_delete);
             }
@@ -111,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
+$inquire_items = $conn->query("SELECT * FROM inquire_images ORDER BY id DESC");
 ?>
 
 <!DOCTYPE html>
@@ -119,7 +135,7 @@ $hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hero Section - RealLiving</title>
+  <title>Inquire Section - RealLiving</title>
   <link rel="icon" type="image/png" sizes="32x32" href="../../logo/favicon.ico">
   <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -187,12 +203,13 @@ $hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
       padding:.4rem .8rem; border-radius:999px;
       border:1px solid var(--adm-line);
       background: var(--adm-bg); color: var(--adm-soft);
-      cursor:pointer; transition: opacity .2s ease;
+      cursor:pointer; transition: opacity .2s ease, background .2s ease, color .2s ease;
     }
-    .adm-pill:hover{ opacity:.8; }
+    .adm-pill:hover{ opacity:.85; }
     .adm-pill.is-active{
       background:#ECFDF3; color:#16A34A; border-color:#BBF7D0;
     }
+    .adm-pill.is-active:hover{ background:#FEF2F2; color:#DC2626; border-color:#FECACA; }
     .adm-pill .dot{ width:6px; height:6px; border-radius:999px; background: currentColor; }
 
     /* ── Alerts ──────────────────────────────── */
@@ -287,10 +304,10 @@ $hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
           <span>Back to Dashboard</span>
         </a>
         <div class="adm-eyebrow mb-2">Home Settings</div>
-        <h1 class="adm-title">Hero Section Images</h1>
-        <p class="adm-subtitle mt-1">Multiple images can be active at once.</p>
+        <h1 class="adm-title">Inquire Images</h1>
+        <p class="adm-subtitle mt-1">Only 1 image can be active at a time.</p>
       </div>
-      <button onclick="openModal('heroModal')" class="adm-btn">
+      <button onclick="openModal('inquireModal')" class="adm-btn">
         <i class="fas fa-upload"></i>
         <span>Upload New Image</span>
       </button>
@@ -310,33 +327,43 @@ $hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
       </div>
     <?php endif; ?>
 
-    <?php if ($hero_items->num_rows === 0): ?>
+    <?php if ($inquire_items->num_rows === 0): ?>
       <div class="adm-empty adm-fade">
         <i class="fas fa-panorama text-2xl mb-3" style="color:var(--adm-muted);"></i>
-        <p class="text-sm font-medium" style="color:var(--adm-ink);">No hero images yet</p>
+        <p class="text-sm font-medium" style="color:var(--adm-ink);">No inquire images yet</p>
         <p class="text-xs mt-1">Upload your first image to get started.</p>
       </div>
     <?php else: ?>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 adm-fade">
-        <?php while ($item = $hero_items->fetch_assoc()): 
+        <?php while ($item = $inquire_items->fetch_assoc()): 
             $filename = basename($item['filepath']);
-            $display_path = CLIENT_ASSET . "/images/hero_section/" . $filename;
+            $display_path = CLIENT_ASSET . "/images/inquire_section/" . $filename;
         ?>
           <div class="adm-media-card">
-            <img src="<?php echo htmlspecialchars($display_path); ?>" alt="Hero" class="adm-media-thumb" />
+            <img src="<?php echo htmlspecialchars($display_path); ?>" alt="Inquire" class="adm-media-thumb" />
             <div class="adm-media-body">
               <h3 class="adm-media-title"><?php echo htmlspecialchars($item['title']); ?></h3>
               <p class="adm-media-path"><?php echo htmlspecialchars($item['filepath']); ?></p>
               <div class="flex items-center justify-between">
-                <form method="POST" class="inline">
-                  <input type="hidden" name="action" value="toggle_status" />
-                  <input type="hidden" name="id" value="<?php echo $item['id']; ?>" />
-                  <input type="hidden" name="current_status" value="<?php echo $item['is_active']; ?>" />
-                  <button type="submit" class="adm-pill <?php echo $item['is_active'] ? 'is-active' : ''; ?>">
-                    <span class="dot"></span>
-                    <?php echo $item['is_active'] ? 'Active' : 'Inactive'; ?>
-                  </button>
-                </form>
+                <?php if ($item['is_active']): ?>
+                  <form method="POST" class="inline">
+                    <input type="hidden" name="action" value="deactivate" />
+                    <input type="hidden" name="id" value="<?php echo $item['id']; ?>" />
+                    <button type="submit" class="adm-pill is-active">
+                      <span class="dot"></span>
+                      Active
+                    </button>
+                  </form>
+                <?php else: ?>
+                  <form method="POST" class="inline">
+                    <input type="hidden" name="action" value="set_active" />
+                    <input type="hidden" name="id" value="<?php echo $item['id']; ?>" />
+                    <button type="submit" class="adm-pill">
+                      <span class="dot"></span>
+                      Set Active
+                    </button>
+                  </form>
+                <?php endif; ?>
                 <form method="POST" onsubmit="return confirm('Delete this image?');" class="inline">
                   <input type="hidden" name="action" value="delete" />
                   <input type="hidden" name="id" value="<?php echo $item['id']; ?>" />
@@ -354,16 +381,16 @@ $hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
   </div>
 
   <!-- Upload Modal -->
-  <div id="heroModal" class="modal">
+  <div id="inquireModal" class="modal">
     <div class="modal-content max-w-md w-full mx-4 p-6">
       <div class="flex items-center justify-between mb-6">
-        <h3 class="text-[15px] font-semibold" style="color:var(--adm-ink);">Upload Hero Image</h3>
-        <button onclick="closeModal('heroModal')" class="adm-btn-ghost">
+        <h3 class="text-[15px] font-semibold" style="color:var(--adm-ink);">Upload Inquire Image</h3>
+        <button onclick="closeModal('inquireModal')" class="adm-btn-ghost">
           <i class="fas fa-xmark"></i>
         </button>
       </div>
       <form method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="action" value="add_hero" />
+        <input type="hidden" name="action" value="add_inquire" />
         <div class="space-y-4">
           <div>
             <label class="adm-field-label">Title</label>
@@ -371,14 +398,14 @@ $hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
           </div>
           <div>
             <label class="adm-field-label">Image (any format — converted to WebP)</label>
-            <input type="file" id="heroImageInput" name="image" accept="image/*" required class="adm-input" onchange="previewImage(event, 'heroPreview')" />
+            <input type="file" id="inquireImageInput" name="image" accept="image/*" required class="adm-input" onchange="previewImage(event, 'inquirePreview')" />
             <p class="adm-field-hint">Supports: JPG, PNG, GIF, WebP</p>
           </div>
-          <div id="heroPreview" class="hidden">
+          <div id="inquirePreview" class="hidden">
             <label class="adm-field-label">Preview</label>
             <div class="relative rounded-lg overflow-hidden" style="border:1px solid var(--adm-line);">
-              <img id="heroPreviewImage" src="" alt="Preview" class="w-full h-48 object-cover" />
-              <button type="button" onclick="clearPreview('heroImageInput', 'heroPreview')" class="absolute top-2 right-2 adm-btn-ghost" style="background:#fff; border:1px solid var(--adm-line);">
+              <img id="inquirePreviewImage" src="" alt="Preview" class="w-full h-48 object-cover" />
+              <button type="button" onclick="clearPreview('inquireImageInput', 'inquirePreview')" class="absolute top-2 right-2 adm-btn-ghost" style="background:#fff; border:1px solid var(--adm-line);">
                 <i class="fas fa-xmark"></i>
               </button>
             </div>
@@ -401,7 +428,7 @@ $hero_items = $conn->query("SELECT * FROM hero_section ORDER BY id DESC");
       document.getElementById(modalId).classList.remove('active');
       const form = document.querySelector('#' + modalId + ' form');
       if (form) form.reset();
-      clearPreview('heroImageInput', 'heroPreview');
+      clearPreview('inquireImageInput', 'inquirePreview');
     }
 
     function previewImage(event, previewId) {

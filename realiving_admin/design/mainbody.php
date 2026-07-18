@@ -2,9 +2,13 @@
   //mainbody.php
   ob_start();
 
+  session_start();
+include $includes ['connection'];
+include $includes ['checkrole'];
+
   // Redirect if not logged in
   if (!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_role'])) {
-    header("Location: " . BASE_URL . "index.php");
+    header("Location: " . BASE_URL . "login");
     exit();
   }
 
@@ -324,7 +328,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Realiving Design Center</title>
-    <link rel="stylesheet" href="../../assets/css/output.css?v=1.0.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script>
       window.onload = function () {
@@ -1045,7 +1048,7 @@
                   <span class="group-hover:text-primary">Manage Profile & Settings</span>
                 </button>
                 <div class="border-t border-gray-100"></div>
-                <button onclick="location.href='../../loginpage/logout.php'"
+                <button onclick="location.href='<?= BASE_URL ?>logout'"
                   class="w-full text-left px-4 py-3 hover:bg-red-50 flex items-center text-sm group transition-colors">
                   <i class="ri-logout-box-line mr-3 text-lg text-gray-500 group-hover:text-red-500"></i>
                   <span class="group-hover:text-red-500">Sign Out</span>
@@ -1231,7 +1234,7 @@
         <div class="sticky top-0 bg-white z-10 border-b shadow-sm">
           <div class="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
             <div class="flex items-center space-x-3">
-              <img src="../../logo/picart.png" alt="Logo" class="h-10 object-cover">
+              <img src="<?= BASE_URL ?>logo/picart.png" alt="Logo" class="h-10 object-cover">
               <div>
                 <span class="font-semibold text-gray-800 block">Realiving</span>
                 <span class="text-xs text-gray-500">Menu</span>

@@ -1,9 +1,6 @@
 <?php
 //sales_dashboard.php
-session_start();
-include $includes ['connection'];
 include $includes ['mainbody'];
-include $includes ['checkrole'];
 
 
 // Allow only admin1 to admin5
@@ -226,7 +223,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- Product Management -->
-        <a href="../sales_product_management/choose.php" class="adm-card">
+        <a href="<?= BASE_URL ?>choose" class="adm-card">
           <div class="adm-icon"><i class="fas fa-box"></i></div>
           <h3 class="adm-card-title">Product Management</h3>
           <p class="adm-card-desc">Add, edit, and organize your product catalog.</p>

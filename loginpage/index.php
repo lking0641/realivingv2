@@ -44,7 +44,7 @@ function getRedirectUrl($role, $conn = null, $user_id = null) {
     $redirects = [
         'general_manager' => BASE_URL . 'realiving_admin/manager_tracker/manager_status_tracker.php',
         'operational_manager' => BASE_URL . 'realiving_admin/manager_tracker/manager_status_tracker.php',
-        'sales' => BASE_URL . 'realiving_admin/sales/sales_dashboard.php',
+        'sales' => BASE_URL . 'sales-dashboard',
         'accounting' => BASE_URL . 'realiving_admin/tracker_management/all_clients_tracker_list.php',
         'project_coordinator' => BASE_URL . 'realiving_admin/tracker_management/all_clients_tracker_list.php',
         'admin1' => BASE_URL . 'admin_mainpage/mainpage.php'

@@ -1,18 +1,9 @@
 <?php
 //home_settings_dashboard.php
-session_start();
-include $includes ['connection'];
 include $includes ['mainbody'];
-include $includes ['checkrole'];
 
 // Allow only admin1 to admin5
 require_role(['admin1', 'admin2', 'admin3', 'admin4', 'admin5', 'admin6', 'superadmin', 'sales']);
-
-// Check if admin is logged in
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../../loginpage/index.php");
-    exit();
-}
 
 // Get counts for each section
 $hero_count = $conn->query("SELECT COUNT(*) as count FROM hero_section")->fetch_assoc()['count'];
@@ -167,7 +158,7 @@ $conn->close();
           <p class="adm-subtitle mt-1">Manage hero section, inquire, and ads images.</p>
         </div>
       </div>
-      <img src="../../realiving_user/images/logo/realiving_logo_hd.png" alt="Logo" class="h-12 object-contain hidden sm:block" />
+      <img src="<?= CLIENT_ASSET ?>/images/logo/realiving_logo_hd.png" alt="Logo" class="h-12 object-contain hidden sm:block" />
     </div>
 
     <!-- Row 1: Hero, Inquire, Ads Banner -->
@@ -197,7 +188,7 @@ $conn->close();
         </a>
 
         <!-- Inquire Image -->
-        <a href="home_settings_inquire_view.php" class="adm-card">
+        <a href="<?= BASE_URL ?>inquire-image" class="adm-card">
           <div class="adm-icon"><i class="fas fa-circle-question"></i></div>
           <h3 class="adm-card-title">Inquire Image</h3>
           <p class="adm-card-desc">Only 1 image can be active at a time.</p>
@@ -217,7 +208,7 @@ $conn->close();
         </a>
 
         <!-- Ads Banner -->
-        <a href="home_settings_ads_view.php" class="adm-card">
+        <a href="<?= BASE_URL ?>ads-view" class="adm-card">
           <div class="adm-icon"><i class="fas fa-rectangle-ad"></i></div>
           <h3 class="adm-card-title">Ads Banner</h3>
           <p class="adm-card-desc">Only 1 banner can be active at a time.</p>
@@ -246,7 +237,7 @@ $conn->close();
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         <!-- Services Section -->
-        <a href="home_settings_services_view.php" class="adm-card">
+        <a href="<?= BASE_URL ?>services-view" class="adm-card">
           <div class="adm-icon"><i class="fas fa-concierge-bell"></i></div>
           <h3 class="adm-card-title">Services Section</h3>
           <p class="adm-card-desc">Manage service cards displayed on the homepage.</p>
@@ -266,7 +257,7 @@ $conn->close();
         </a>
 
         <!-- Ads Content -->
-        <a href="home_settings_ads_content_view.php" class="adm-card">
+        <a href="<?= BASE_URL ?>ads-content-view" class="adm-card">
           <div class="adm-icon"><i class="fas fa-bullhorn"></i></div>
           <h3 class="adm-card-title">Ads Content</h3>
           <p class="adm-card-desc">Manage ads with captions &amp; hashtags.</p>

@@ -6,7 +6,7 @@ if (!defined('BASE_URL')) {
 
     if ($is_local) {
         define('BASE_URL', 'http://localhost/realivingv2/');
-        define('ROOT_PATH', 'C:/xampp/htdocs/realivingv2/');
+        define('ROOT_PATH', 'D:/xampp/htdocs/realivingv2/');
     } else {
         define('BASE_URL', 'https://realivingdesigncenter.com/');
         define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . '/');

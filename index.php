@@ -58,6 +58,7 @@ $routes = [
   'ads-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_ads_view.php',
   'services-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_services_view.php',
   'ads-content-view' => 'realiving_admin/realiving_sales/home-settings/home_settings_ads_content_view.php',
+  'ads-content-edit' => 'realiving_admin/realiving_sales/home-settings/home_settings_ads_content_edit.php',
 
   //PRODUCT MANAGEMENT
   'choose' => 'realiving_admin/realiving_sales/product-management/choose.php',

@@ -674,7 +674,7 @@ if ($dow_posts_res) while ($r = $dow_posts_res->fetch_assoc()) $posts_by_dow[$r[
             <div class="flex items-center justify-between mt-4 pt-3" style="border-top:1px solid var(--adm-line);">
               <span class="text-xs italic" style="color:var(--adm-muted);">Hidden until scheduled date</span>
               <div class="flex items-center gap-1">
-                <a href="home_settings_ads_edit.php?id=<?php echo $item['id']; ?>" class="adm-btn-ghost is-edit" title="Edit post">
+                <a href="<?= BASE_URL ?>ads-content-edit?id=<?php echo $item['id']; ?>" class="adm-btn-ghost is-edit" title="Edit post">
                   <i class="fas fa-pen"></i>
                 </a>
                 <form method="POST" onsubmit="return confirm('Cancel and delete this scheduled post?');" class="inline">
@@ -798,7 +798,7 @@ if ($dow_posts_res) while ($r = $dow_posts_res->fetch_assoc()) $posts_by_dow[$r[
               </div>
 
               <div class="flex items-center gap-1">
-                <a href="home_settings_ads_edit.php?id=<?php echo $item['id']; ?>" class="adm-btn-ghost is-edit" title="Edit post">
+                <a href="<?= BASE_URL ?>ads-content-edit?id=<?php echo $item['id']; ?>" class="adm-btn-ghost is-edit" title="Edit post">
                   <i class="fas fa-pen"></i>
                 </a>
                 <form method="POST" onsubmit="return confirmDelete(<?php echo $stat_active; ?>);" class="inline">

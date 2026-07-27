@@ -152,7 +152,7 @@ if ($_SESSION['admin_role'] === 'designer') {
         <h1 class="adm-title">Product Management</h1>
         <p class="adm-subtitle mt-1">Manage products, accessories, and their relationships.</p>
       </div>
-      <a href="insert_dimension.php" class="adm-util-card adm-fade">
+      <a href="insert-dimension" class="adm-util-card adm-fade">
         <div class="adm-util-icon"><i class="fas fa-ruler-combined"></i></div>
         <div>
           <div class="adm-util-title">Dimension Label</div>
@@ -181,7 +181,7 @@ if ($_SESSION['admin_role'] === 'designer') {
       </a>
 
       <!-- Link Product Accessories -->
-      <a href="link_product_addons.php" class="block">
+      <a href="link-product-addons" class="block">
         <div class="adm-action-card">
           <div class="adm-action-icon"><i class="fas fa-link"></i></div>
           <h2 class="adm-action-title">Link Product Accessories</h2>
@@ -196,7 +196,7 @@ if ($_SESSION['admin_role'] === 'designer') {
       </a>
 
       <!-- Add Accessory -->
-      <a href="view_addons.php" class="block">
+      <a href="view-addons" class="block">
         <div class="adm-action-card">
           <div class="adm-action-icon"><i class="fas fa-puzzle-piece"></i></div>
           <h2 class="adm-action-title">Add New Accessory</h2>

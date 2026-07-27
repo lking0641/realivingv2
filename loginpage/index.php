@@ -31,26 +31,26 @@ function getRedirectUrl($role, $conn = null, $user_id = null) {
 
     if ($role === 'designer') {
         return $is_head
-            ? BASE_URL . 'realiving_admin/tracker_management/all_clients_tracker_list.php'
-            : BASE_URL . 'realiving_admin/tracker_site_visit/designer_clients_list.php';
+            ? BASE_URL . 'all-clients-tracker-list'
+            : BASE_URL . 'designer-clients-list';
     }
 
     if ($role === 'technical_designer') {
         return $is_head
-            ? BASE_URL . 'realiving_admin/tracker_management/all_clients_tracker_list.php'
-            : BASE_URL . 'realiving_admin/tracker_technical/td_layout_list.php';
+            ? BASE_URL . 'all-clients-tracker-list'
+            : BASE_URL . 'td-layout-list';
     }
 
     $redirects = [
-        'general_manager' => BASE_URL . 'realiving_admin/manager_tracker/manager_status_tracker.php',
-        'operational_manager' => BASE_URL . 'realiving_admin/manager_tracker/manager_status_tracker.php',
+        'general_manager' => BASE_URL . 'manager-status-tracker',
+        'operational_manager' => BASE_URL . 'manager-status-tracker',
         'sales' => BASE_URL . 'sales-dashboard',
-        'accounting' => BASE_URL . 'realiving_admin/tracker_management/all_clients_tracker_list.php',
-        'project_coordinator' => BASE_URL . 'realiving_admin/tracker_management/all_clients_tracker_list.php',
-        'admin1' => BASE_URL . 'admin_mainpage/mainpage.php'
+        'accounting' => BASE_URL . 'all-clients-tracker-list',
+        'project_coordinator' => BASE_URL . 'all-clients-tracker-list',
+        'admin1' => BASE_URL . 'admin-mainpage'
     ];
 
-    return isset($redirects[$role]) ? $redirects[$role] : BASE_URL . 'admin/admin_mainpage/mainpage';
+    return isset($redirects[$role]) ? $redirects[$role] : BASE_URL . 'admin-mainpage';
 }
 
 // Redirect to appropriate page if already logged in

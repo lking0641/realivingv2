@@ -6,7 +6,7 @@ if (!defined('BASE_URL')) {
 
     if ($is_local) {
         define('BASE_URL', 'http://localhost/realivingv2/');
-        define('ROOT_PATH', 'D:/xampp/htdocs/realivingv2/');
+        define('ROOT_PATH', 'C:/xampp/htdocs/realivingv2/');
     } else {
         define('BASE_URL', 'https://realivingdesigncenter.com/');
         define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . '/');
@@ -52,6 +52,20 @@ if (!isset($GLOBALS['includes'])) {
 
         //footer
         'footer' => PAGES_PATH . 'footer/footer.php',
+
+        //product list view
+        'quotation-products-display' => ADMIN_PATH . 'quotation-management/product-list-view/quotation_products_display.php',
+        'quotation-modal-content' => ADMIN_PATH . 'quotation-management/product-list-view/quotation_modal_content.php',
+
+        //quotation partials
+        'client-header' => ADMIN_PATH . 'quotation-management/quotation-partials/client_header.php',
+        'customized-entries' => ADMIN_PATH . 'quotation-management/quotation-partials/customized_entries.php',
+        'fixed-entries' => ADMIN_PATH . 'quotation-management/quotation-partials/fixed_entries.php',
+        'modals' => ADMIN_PATH . 'quotation-management/quotation-partials/modals.php',
+        'summary-pannel' => ADMIN_PATH . 'quotation-management/quotation-partials/summary_pannel.php',
+
+        //tracker management
+        'esign-modal' => ADMIN_PATH . 'tracker-management/tracker-management/esign_modal.php',
     ];
 }
 

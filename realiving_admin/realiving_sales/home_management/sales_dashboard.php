@@ -4,7 +4,7 @@ include $includes ['mainbody'];
 
 
 // Allow only admin1 to admin5
-require_role(['admin1', 'admin2', 'admin3', 'admin4', 'admin5', 'admin6', 'superadmin', 'sales', 'designer']);
+require_role(['superadmin', 'sales', 'designer']);
 
 // Get admin info for inquiry counts
 $admin_id = $_SESSION['admin_id'] ?? 0;
@@ -43,7 +43,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales & Marketing Dashboard - RealLiving</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="../../logo/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="<? BASE_URL ?>logo/favicon.ico">
   <!-- Font Awesome CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- Google Fonts: Inter -->
@@ -231,7 +231,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- Projects Management -->
-        <a href="projects_dashboard.php" class="adm-card">
+        <a href="projects-dashboard" class="adm-card">
           <div class="adm-icon"><i class="fas fa-briefcase"></i></div>
           <h3 class="adm-card-title">Projects Management</h3>
           <p class="adm-card-desc">Showcase completed projects and portfolio items.</p>
@@ -239,7 +239,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- Rooms Management -->
-        <a href="gallery_dashboard_v2.php" class="adm-card">
+        <a href="gallery-dashboard" class="adm-card">
           <div class="adm-icon"><i class="fas fa-images"></i></div>
           <h3 class="adm-card-title">Rooms Management</h3>
           <p class="adm-card-desc">Organize and display room design galleries.</p>
@@ -247,7 +247,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- Concept Management -->
-        <a href="concept_dashboard.php" class="adm-card">
+        <a href="concept-dashboard" class="adm-card">
           <div class="adm-icon"><i class="fas fa-lightbulb"></i></div>
           <h3 class="adm-card-title">Concept Management</h3>
           <p class="adm-card-desc">Create and manage design concepts and themes.</p>
@@ -255,7 +255,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- News Management -->
-        <a href="news_dashboard.php" class="adm-card">
+        <a href="news-dashboard" class="adm-card">
           <div class="adm-icon"><i class="fas fa-newspaper"></i></div>
           <h3 class="adm-card-title">News Management</h3>
           <p class="adm-card-desc">Publish and manage company news and updates.</p>
@@ -272,7 +272,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
         <!-- Appointment Inquiries -->
-        <a href="../sales_inquiry_management/appointment_dashboard.php" class="adm-stat">
+        <a href="appointment-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-calendar-check adm-stat-icon"></i>
             <span class="adm-stat-badge" id="badge-appointments" style="display: <?php echo $pending_appointments > 0 ? 'block' : 'none'; ?>"><?php echo $pending_appointments; ?></span>
@@ -283,7 +283,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- Concept Inquiries -->
-        <a href="../sales_inquiry_management/concept_inquiries_dashboard.php" class="adm-stat">
+        <a href="concept-inquiries-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-palette adm-stat-icon"></i>
             <span class="adm-stat-badge" id="badge-concepts" style="display: <?php echo $pending_concepts > 0 ? 'block' : 'none'; ?>"><?php echo $pending_concepts; ?></span>
@@ -294,7 +294,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- Contact Inquiries -->
-        <a href="../sales_inquiry_management/contact_dashboard.php" class="adm-stat">
+        <a href="contact-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-envelope-open-text adm-stat-icon"></i>
             <span class="adm-stat-badge" id="badge-contacts" style="display: <?php echo $pending_contacts > 0 ? 'block' : 'none'; ?>"><?php echo $pending_contacts; ?></span>
@@ -305,7 +305,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         </a>
 
         <!-- Project Inquiries -->
-        <a href="../sales_inquiry_management/project_inquiries_dashboard.php" class="adm-stat">
+        <a href="project-inquiries-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-building adm-stat-icon"></i>
             <span class="adm-stat-badge" id="badge-projects" style="display: <?php echo $pending_projects > 0 ? 'block' : 'none'; ?>"><?php echo $pending_projects; ?></span>

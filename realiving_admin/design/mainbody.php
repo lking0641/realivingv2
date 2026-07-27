@@ -2,7 +2,7 @@
   //mainbody.php
   ob_start();
 
-  session_start();
+session_start();
 include $includes ['connection'];
 include $includes ['checkrole'];
 
@@ -218,7 +218,7 @@ include $includes ['checkrole'];
 
       // ── Quotation ─────────────────────────────────────────────────
       'quotation_management' => [
-        'quotation_list.php',
+        'quotation-list',
         'quotation_items.php',
         'quotation_product_details.php',
         'computation_list.php'
@@ -675,19 +675,19 @@ include $includes ['checkrole'];
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center space-x-2 transition-colors">
                     <i class="ri-home-gear-line"></i><span>Home Management</span>
                   </a>
-                  <a href="../../realiving_admin/sales/projects_dashboard.php" data-section="project_management"
+                  <a href="projects-dashboard" data-section="project_management"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center space-x-2 transition-colors">
                     <i class="ri-building-4-line"></i><span>Projects Management</span>
                   </a>
-                  <a href="../../realiving_admin/sales/gallery_dashboard_v2.php" data-section="gallery_management"
+                  <a href="gallery-dashboard" data-section="gallery_management"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center space-x-2 transition-colors">
                     <i class="ri-image-2-line"></i><span>Rooms Management</span>
                   </a>
-                  <a href="../../realiving_admin/sales/concept_dashboard.php" data-section="concept_management"
+                  <a href="concept-dashboard" data-section="concept_management"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center space-x-2 transition-colors">
                     <i class="ri-lightbulb-line"></i><span>Concept Management</span>
                   </a>
-                  <a href="../../realiving_admin/sales/news_dashboard.php" data-section="news_management"
+                  <a href="news-dashboard" data-section="news_management"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center space-x-2 transition-colors">
                     <i class="ri-newspaper-line"></i><span>News Management</span>
                   </a>
@@ -696,7 +696,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'sales_dashboard')): ?>
-              <a href="../../realiving_admin/sales_product_management/choose.php" data-section="sales_product"
+              <a href="choose" data-section="sales_product"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-store-2-line text-lg"></i>
@@ -720,7 +720,7 @@ include $includes ['checkrole'];
                 </button>
                 <div id="inquiryDropdown"
                   class="dropdown absolute bg-white shadow-dropdown rounded-lg p-2 mt-2 space-y-1 z-50 w-56 border border-gray-100">
-                  <a href="../../realiving_admin/sales_inquiry_management/appointment_dashboard.php"
+                  <a href="appointment-dashboard"
                     data-section="appointment_management"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center justify-between transition-colors">
                     <div class="flex items-center space-x-2"><i class="ri-calendar-check-line"></i><span>Appointments</span>
@@ -728,21 +728,21 @@ include $includes ['checkrole'];
                     <span id="nav-badge-appointments"
                       class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full<?php echo $pending_appointments > 0 ? '' : ' hidden'; ?>"><?php echo $pending_appointments; ?></span>
                   </a>
-                  <a href="../../realiving_admin/sales_inquiry_management/concept_inquiries_dashboard.php"
+                  <a href="concept-inquiries-dashboard"
                     data-section="concept_inquiry"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center justify-between transition-colors">
                     <div class="flex items-center space-x-2"><i class="ri-palette-line"></i><span>Concepts</span></div>
                     <span id="nav-badge-concepts"
                       class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full<?php echo $pending_concepts > 0 ? '' : ' hidden'; ?>"><?php echo $pending_concepts; ?></span>
                   </a>
-                  <a href="../../realiving_admin/sales_inquiry_management/contact_dashboard.php"
+                  <a href="contact-dashboard"
                     data-section="contact_inquiry"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center justify-between transition-colors">
                     <div class="flex items-center space-x-2"><i class="ri-contacts-line"></i><span>Contacts</span></div>
                     <span id="nav-badge-contacts"
                       class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full<?php echo $pending_contacts > 0 ? '' : ' hidden'; ?>"><?php echo $pending_contacts; ?></span>
                   </a>
-                  <a href="../../realiving_admin/sales_inquiry_management/project_inquiries_dashboard.php"
+                  <a href="project-inquiries-dashboard"
                     data-section="project_inquiry"
                     class="block px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-primary rounded-md flex items-center justify-between transition-colors">
                     <div class="flex items-center space-x-2"><i class="ri-building-line"></i><span>Projects</span></div>
@@ -754,7 +754,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'quotation_management')): ?>
-              <a href="../../realiving_admin/admin_quotation/quotation_list.php" data-section="quotation_management"
+              <a href="quotation-list" data-section="quotation_management"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-file-list-3-line text-lg"></i>
@@ -764,7 +764,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'sales_tracker')): ?>
-              <a href="../../realiving_admin/tracker_management/client_tracker_list.php" data-section="sales_tracker"
+              <a href="client-tracker-list" data-section="sales_tracker"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-map-pin-time-line text-lg"></i>
@@ -774,7 +774,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'spinwheel_management')): ?>
-              <a href="../../realiving_admin/sales/spinwheel_registrations_dashboard.php"
+              <a href="spinwheel-registrations-dashboard"
                 data-section="spinwheel_management" class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-disc-line text-lg"></i>
@@ -785,7 +785,7 @@ include $includes ['checkrole'];
 
             <!-- ===== DESIGNER ===== -->
             <?php if (hasAccess($user_role, 'designer_dashboard') && $is_head_user): ?>
-              <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+              <a href="all-clients-tracker-list"
                 data-section="designer_dashboard" class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -795,7 +795,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'sales_product') && $is_head_user): ?>
-              <a href="../../realiving_admin/sales_product_management/choose.php" data-section="sales_product"
+              <a href="choose" data-section="sales_product"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-store-2-line text-lg"></i>
@@ -805,7 +805,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'designer_site_visit')): ?>
-              <a href="../../realiving_admin/tracker_site_visit/designer_clients_list.php"
+              <a href="designer-clients-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-map-pin-user-line text-lg"></i>
@@ -815,7 +815,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'designer_dashboard') && !$is_head_user): ?>
-              <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+              <a href="all-clients-tracker-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -825,7 +825,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'designer_2d3d')): ?>
-              <a href="../../realiving_admin/tracker_designer/designer_layout_list.php"
+              <a href="designer-layout-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-pencil-ruler-2-line text-lg"></i>
@@ -835,7 +835,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'designer_quotation')): ?>
-              <a href="../../realiving_admin/admin_quotation/quotation_list.php"
+              <a href="quotation-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-file-list-3-line text-lg"></i>
@@ -845,7 +845,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'designer_dashboard')): ?>
-              <a href="../../realiving_admin/tracker_management/client_tracker_list.php"
+              <a href="client-tracker-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-map-pin-time-line text-lg"></i>
@@ -856,7 +856,7 @@ include $includes ['checkrole'];
 
             <!-- ===== TECHNICAL DESIGNER ===== -->
             <?php if (hasAccess($user_role, 'technical_designer_dashboard') && $is_head_user): ?>
-              <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+              <a href="all-clients-tracker-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -866,7 +866,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'technical_designer_management')): ?>
-              <a href="../../realiving_admin/tracker_technical/td_layout_list.php"
+              <a href="td-layout-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1 relative">
                   <i class="ri-settings-3-line text-lg"></i>
@@ -879,7 +879,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'technical_designer_dashboard') && !$is_head_user): ?>
-              <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+              <a href="all-clients-tracker-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -889,7 +889,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'technical_designer_quotation') && $is_head_user): ?>
-              <a href="../../realiving_admin/admin_quotation/quotation_list.php"
+              <a href="quotation-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-file-list-3-line text-lg"></i>
@@ -899,7 +899,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'technical_designer_dashboard') && $is_head_user): ?>
-              <a href="../../realiving_admin/tracker_management/client_tracker_list.php"
+              <a href="client-tracker-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-map-pin-time-line text-lg"></i>
@@ -910,7 +910,7 @@ include $includes ['checkrole'];
 
             <!-- ===== ACCOUNTING ===== -->
             <?php if (hasAccess($user_role, 'accounting_dashboard')): ?>
-              <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+              <a href="all-clients-tracker-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -931,7 +931,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'technical_approval_management')): ?>
-              <a href="../../realiving_admin/tracker_technical/td_layout_list.php"
+              <a href="td-layout-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1 relative">
                   <i class="ri-settings-3-line text-lg"></i>
@@ -965,7 +965,7 @@ include $includes ['checkrole'];
 
             <!-- ===== PROJECT COORDINATOR ===== -->
             <?php if (hasAccess($user_role, 'project_dashboard')): ?>
-              <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+              <a href="all-clients-tracker-list"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -1312,16 +1312,16 @@ include $includes ['checkrole'];
                   <a href="../../realiving_admin/sales/home_settings_dashboard.php" data-section="home_management"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center space-x-2"><i
                       class="ri-home-gear-line"></i><span>Home Management</span></a>
-                  <a href="../../realiving_admin/sales/projects_dashboard.php" data-section="project_management"
+                  <a href="projects-dashboard" data-section="project_management"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center space-x-2"><i
                       class="ri-building-4-line"></i><span>Projects Management</span></a>
-                  <a href="../../realiving_admin/sales/gallery_dashboard_v2.php" data-section="gallery_management"
+                  <a href="gallery_dashboard" data-section="gallery_management"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center space-x-2"><i
                       class="ri-image-2-line"></i><span>Rooms Management</span></a>
-                  <a href="../../realiving_admin/sales/concept_dashboard.php" data-section="concept_management"
+                  <a href="concept-dashboard" data-section="concept_management"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center space-x-2"><i
                       class="ri-lightbulb-line"></i><span>Concept Management</span></a>
-                  <a href="../../realiving_admin/sales/news_dashboard.php" data-section="news_management"
+                  <a href="news-dashboard" data-section="news_management"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center space-x-2"><i
                       class="ri-newspaper-line"></i><span>News Management</span></a>
                 </div>
@@ -1330,7 +1330,7 @@ include $includes ['checkrole'];
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'sales_dashboard')): ?>
-            <a href="../../realiving_admin/sales_product_management/choose.php" data-section="sales_product"
+            <a href="choose" data-section="sales_product"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-store-2-line text-lg"></i><span>Product</span>
             </a>
@@ -1351,29 +1351,28 @@ include $includes ['checkrole'];
               </button>
               <div id="inquiryMobileDropdown" class="mobile-dropdown-content bg-blue-50/50 rounded-lg mx-2">
                 <div class="pl-8 py-2 space-y-1">
-                  <a href="../../realiving_admin/sales_inquiry_management/appointment_dashboard.php"
-                    data-section="appointment_management"
+                  <a href="appointment-dashboard" data-section="appointment_management"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center justify-between">
                     <div class="flex items-center space-x-2"><i class="ri-calendar-check-line"></i><span>Appointments</span>
                     </div>
                     <span id="mob-badge-appointments"
                       class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full<?php echo $pending_appointments > 0 ? '' : ' hidden'; ?>"><?php echo $pending_appointments; ?></span>
                   </a>
-                  <a href="../../realiving_admin/sales_inquiry_management/concept_inquiries_dashboard.php"
+                  <a href="concept-inquiries-dashboard"
                     data-section="concept_inquiry"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center justify-between">
                     <div class="flex items-center space-x-2"><i class="ri-palette-line"></i><span>Concepts</span></div>
                     <span id="mob-badge-concepts"
                       class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full<?php echo $pending_concepts > 0 ? '' : ' hidden'; ?>"><?php echo $pending_concepts; ?></span>
                   </a>
-                  <a href="../../realiving_admin/sales_inquiry_management/contact_dashboard.php"
+                  <a href="contact-dashboard"
                     data-section="contact_inquiry"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center justify-between">
                     <div class="flex items-center space-x-2"><i class="ri-contacts-line"></i><span>Contacts</span></div>
                     <span id="mob-badge-contacts"
                       class="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full<?php echo $pending_contacts > 0 ? '' : ' hidden'; ?>"><?php echo $pending_contacts; ?></span>
                   </a>
-                  <a href="../../realiving_admin/sales_inquiry_management/project_inquiries_dashboard.php"
+                  <a href="project-inquiries-dashboard"
                     data-section="project_inquiry"
                     class="block px-3 py-2 text-sm text-gray-600 hover:text-primary hover:bg-white/50 rounded-md transition-colors flex items-center justify-between">
                     <div class="flex items-center space-x-2"><i class="ri-building-line"></i><span>Projects</span></div>
@@ -1386,21 +1385,21 @@ include $includes ['checkrole'];
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'quotation_management')): ?>
-            <a href="../../realiving_admin/admin_quotation/quotation_list.php" data-section="quotation_management"
+            <a href="quotation-list" data-section="quotation_management"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-file-list-3-line text-lg"></i><span>Quotation</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'sales_tracker')): ?>
-            <a href="../../realiving_admin/tracker_management/client_tracker_list.php" data-section="sales_tracker"
+            <a href="client-tracker-list" data-section="sales_tracker"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-map-pin-time-line text-lg"></i><span>Client Tracker</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'spinwheel_management')): ?>
-            <a href="../../realiving_admin/sales/spinwheel_registrations_dashboard.php" data-section="spinwheel_management"
+            <a href="spinwheel-registrations-dashboard" data-section="spinwheel_management"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-disc-line text-lg"></i><span>Spin to Win</span>
             </a>
@@ -1408,7 +1407,7 @@ include $includes ['checkrole'];
 
           <!-- ===== DESIGNER MOBILE ===== -->
           <?php if (hasAccess($user_role, 'designer_dashboard') && $is_head_user): ?>
-            <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+            <a href="all-clients-tracker-list"
               data-section="designer_dashboard"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-speed-up-line text-lg"></i><span>Dashboard</span>
@@ -1416,42 +1415,42 @@ include $includes ['checkrole'];
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'sales_product') && $is_head_user): ?>
-            <a href="../../realiving_admin/sales_product_management/choose.php" data-section="sales_product"
+            <a href="choose" data-section="sales_product"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-store-2-line text-lg"></i><span>Product</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'designer_site_visit')): ?>
-            <a href="../../realiving_admin/tracker_site_visit/designer_clients_list.php"
+            <a href="designer-clients-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-map-pin-user-line text-lg"></i><span>Site Visit</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'designer_dashboard') && !$is_head_user): ?>
-            <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+            <a href="all-clients-tracker-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-speed-up-line text-lg"></i><span>Designer Client</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'designer_2d3d')): ?>
-            <a href="../../realiving_admin/tracker_designer/designer_layout_list.php"
+            <a href="designer-layout-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-pencil-ruler-2-line text-lg"></i><span>2D / 3D</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'designer_quotation')): ?>
-            <a href="../../realiving_admin/admin_quotation/quotation_list.php"
+            <a href="quotation-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-file-list-3-line text-lg"></i><span>Quotation</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'designer_dashboard')): ?>
-            <a href="../../realiving_admin/tracker_management/client_tracker_list.php"
+            <a href="client-tracker-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-map-pin-time-line text-lg"></i><span>Client Tracker</span>
             </a>
@@ -1459,14 +1458,14 @@ include $includes ['checkrole'];
 
           <!-- ===== TECHNICAL DESIGNER MOBILE ===== -->
           <?php if (hasAccess($user_role, 'technical_designer_dashboard') && $is_head_user): ?>
-            <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+            <a href="all-clients-tracker-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-speed-up-line text-lg"></i><span>Dashboard</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'technical_designer_management')): ?>
-            <a href="../../realiving_admin/tracker_technical/td_layout_list.php"
+            <a href="td-layout-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center justify-between transition-all duration-200 mb-1">
               <div class="flex items-center space-x-3">
                 <i class="ri-settings-3-line text-lg"></i><span>Technical Management</span>
@@ -1478,21 +1477,21 @@ include $includes ['checkrole'];
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'technical_designer_dashboard') && !$is_head_user): ?>
-            <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+            <a href="all-clients-tracker-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-speed-up-line text-lg"></i><span>Technical Designer Client</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'technical_designer_quotation') && $is_head_user): ?>
-            <a href="../../realiving_admin/admin_quotation/quotation_list.php"
+            <a href="quotation-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-file-list-3-line text-lg"></i><span>Quotation</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'technical_designer_dashboard') && $is_head_user): ?>
-            <a href="../../realiving_admin/tracker_management/client_tracker_list.php"
+            <a href="client-tracker-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-map-pin-time-line text-lg"></i><span>Client Tracker</span>
             </a>
@@ -1500,7 +1499,7 @@ include $includes ['checkrole'];
 
           <!-- ===== ACCOUNTING MOBILE ===== -->
           <?php if (hasAccess($user_role, 'accounting_dashboard')): ?>
-            <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+            <a href="client-tracker-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-speed-up-line text-lg"></i><span>Dashboard</span>
             </a>
@@ -1515,7 +1514,7 @@ include $includes ['checkrole'];
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'technical_approval_management')): ?>
-            <a href="../../realiving_admin/tracker_technical/td_layout_list.php"
+            <a href="td-layout-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center justify-between transition-all duration-200 mb-1">
               <div class="flex items-center space-x-3">
                 <i class="ri-settings-3-line text-lg"></i><span>Technical Management</span>
@@ -1541,7 +1540,7 @@ include $includes ['checkrole'];
 
           <!-- ===== PROJECT COORDINATOR MOBILE ===== -->
           <?php if (hasAccess($user_role, 'project_dashboard')): ?>
-            <a href="../../realiving_admin/tracker_management/all_clients_tracker_list.php"
+            <a href="all-clients-tracker-list"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-speed-up-line text-lg"></i><span>Dashboard</span>
             </a>
@@ -1703,7 +1702,7 @@ include $includes ['checkrole'];
       }
 
       function loadAccountData() {
-        fetch('../account/get-account.php')
+        fetch('<?php echo BASE_URL ?>get-account')
           .then(r => r.json())
           .then(data => {
             if (data.success) {
@@ -1743,7 +1742,7 @@ include $includes ['checkrole'];
         btn.textContent = 'Saving...';
         btn.disabled = true;
 
-        fetch('../account/update-account.php', {
+        fetch('<?php echo BASE_URL ?>update-account', {
           method: 'POST',
           body: new FormData(document.getElementById('account-settings-form'))
         })

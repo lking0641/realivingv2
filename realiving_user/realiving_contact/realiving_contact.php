@@ -336,7 +336,7 @@ unset($_SESSION['contact_form_errors']);
                             <!-- reCAPTCHA -->
                             <div>
                                 <div id="contact-recaptcha" class="g-recaptcha origin-top-left scale-[0.93] sm:scale-100"
-                                    data-sitekey="<?php require_once __DIR__ . '/../config/recaptcha_config.php';
+                                    data-sitekey="<?php require_once $includes ['recaptcha'];
                                     echo RECAPTCHA_SITE_KEY; ?>" data-callback="contactRecaptchaCallback"
                                     data-expired-callback="contactRecaptchaExpiredCallback"
                                     data-error-callback="contactRecaptchaErrorCallback"></div>

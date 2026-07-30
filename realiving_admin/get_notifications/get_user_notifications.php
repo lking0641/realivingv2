@@ -35,7 +35,7 @@ function buildStageLink($client_id, $stage_id, $stage_name, $isManagerRole = fal
     if ($isManagerRole) {
         return BASE_URL . "manager-stage-files?client_id={$client_id}&stage_id={$stage_id}&stage=" . urlencode($stage_name);
     }
-    return BASE_URL . "tracker-stage-files?client_id={$client_id}&stage_id={$stage_id}&stage=" . urlencode($stage_name);
+    return BASE_URL . "stage-files?client_id={$client_id}&stage_id={$stage_id}&stage=" . urlencode($stage_name);
 }
 function buildTrackerLink($client_id, $isManagerRole = false)
 {

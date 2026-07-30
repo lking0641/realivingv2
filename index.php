@@ -42,6 +42,12 @@ $routes = [
   'get-booked-dates' => 'realiving_user/realiving_appointment/get_booked_dates.php',
   'submit-appointment' => 'realiving_user/realiving_appointment/submit_appointment.php',
 
+  //SPIN-WHEEL
+  'spinwheel-spin' => 'realiving_user/spin-wheel/spinwheel_spin.php',
+  'badge-scanner' => 'realiving_user/spin-wheel/badge_scanner.php',
+  'spinwheel-verify-claim' => 'realiving-user/spin-wheel/spinwheel_verify_claim.php',
+  'spinwheel' => 'realiving_user/spin-wheel/spinwheel.php',
+
   //ADMIN
 
   //AUTH
@@ -142,7 +148,7 @@ $routes = [
   'computation-list' => 'realiving_admin/quotation-management/quotation-management/computation_list.php',
   'edit-quotation-entry' => 'realiving_admin/quotation-management/quotation-management/edit_quotation_entry.php',
   'export-computation' => 'realiving_admin/quotation-management/quotation-management/export_computation.php',
-  'export-quoation' => 'realiving_admin/quotation-management/quotation-management/export_quoation.php',
+  'export-quotation' => 'realiving_admin/quotation-management/quotation-management/export_quotation.php',
   'link-addon' => 'realiving_admin/quotation-management/quotation-management/link_addon.php',
   'link-fixed-addon' => 'realiving_admin/quotation-management/quotation-management/link_fixed_addon.php',
 
@@ -212,6 +218,19 @@ $routes = [
   'update-tracker-status' => 'realiving_admin/tracker-management/tracker-update/update_tracker_status.php',
   'update-unit-status' => 'realiving_admin/tracker-management/tracker-update/update_unit_status.php',
 
+  //ITEM-TRACKER
+  'get-item-remarks' => 'realiving_admin/tracker-management/item-tracker/get_item_remarks.php',
+  'item-tracker' => 'realiving_admin/tracker-management/item-tracker/item_tracker.php',
+
+  //TRACKER-COORDINATOR
+  'coordinator-timeline' => 'realiving_admin/tracker-management/tracker-coordinator/coordinator_timeline.php',
+
+  //TRACKER-MANAGER
+  'manager-project-detail' => 'realiving_admin/tracker-management/tracker-manager/manager_project_detail.php',
+  'manager-site-visit-approval' => 'realiving_admin/tracker-management/tracker-manager/manager_site_visit_approval.php',
+  'manager-stage-files' => 'realiving_admin/tracker-management/tracker-manager/manager_stage_files.php',
+  'manager-status-tracker' => 'realiving_admin/tracker-management/tracker-manager/manager_status_tracker.php',
+
   //WHEEL-MANAGEMENT
   'delete-spinwheel' => 'realiving_admin/wheel-management/delete_spinwheel.php',
   'spinwheel-claim-scanner' => 'realiving_admin/wheel-management/spinwheel_claim_scanner.php',
@@ -264,7 +283,6 @@ $routes = [
 
   //TD-MANAGEMENT
   'designer-submit-td-remark' => 'realiving_admin/technical-designer-management/td-management/designer_submit_td_remark.php',
-  'get-td-approval-counts' => 'realiving_admin/technical-designer-management/td-management/get_td_approval_counts.php',
   'td-layout-list' => 'realiving_admin/technical-designer-management/td-management/td_layout_list.php',
   'td-layout' => 'realiving_admin/technical-designer-management/td-management/td_layout.php',
 
@@ -272,6 +290,25 @@ $routes = [
   'td-request-approval' => 'realiving_admin/technical-designer-management/td-process/td_request_approval.php',
   'td-request-revision' => 'realiving_admin/technical-designer-management/td-process/td_request_revision.php',
   'td-respond-approval' => 'realiving_admin/technical-designer-management/td-process/td_respond_approval.php',
+
+  //ROLE-CONTROLLER
+  'role-permissions-controller' => 'realiving_admin/role-controller/role_permissions_controller.php',
+  'get-role-permissions' => 'realiving_admin/role-controller/get_role_permissions.php',
+  'save-role-permissions' => 'realiving_admin/role-controller/save_role_permissions.php',
+
+  //SALES-CONTROLLER
+  'stage-permissions-controller' => 'realiving_admin/sales-controller/stage_permissions_controller.php',
+  'get-stage-permissions' => 'realiving_admin/sales-controller/get_stage_permissions.php',
+  'save-stage-permissions' => 'realiving_admin/sales-controller/save_stage_permissions.php',
+
+  //GET-NOTIFICATIONS
+  'get-user-notificaitons' => 'realiving_admin/get_notifications/get_user_notifications.php',
+  'get-td-approval-counts' => 'realiving_admin/get_notifications/get_td_approval_counts.php',
+  'get-inquiry-counts' => 'realiving_admin/get_notifications/get_inquiry_counts.php',
+
+  //INQUIRY-FORM
+  'inquiry' => 'realiving_user/inquiry_form/inquiry.php',
+
 
 ];
 
@@ -318,6 +355,7 @@ if (array_key_exists($slug, $routes)) {
   $page_file = ROOT_PATH . $routes[$slug];
 
   if (file_exists($page_file)) {
+    $GLOBALS['current_route_slug'] = $slug;
     require_once $page_file;
   } else {
     http_response_code(404);

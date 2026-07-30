@@ -1,15 +1,7 @@
 <?php
 // role_permissions_controller.php
-session_start();
-include '../../connection/connection.php';
-include '../design/mainbody.php';
-include '../checkrole/checkrole.php';
+include $includes['mainbody'];
 require_role(['sales', 'general_manager', 'operational_manager']); // Only superadmin can manage role permissions
-
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
 
 $current_admin_id = $_SESSION['admin_id'];
 
@@ -592,7 +584,7 @@ foreach ($roles as $role_key => $role_name) {
                 <div>
                     <strong>Note:</strong> Sales role is excluded from this controller. 
                     Sales users have individual stage permissions managed through the 
-                    <a href="stage_permissions_controller.php" style="color: white; text-decoration: underline;">Stage Permissions Controller</a>.
+                    <a href="stage-permissions-controller" style="color: white; text-decoration: underline;">Stage Permissions Controller</a>.
                 </div>
             </div>
         </div>
@@ -757,7 +749,7 @@ foreach ($roles as $role_key => $role_name) {
             document.getElementById('modalUserCount').textContent = userCount;
 
             // Fetch current permissions
-            const response = await fetch('get_role_permissions.php?role=' + encodeURIComponent(roleKey));
+            const response = await fetch('get-role-permissions?role=' + encodeURIComponent(roleKey));
             const data = await response.json();
             
             // Populate stages list
@@ -841,7 +833,7 @@ foreach ($roles as $role_key => $role_name) {
             const enabledStages = Array.from(checkboxes).map(cb => cb.dataset.stage);
 
             try {
-                const response = await fetch('save_role_permissions.php', {
+                const response = await fetch('save-role-permissions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

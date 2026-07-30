@@ -229,7 +229,7 @@ foreach ($revRows as $rv)
 
 <body>
     <div class="container">
-        <a href="td-layoutclient_id=<?= $client_id ?>" class="btn-back">
+        <a href="td-layout?client_id=<?= $client_id ?>" class="btn-back">
             <i class="fas fa-arrow-left"></i> Back to TD Layout
         </a>
 

@@ -116,7 +116,7 @@ include $includes ['checkrole'];
       'general_manager' => ['manager_dashboard', 'technical_approval_management', 'sales_controller', 'role_controller'],
       'operational_manager' => ['manager_dashboard', 'technical_approval_management', 'sales_controller', 'role_controller'],
       'sales' => ['sales_dashboard', 'content_management', 'inquiry_management', 'quotation_management', 'sales_tracker', 'spinwheel_management'],
-      'designer' => ['designer_dashboard', 'designer_site_visit', 'designer_2d3d', 'designer_quotation', 'sales_product'],
+      'designer' => ['designer_dashboard', 'designer_site_visit', 'designer_2d3d', 'designer_quotation', 'designer_client_tracker', 'sales_product'],
       'technical_designer' => ['technical_designer_dashboard', 'technical_designer_management', 'technical_designer_quotation'],
       'accounting' => ['accounting_dashboard'],
       'project_coordinator' => ['project_dashboard', 'project_timeline'],
@@ -124,9 +124,10 @@ include $includes ['checkrole'];
     return isset($permissions[$role]) && in_array($section, $permissions[$role]);
   }
 
-  // ── Map filenames → nav section key ─────────────────────────────────────────
-  // YOU control this list. Add any filename → section you need.
-  function getNavSectionByFile($filename, $role = '')
+  // ── Map route slugs → nav section key ────────────────────────────────────
+  // These MUST match the keys used in your $routes array (index.php),
+  // not the underlying .php filenames — the router passes us the slug.
+  function getNavSectionByFile($slug, $role = '')
   {
     $groups = [
 
@@ -137,177 +138,193 @@ include $includes ['checkrole'];
 
       // ── Spin to Win ─────────────────────────────────────────────────
       'spinwheel_management' => [
-        'spinwheel_registrations_dashboard.php',
+        'spinwheel-registrations-dashboard',
       ],
 
       // ── Content Management ────────────────────────────────────────
       'home_management' => [
-        'home_settings_dashboard.php',
-        'home_settings_hero_view.php',
-        'home_settings_inquire_view.php',
-        'home_settings_ads_view.php',
-        'home_settings_services_view.php'
+        'home-setting',
+        'hero-view',
+        'inquire-image',
+        'ads-view',
+        'services-view',
       ],
 
       'project_management' => [
-        'projects_dashboard.php',
-        'projects_view.php',
+        'projects-dashboard',
+        'projects-view',
       ],
 
       'gallery_management' => [
-        'gallery_dashboard_v2.php',
-        'manage_building_types.php',
-        'manage_themes.php',
-        'manage_collection_details.php',
-        'manage_collections.php'
+        'gallery-dashboard',
+        'manage-building-types',
+        'manage-themes',
+        'manage-collection-details',
+        'manage-collections',
       ],
 
       'concept_management' => [
-        'concept_dashboard.php',
-        'concept_manage_header.php',
-        'concept_manage_styles.php',
-        'concept_manage_carousel.php'
+        'concept-dashboard',
+        'concept-manage-header',
+        'concept-manage-styles',
+        'concept-manage-carousel',
       ],
 
       'news_management' => [
-        'news_dashboard.php',
-        'news_manage.php',
-        'news_manage_header.php',
+        'news-dashboard',
+        'news-manage',
+        'news-manage-header',
       ],
 
       // ── Product ───────────────────────────────────────────────────
-      // ADD any product-related pages here
       'sales_product' => [
-        'choose.php',
-        'view_products.php',
-        'add_product.php',
-        'edit_product.php',
-        'add_product_details.php',
-        'manage_fixed_sizes.php',
-        'link_product_addons.php',
-        'view_addons.php',
-        'add_addon.php',
-        'edit_addon.php'
+        'choose',
+        'view-products',
+        'add-product',
+        'edit-product',
+        'add-details',
+        'fixed-sized-setting',
+        'link-product-addons',
+        'view-addons',
       ],
 
       // ── Inquiry ───────────────────────────────────────────────────
       'appointment_management' => [
-        'appointment_dashboard.php',
-        'appointment_manage.php',
-        'appointment_clients.php'
+        'appointment-dashboard',
+        'appointment-clients',
       ],
 
       'concept_inquiry' => [
-        'concept_inquiries_dashboard.php',
-        'concept_inquiries_manage.php',
-        'concept_inquiries_clients.php',
-        ''
+        'concept-inquiries-dashboard',
+        'concept-inquiries-clients',
       ],
 
       'contact_inquiry' => [
-        'contact_dashboard.php',
-        'contact_manage.php',
-        'contact_clients.php'
+        'contact-dashboard',
+        'contact-clients',
       ],
 
       'project_inquiry' => [
-        'project_inquiries_dashboard.php',
-        'project_inquiries_manage.php',
-        'project_inquiries_clients.php'
+        'project-inquiries-dashboard',
+        'project-inquiries-manage',
+        'project-inquiries-clients',
       ],
 
       // ── Quotation ─────────────────────────────────────────────────
       'quotation_management' => [
         'quotation-list',
-        'quotation_items.php',
-        'quotation_product_details.php',
-        'computation_list.php'
+        'quotation-items',
+        'quotation-product-details',
+        'computation-list',
       ],
 
       'sales_tracker' => [
-        'client_tracker_list.php',
-        'stage_files.php'
+        'client-tracker-list',
+        'stage-files',
+        'td-layout-list', // sales sees this as part of Client Tracker
       ],
 
       // ── Designer ──────────────────────────────────────────────────
       'designer_dashboard' => [
-        'all_clients_tracker_list.php',
-        'site_visit_manager.php'
+        'all-clients-tracker-list',
+        'site-visit-manager',
+      ],
+      'designer_client_tracker' => [
+        'client-tracker-list',
       ],
       'designer_site_visit' => [
-        'designer_clients_list.php',
+        'designer-clients-list',
       ],
       'designer_2d3d' => [
-        'designer_layout_list.php',
+        'designer-layout-list',
+      ],
+      'designer_quotation' => [
+        'quotation-list',
       ],
 
       // ── Technical Designer ────────────────────────────────────────
       'technical_designer_management' => [
-        'td_layout_list.php',
+        'td-layout-list',
+      ],
+      'technical_designer_quotation' => [
+        'quotation-list',
       ],
 
       // ── Manager ───────────────────────────────────────────────────
       'manager_dashboard' => [
-        'manager_status_tracker.php',
+        'manager-status-tracker',
       ],
       'sales_controller' => [
-        'stage_permissions_controller.php',
+        'stage-permissions-controller',
       ],
       'role_controller' => [
-        'role_permissions_controller.php',
+        'role-permissions-controller',
       ],
 
       // ── Project Coordinator ───────────────────────────────────────
       'project_timeline' => [
-        'coordinator_timeline.php',
+        'coordinator-timeline',
       ],
 
     ];
 
     // Role-based override for shared pages
     $roleOverrides = [
-      'unified_project_tracker.php' => [
+      'unified-project-tracker' => [
         'designer' => 'designer_dashboard',
         'technical_designer' => 'technical_designer_management',
         'sales' => 'sales_tracker',
       ],
-      'stage_files.php' => [
+      'stage-files' => [
         'designer' => 'designer_dashboard',
         'technical_designer' => 'technical_designer_management',
         'sales' => 'sales_tracker',
       ],
-      'designer_2d3d_layout.php' => [
+      'designer-2d3d-layout' => [
         'designer' => 'designer_dashboard',
         'technical_designer' => 'technical_designer_management'
       ],
-      'designer_attachments.php' => [
+      'designer-attachments' => [
         'designer' => 'designer_dashboard',
         'technical_designer' => 'technical_designer_management'
       ],
-      'designer_attachment_area.php' => [
+      'designer-attachment-area' => [
         'designer' => 'designer_dashboard',
         'technical_designer' => 'technical_designer_management'
       ],
-      'designer_attachment_upload.php' => [
+      'designer-attachment-upload' => [
         'designer' => 'designer_dashboard',
         'technical_designer' => 'technical_designer_management'
       ],
     ];
 
-    if (isset($roleOverrides[$filename][$role])) {
-      return $roleOverrides[$filename][$role];
+    if (isset($roleOverrides[$slug][$role])) {
+      return $roleOverrides[$slug][$role];
     }
 
-    foreach ($groups as $section => $files) {
-      if (in_array($filename, $files)) {
+    // Only accept a match if the current role actually has this section
+    // (prevents a shared slug like 'quotation-list' resolving to the
+    // wrong role's section).
+    foreach ($groups as $section => $slugs) {
+      if (in_array($slug, $slugs) && hasAccess($role, $section)) {
+        return $section;
+      }
+    }
+
+    // Fallback: unfiltered match, in case hasAccess() permissions
+    // haven't been updated yet for a newly-added section.
+    foreach ($groups as $section => $slugs) {
+      if (in_array($slug, $slugs)) {
         return $section;
       }
     }
     return null;
   }
 
-  // Detect active section from current URL
-  $_current_nav_section = getNavSectionByFile(basename($_SERVER['PHP_SELF']), $user_role);
+  // Detect active section from the route slug the router resolved.
+  // Falls back to PHP_SELF only if a page bypasses the router.
+  $_current_route_slug = $GLOBALS['current_route_slug'] ?? basename($_SERVER['PHP_SELF']);
+  $_current_nav_section = getNavSectionByFile($_current_route_slug, $user_role);
 
   // Build absolute URL for inquiry counts AJAX
   $_is_local = (isset($_SERVER['HTTP_HOST']) && (
@@ -317,9 +334,7 @@ include $includes ['checkrole'];
   ));
   $_protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
   $_host = $_SERVER['HTTP_HOST'];
-  $_inquiry_counts_url = $_is_local
-    ? 'http://localhost/realiving/realiving_admin/sales/get_inquiry_counts.php'
-    : $_protocol . '://' . $_host . '/realiving_admin/sales/get_inquiry_counts.php';
+  $_inquiry_counts_url = BASE_URL . 'get-inquiry-counts';
   ?>
   <!DOCTYPE html>
   <html lang="en">
@@ -650,7 +665,7 @@ include $includes ['checkrole'];
 
             <!-- ===== SALES ===== -->
             <?php if (hasAccess($user_role, 'sales_dashboard')): ?>
-              <a href="<?= BASE_URL ?>sales-dashboard" data-section="sales-dashboard"
+              <a href="<?= BASE_URL ?>sales-dashboard" data-section="sales_dashboard"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -844,8 +859,8 @@ include $includes ['checkrole'];
               </a>
             <?php endif; ?>
 
-            <?php if (hasAccess($user_role, 'designer_dashboard')): ?>
-              <a href="client-tracker-list"
+            <?php if (hasAccess($user_role, 'designer_client_tracker')): ?>
+              <a href="client-tracker-list" data-section="designer_client_tracker"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-map-pin-time-line text-lg"></i>
@@ -921,7 +936,7 @@ include $includes ['checkrole'];
 
             <!-- ===== MANAGER ===== -->
             <?php if (hasAccess($user_role, 'manager_dashboard')): ?>
-              <a href="../../realiving_admin/manager_tracker/manager_status_tracker.php"
+              <a href="manager-status-tracker"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-speed-up-line text-lg"></i>
@@ -943,7 +958,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'sales_controller')): ?>
-              <a href="../../realiving_admin/tracker_management/stage_permissions_controller.php"
+              <a href="stage-permissions-controller"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-shield-user-line text-lg"></i>
@@ -953,7 +968,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'role_controller')): ?>
-              <a href="../../realiving_admin/tracker_management/role_permissions_controller.php"
+              <a href="role-permissions-controller"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-user-settings-line text-lg"></i>
@@ -975,7 +990,7 @@ include $includes ['checkrole'];
             <?php endif; ?>
 
             <?php if (hasAccess($user_role, 'project_timeline')): ?>
-              <a href="../../realiving_admin/tracker_coordinator/coordinator_timeline.php"
+              <a href="coordinator-timeline"
                 class="nav-link text-dark hover:text-primary text-sm transition-colors">
                 <div class="flex items-center space-x-1">
                   <i class="ri-settings-3-line text-lg"></i>
@@ -1449,8 +1464,8 @@ include $includes ['checkrole'];
             </a>
           <?php endif; ?>
 
-          <?php if (hasAccess($user_role, 'designer_dashboard')): ?>
-            <a href="client-tracker-list"
+          <?php if (hasAccess($user_role, 'designer_client_tracker')): ?>
+            <a href="client-tracker-list" data-section="designer_client_tracker"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-map-pin-time-line text-lg"></i><span>Client Tracker</span>
             </a>
@@ -1507,7 +1522,7 @@ include $includes ['checkrole'];
 
           <!-- ===== MANAGER MOBILE ===== -->
           <?php if (hasAccess($user_role, 'manager_dashboard')): ?>
-            <a href="../../realiving_admin/manager_tracker/manager_status_tracker.php"
+            <a href="manager-status-tracker"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-speed-up-line text-lg"></i><span>Dashboard</span>
             </a>
@@ -1525,14 +1540,14 @@ include $includes ['checkrole'];
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'sales_controller')): ?>
-            <a href="../../realiving_admin/tracker_management/stage_permissions_controller.php"
+            <a href="stage-permissions-controller"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-shield-user-line text-lg"></i><span>Sales Controller</span>
             </a>
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'role_controller')): ?>
-            <a href="../../realiving_admin/tracker_management/role_permissions_controller.php"
+            <a href="role-permissions-controller"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-user-settings-line text-lg"></i><span>Role Controller</span>
             </a>
@@ -1547,7 +1562,7 @@ include $includes ['checkrole'];
           <?php endif; ?>
 
           <?php if (hasAccess($user_role, 'project_timeline')): ?>
-            <a href="../../realiving_admin/tracker_coordinator/coordinator_timeline.php"
+            <a href="coordinator-timeline"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-settings-3-line text-lg"></i><span>Timeline Management</span>
             </a>
@@ -1555,7 +1570,7 @@ include $includes ['checkrole'];
 
           <!-- Logout -->
           <div class="border-t border-gray-200 mt-4 pt-4 px-2 pb-4">
-            <a href="../../loginpage/logout.php"
+            <a href="logout.php"
               class="block px-4 py-3 text-gray-700 hover:bg-red-50 hover:text-red-500 rounded-lg flex items-center space-x-3 transition-all duration-200 border border-red-200">
               <i class="ri-logout-box-line text-lg"></i>
               <span class="font-medium">Sign Out</span>
@@ -1909,11 +1924,7 @@ include $includes ['checkrole'];
         ); ?>;
         if (!hasNotifAccess) return;
 
-        var notifUrl = <?php echo json_encode(
-          $_is_local
-          ? 'http://localhost/realiving/realiving_admin/notifications/get_user_notifications.php'
-          : $_protocol . '://' . $_host . '/realiving_admin/notifications/get_user_notifications.php'
-        ); ?>;
+        var notifUrl = <?php echo json_encode(BASE_URL . 'get-user-notificaitons'); ?>;
 
         var notifBellButton = document.getElementById('notifBellButton');
         var notifDropdown = document.getElementById('notifDropdown');
@@ -2032,11 +2043,7 @@ include $includes ['checkrole'];
         if (!hasTdAccess) return;
 
         // Build URL the same way the inquiry counts URL is built
-        var tdCountUrl = <?php echo json_encode(
-          $_is_local
-          ? 'http://localhost/realiving/realiving_admin/tracker_technical/get_td_approval_counts.php'
-          : $_protocol . '://' . $_host . '/realiving_admin/tracker_technical/get_td_approval_counts.php'
-        ); ?>;
+        var tdCountUrl = <?php echo json_encode(BASE_URL . 'get-td-approval-counts'); ?>;
 
         function updateTdBadges(data) {
           if (!data || data.error) return;

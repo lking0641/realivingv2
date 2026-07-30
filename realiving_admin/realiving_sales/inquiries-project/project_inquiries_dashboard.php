@@ -1255,7 +1255,7 @@ $type_stats = $conn->query($type_stats_sql);
                           </form>
                         <?php endif; ?>
                         <?php if ($inq['project_page_id']): ?>
-                          <a href="../../view-projects?id=<?php echo $inq['project_page_id']; ?>" target="_blank"
+                          <a href="view-projects?id=<?php echo $inq['project_page_id']; ?>" target="_blank"
                             class="btn btn-sm btn-purple btn-icon" title="View Project"><i
                               class="fas fa-external-link-alt"></i></a>
                         <?php endif; ?>
@@ -1417,7 +1417,7 @@ $type_stats = $conn->query($type_stats_sql);
       document.getElementById('detailModal').classList.add('open');
 
       const projectLink = inqObj.project_page_id
-        ? `<a href="../../view-projects?id=${inqObj.project_page_id}" target="_blank"
+        ? `<a href="view-projects?id=${inqObj.project_page_id}" target="_blank"
          style="font-size:12px;color:var(--purple);text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-top:3px;">
          <i class="fas fa-external-link-alt"></i> View Project Page
        </a>` : '';

@@ -3,12 +3,7 @@
 session_start();
 header('Content-Type: application/json');
 
-include '../../connection/connection.php';
-
-if (!isset($_SESSION['admin_id'])) {
-    echo json_encode(['success' => false, 'error' => 'Not authenticated']);
-    exit();
-}
+include $includes ['connection'];
 
 $admin_id = $_SESSION['admin_id'];
 

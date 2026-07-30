@@ -282,7 +282,7 @@ $display_subtotalWithGR = round($subtotalWithGR, 2);
 $display_vat = round($vat, 2);
 $display_finalTotal = round($finalTotal, 2);
 
-require_once '../../vendor/autoload.php';
+require_once ROOT_PATH . 'vendor/autoload.php';
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -887,7 +887,7 @@ ob_start();
       <tr>
         <td class="header-logo-cell">
           <?php
-          $logoPath = 'img/realiving_logo.png';
+          $logoPath = ROOT_PATH . 'realiving_admin/quotation-management/quotation-management/img/realiving_logo.png';
           if (file_exists($logoPath)):
             $logoData = base64_encode(file_get_contents($logoPath));
             $logoMime = 'image/png';

@@ -163,3 +163,5 @@
 
   </div>
 </footer>
+
+<?php include $includes['inquiry-popup']; ?>

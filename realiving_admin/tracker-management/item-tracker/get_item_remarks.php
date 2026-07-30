@@ -1,7 +1,7 @@
 <?php
 session_start();
 header('Content-Type: application/json');
-include '../../connection/connection.php';
+include $includes ['connection'];
 
 if (!isset($_SESSION['admin_id'])) {
     echo json_encode(['success' => false]);

@@ -125,7 +125,7 @@ $hero_result = $conn->query($hero_query);
             <i class="fa-solid fa-paper-plane text-[10px]"></i> Inquire Now
           </a>
 
-          <a href="#services"
+          <a href="projects"
             class="inline-flex items-center gap-2 border border-white/70 px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[2px] text-white transition-all duration-300 hover:border-white hover:bg-white/10 sm:px-9 sm:py-4">
             Explore Our Work
           </a>
@@ -691,7 +691,7 @@ $hero_result = $conn->query($hero_query);
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8">
 
         <!-- Featured Article (big, left) -->
-        <a href="<?= BASE_URL ?>news?id=<?= $featured['id'] ?>"
+        <a href="<?= BASE_URL ?>news-view?id=<?= $featured['id'] ?>"
           class="group lg:col-span-3 relative rounded-2xl overflow-hidden block h-[320px] sm:h-[420px] lg:h-[560px] shadow-[0_20px_50px_rgba(47,18,0,0.12)]">
 
           <img src="<?= CLIENT_ASSET ?>/<?= htmlspecialchars($featured['image']) ?>" alt="<?= htmlspecialchars($featured['title']) ?>"
@@ -728,7 +728,7 @@ $hero_result = $conn->query($hero_query);
         <!-- Side List (smaller articles) -->
         <div class="lg:col-span-2 flex flex-col gap-4">
           <?php foreach ($rest as $row): ?>
-            <a href="<?= BASE_URL ?>news?id=<?= $row['id'] ?>"
+            <a href="<?= BASE_URL ?>news-view?id=<?= $row['id'] ?>"
               class="group flex items-center gap-4 p-3 rounded-xl border border-gray-100 hover:border-[#c4905c]/30 hover:bg-[#faf8f6] transition-all duration-300">
 
               <div class="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 rounded-lg overflow-hidden">
@@ -763,11 +763,50 @@ $hero_result = $conn->query($hero_query);
   ═══════════════════════════════ -->
 
 
-    <?php include $includes['footer']; ?>
+  <?php include $includes['footer']; ?>
 
   </div>
   <!-- ↑ closing .main-content — LAHAT ng content mula hero hanggang dito
        ay dapat nasa LOOB nito para gumana yung push/compress ng sidebar -->
+
+  <?php
+  $spinwheel_status = $conn->query("SELECT is_active FROM spinwheel_settings WHERE id = 1")->fetch_assoc();
+  $spinwheel_active = $spinwheel_status && $spinwheel_status['is_active'] == 1;
+  ?>
+  <?php if ($spinwheel_active): ?>
+  <a href="<?= BASE_URL ?>spinwheel" title="Spin to Win"
+    class="fixed bottom-6 right-6 z-[9998] flex items-center gap-2.5 rounded-full
+           bg-gradient-to-br from-[#c4905c] to-[#2f1200] pl-3 pr-5 py-2.5 text-white
+           shadow-[0_8px_24px_rgba(47,18,0,0.35)] ring-4 ring-[#c4905c]/15
+           transition-transform duration-300 ease-out
+           hover:scale-105 hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(47,18,0,0.45)]
+           sm:bottom-6 sm:right-6">
+
+    <span class="flex h-9 w-9 shrink-0 animate-spin [animation-duration:4s] drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="h-full w-full">
+        <circle cx="50" cy="50" r="48" fill="#fff" stroke="#2f1200" stroke-width="3" />
+        <path d="M50 50 L50 2 A48 48 0 0 1 84 16 Z" fill="#e63946" />
+        <path d="M50 50 L84 16 A48 48 0 0 1 98 50 Z" fill="#f4a261" />
+        <path d="M50 50 L98 50 A48 48 0 0 1 84 84 Z" fill="#2a9d8f" />
+        <path d="M50 50 L84 84 A48 48 0 0 1 50 98 Z" fill="#e9c46a" />
+        <path d="M50 50 L50 98 A48 48 0 0 1 16 84 Z" fill="#264653" />
+        <path d="M50 50 L16 84 A48 48 0 0 1 2 50 Z" fill="#f4a261" />
+        <path d="M50 50 L2 50 A48 48 0 0 1 16 16 Z" fill="#e76f51" />
+        <path d="M50 50 L16 16 A48 48 0 0 1 50 2 Z" fill="#2a9d8f" />
+        <circle cx="50" cy="50" r="6" fill="#2f1200" />
+      </svg>
+    </span>
+
+    <span class="flex flex-col leading-tight">
+      <span class="font-montserrat text-[11px] sm:text-[12px] font-extrabold uppercase tracking-[1.5px] text-[#ffd9a0]">
+        Spin to Win
+      </span>
+      <span class="font-montserrat text-[10px] sm:text-[11px] font-semibold tracking-wide text-white">
+        Get a Discount!
+      </span>
+    </span>
+  </a>
+  <?php endif; ?>
 
   <script>
     document.addEventListener('DOMContentLoaded', function () {

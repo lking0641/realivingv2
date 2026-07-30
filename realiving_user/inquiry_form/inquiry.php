@@ -2,7 +2,7 @@
 // inquiry.php - Handles both display and form submission
 
 // Include reCAPTCHA configuration
-require_once __DIR__ . "/../config/recaptcha_config.php";
+include $includes['recaptcha'];
 
 // Handle form submission FIRST before any output
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
@@ -13,8 +13,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
     session_start();
 
     // Include database connection and assignment logic
-    include "../../connection/connection.php";
-    include "../../connection/assignement_logic.php";
+    include $includes['connection'];
+    include $includes['assignement_logic'];
 
     // Clear any output buffer
     ob_clean();
@@ -176,44 +176,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
         
         <form id="inquiryFormElement" class="space-y-4">
             <div class="mb-4">
-                <label for="name" class="block font-semibold text-sm mb-1.5">NAME</label>
-                <input type="text" id="name" name="name" placeholder="ENTER YOUR NAME" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors" >
+                <label for="inq_name" class="block font-semibold text-sm mb-1.5">NAME</label>
+                <input type="text" id="inq_name" name="name" placeholder="ENTER YOUR NAME" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors" >
             </div>
 
             <div class="mb-4">
-                <label for="email" class="block font-semibold text-sm mb-1.5">EMAIL ADDRESS</label>
-                <input type="email" id="email" name="email" placeholder="ENTER YOUR EMAIL" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
+                <label for="inq_email" class="block font-semibold text-sm mb-1.5">EMAIL ADDRESS</label>
+                <input type="email" id="inq_email" name="email" placeholder="ENTER YOUR EMAIL" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
             </div>
 
             <div class="mb-4">
-                <label for="phone" class="block font-semibold text-sm mb-1.5">PHONE NUMBER</label>
-                <input type="tel" id="phone" name="phone" placeholder="E.g. 09123456789" required pattern="09[0-9]{9}" title="Enter 11-digit Philippine mobile number starting with 09" maxlength="11" class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
+                <label for="inq_phone" class="block font-semibold text-sm mb-1.5">PHONE NUMBER</label>
+                <input type="tel" id="inq_phone" name="phone" placeholder="E.g. 09123456789" required pattern="09[0-9]{9}" title="Enter 11-digit Philippine mobile number starting with 09" maxlength="11" class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
                 <small class="text-gray-600 text-xs block mt-1">Format: 09XXXXXXXXX (11 digits)</small>
             </div>
 
             <div class="mb-4">
-                <label for="location" class="block font-semibold text-sm mb-1.5">LOCATION</label>
-                <input type="text" id="location" name="location" placeholder="E.g. 123 Main St, Quezon City" required pattern="[a-zA-Z0-9\s,\-\.]+" title="Location should only contain letters, numbers, spaces, commas, and hyphens" class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
+                <label for="inq_location" class="block font-semibold text-sm mb-1.5">LOCATION</label>
+                <input type="text" id="inq_location" name="location" placeholder="E.g. 123 Main St, Quezon City" required pattern="[a-zA-Z0-9\s,\-\.]+" title="Location should only contain letters, numbers, spaces, commas, and hyphens" class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
             </div>
 
             <div class="mb-4">
-                <label for="subject" class="block font-semibold text-sm mb-1.5">SUBJECT</label>
-                <input type="text" id="subject" name="subject" placeholder="SUBJECT TITLE" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
+                <label for="inq_subject" class="block font-semibold text-sm mb-1.5">SUBJECT</label>
+                <input type="text" id="inq_subject" name="subject" placeholder="SUBJECT TITLE" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors">
             </div>
 
             <div class="mb-4">
-                <label for="message" class="block font-semibold text-sm mb-1.5">MESSAGE</label>
-                <textarea id="message" name="message" rows="4" placeholder="TYPE YOUR MESSAGE HERE" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors"></textarea>
+                <label for="inq_message" class="block font-semibold text-sm mb-1.5">MESSAGE</label>
+                <textarea id="inq_message" name="message" rows="4" placeholder="TYPE YOUR MESSAGE HERE" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors"></textarea>
             </div>
 
-         
-
-            <button type="submit" class="w-full py-3 bg-amber-950 text-white border-none tracking-widest text-sm cursor-pointer transition-colors hover:bg-amber-900 disabled:bg-gray-300 disabled:cursor-not-allowed">SUBMIT INQUIRY</button>
-        </form>
-    </div>
-</div>
-   <!-- reCAPTCHA -->
-            <div class="flex justify-center mb-5 scale-95 origin-top-left sm:scale-100">
+            <!-- reCAPTCHA -->
+            <div class="flex justify-center mb-2 scale-95 origin-center sm:scale-100">
                 <div id="inquiry-recaptcha" class="g-recaptcha"
                     data-sitekey="<?php echo RECAPTCHA_SITE_KEY; ?>"
                     data-callback="inquiryRecaptchaCallback"
@@ -221,6 +215,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
                     data-error-callback="inquiryRecaptchaErrorCallback">
                 </div>
             </div>
+
+            <button type="submit" class="submit-btn w-full py-3 bg-amber-950 text-white border-none tracking-widest text-sm cursor-pointer transition-colors hover:bg-amber-900 disabled:bg-gray-300 disabled:cursor-not-allowed">SUBMIT INQUIRY</button>
+        </form>
+    </div>
+</div>
 <!-- Add custom animation to your Tailwind CSS config -->
 <style>
     @keyframes fadeIn {
@@ -240,24 +239,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
 </style>
 
 <!-- Thank You Modal for Inquiry -->
-<div id="inquiryThankYouModal" class="inquiry-modal">
-    <div class="inquiry-modal-content">
-        <span class="inquiry-close">&times;</span>
-        <h2>Thank You!</h2>
-        <p>Thank you for your inquiry.<br>We will get back to you soon.</p>
+<div id="inquiryThankYouModal" class="inquiry-modal fixed inset-0 z-[10000] items-center justify-center bg-black/50 backdrop-blur-sm p-5" style="display:none;">
+    <div class="inquiry-modal-content bg-white rounded-xl shadow-2xl w-full max-w-sm p-8 text-center relative">
+        <span class="inquiry-close absolute top-4 right-5 text-2xl text-gray-800 cursor-pointer hover:text-black">&times;</span>
+        <h2 class="font-serif text-2xl text-amber-950 mb-3">Thank You!</h2>
+        <p class="text-gray-600 text-sm">Thank you for your inquiry.<br>We will get back to you soon.</p>
     </div>
 </div>
 
 <!-- Error Modal -->
-<div id="inquiryErrorModal" class="inquiry-modal">
-    <div class="inquiry-modal-content">
-        <span class="inquiry-error-close">&times;</span>
-        <h2>Error</h2>
-        <p id="errorMessage"></p>
+<div id="inquiryErrorModal" class="inquiry-modal fixed inset-0 z-[10000] items-center justify-center bg-black/50 backdrop-blur-sm p-5" style="display:none;">
+    <div class="inquiry-modal-content bg-white rounded-xl shadow-2xl w-full max-w-sm p-8 text-center relative">
+        <span class="inquiry-error-close absolute top-4 right-5 text-2xl text-gray-800 cursor-pointer hover:text-black">&times;</span>
+        <h2 class="font-serif text-2xl text-red-700 mb-3">Error</h2>
+        <p id="errorMessage" class="text-gray-600 text-sm"></p>
     </div>
 </div>
 
 <!-- reCAPTCHA Script -->
 <script src="<?php echo RECAPTCHA_SCRIPT_URL; ?>" async defer></script>
-<script src="./inquiry_form/inquiry.js" defer></script>
+<script>window.BASE_URL = "<?= BASE_URL ?>";</script>
+<script src="<?= CLIENT_ASSET ?>/inquiry_form/inquiry.js" defer></script>
 

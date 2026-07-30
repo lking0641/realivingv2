@@ -41,6 +41,9 @@ if (!isset($GLOBALS['includes'])) {
         //inquiry
         'inquiry' => PAGES_PATH . 'inquiry_form/concept_inquiry.php',
 
+        //inquiry_popup
+        'inquiry-popup' => PAGES_PATH . 'inquiry_form/inquiry.php',
+
         //navbar
         'header' => PAGES_PATH . 'realiving_navbar/realiving_navbar.php',
 

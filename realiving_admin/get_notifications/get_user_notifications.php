@@ -1,7 +1,7 @@
 <?php
 // get_user_notifications.php
 session_start();
-include '../../connection/connection.php';
+include $includes ['connection'];
 
 if (!isset($_SESSION['admin_id'])) {
     header('Content-Type: application/json');
@@ -33,16 +33,16 @@ $isSalesRole = ($currentRole === 'sales');
 function buildStageLink($client_id, $stage_id, $stage_name, $isManagerRole = false)
 {
     if ($isManagerRole) {
-        return "../manager_tracker/manager_stage_files.php?client_id={$client_id}&stage_id={$stage_id}&stage=" . urlencode($stage_name);
+        return BASE_URL . "manager-stage-files?client_id={$client_id}&stage_id={$stage_id}&stage=" . urlencode($stage_name);
     }
-    return "../tracker_management/stage_files.php?client_id={$client_id}&stage_id={$stage_id}&stage=" . urlencode($stage_name);
+    return BASE_URL . "tracker-stage-files?client_id={$client_id}&stage_id={$stage_id}&stage=" . urlencode($stage_name);
 }
 function buildTrackerLink($client_id, $isManagerRole = false)
 {
     if ($isManagerRole) {
-        return "../manager_tracker/manager_project_detail.php?client_id={$client_id}";
+        return BASE_URL . "manager-project-detail?client_id={$client_id}";
     }
-    return "../tracker_management/unified_project_tracker.php?client_id={$client_id}";
+    return BASE_URL . "unified-project-tracker?client_id={$client_id}";
 }
 
 // ── Build client ID + name list (respecting assignment filter) ────────────
@@ -218,7 +218,7 @@ foreach ($clients as $cid => $cinfo) {
                 'client_name' => $cinfo['clientname'],
                 'title' => '2D/3D Layout needs your approval',
                 'subtitle' => $cinfo['clientname'] . ' · ' . htmlspecialchars($areaLabel),
-                'link' => "../tracker_designer/designer_attachment_upload.php?client_id={$cid}&area=" . urlencode($row['area']),
+                'link' => BASE_URL . "designer-attachment-upload?client_id={$cid}&area=" . urlencode($row['area']),
                 'created_at' => $row['requested_at'],
             ];
         }
@@ -250,7 +250,7 @@ foreach ($clients as $cid => $cinfo) {
                 'client_name' => $cinfo['clientname'],
                 'title'       => '2D/3D layout was rejected',
                 'subtitle'    => $cinfo['clientname'] . ' · ' . htmlspecialchars($row['area']),
-                'link'        => "../tracker_designer/designer_attachment_upload.php?client_id={$cid}&area=" . urlencode($row['area']),
+                'link'        => BASE_URL . "designer-attachment-upload?client_id={$cid}&area=" . urlencode($row['area']),
                 'created_at'  => $row['responded_at'],
             ];
         }
@@ -475,7 +475,7 @@ if ($currentRole === 'designer' && $isHeadUser) {
             'subtitle'    => $cinfo['clientname'] . ' · '
                              . date('M d, Y', strtotime($row['visit_date']))
                              . (!empty($row['approval_comment']) ? ' — "' . htmlspecialchars($row['approval_comment']) . '"' : ''),
-            'link'        => "../tracker_site_visit/site_visit_manager.php?client_id={$cid}",
+            'link'        => BASE_URL . "site-visit-manager?client_id={$cid}",
             'created_at'  => $row['created_at'],
         ];
     }
@@ -501,7 +501,7 @@ if ($currentRole === 'designer' && $isHeadUser) {
                 'title' => 'Site Visit needs your approval',
                 'subtitle' => $cinfo['clientname'],
                 'link' => $isManagerRole
-                    ? "../manager_tracker/manager_site_visit_approval.php?client_id={$cid}"
+                    ? BASE_URL . "manager-site-visit-approval?client_id={$cid}"
                     : buildTrackerLink($cid, $isManagerRole),
                 'created_at' => $row['created_at'],
             ];

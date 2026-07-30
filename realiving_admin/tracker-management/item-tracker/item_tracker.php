@@ -1,14 +1,6 @@
 <?php
 // item_tracker.php
-session_start();
-include '../../connection/connection.php';
-include '../design/mainbody.php';
-include '../checkrole/checkrole.php';
-
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
+include $includes ['mainbody'];
 
 $admin_id = $_SESSION['admin_id'];
 $client_id = isset($_GET['client_id']) ? intval($_GET['client_id']) : 0;
@@ -72,7 +64,7 @@ $isTechDesignerAccess = $admin_role === 'technical_designer' && (
 );
 
 if (!$canUpdate && !$view_only && !$isTechDesignerAccess) {
-    header("Location: unified_project_tracker.php?client_id=" . $client_id);
+    header("Location: " . BASE_URL . "unified-project-tracker?client_id=" . $client_id);
     exit();
 }
 
@@ -982,10 +974,10 @@ function renderTimelineBar($tl)
 
         <?php
         if ($came_from === 'manager') {
-            $backHref = '../manager_tracker/manager_project_detail.php?client_id=' . $client_id;
+            $backHref = BASE_URL . 'manager-project-detail?client_id=' . $client_id;
             $backLabel = 'Back to Project Detail';
         } else {
-            $backHref = 'unified_project_tracker.php?client_id=' . $client_id;
+            $backHref = BASE_URL . 'unified-project-tracker?client_id=' . $client_id;
             $backLabel = 'Back to Project Tracker';
         }
         ?>
@@ -1612,7 +1604,7 @@ foreach ($ungroupedDisplay as $area => $items) {
 
             if (type === 'unit') {
                 if (updCell) updCell.innerHTML = '<i class="fas fa-clock"></i> Just now';
-                await doUpdate('update_unit_status.php', {
+                await doUpdate('<?= BASE_URL ?>update-unit-status', {
                     distribution_id: distId,
                     stage: STAGE,
                     status: newStatus,
@@ -1621,7 +1613,7 @@ foreach ($ungroupedDisplay as $area => $items) {
                     remark
                 });
             } else {
-                await doUpdate('update_item_status.php', {
+                await doUpdate('<?= BASE_URL ?>update-item-status', {
                     entry_id: itemId,
                     source,
                     stage: STAGE,
@@ -1679,7 +1671,7 @@ foreach ($ungroupedDisplay as $area => $items) {
                     client_id: CLIENT_ID, stage: STAGE, item_id: itemId,
                     source, ...(distId ? { distribution_id: distId } : {})
                 });
-                const resp = await fetch('get_item_remarks.php?' + params);
+                const resp = await fetch('<?= BASE_URL ?>get-item-remarks?' + params);
                 const data = await resp.json();
 
                 if (!data.success || !data.remarks.length) {

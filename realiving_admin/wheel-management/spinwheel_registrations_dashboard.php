@@ -74,7 +74,7 @@ $spinwheel_active = $spinwheel_status && $spinwheel_status['is_active'] == 1;
         </a>
 
         <!-- Promo Toggle -->
-        <form method="POST" action="<?BASE_URL ?>toggle-spinwheel" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100">
+        <form method="POST" action="<?= BASE_URL ?>toggle-spinwheel" class="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm border border-gray-100">
           <span class="text-sm font-semibold <?php echo $spinwheel_active ? 'text-green-600' : 'text-gray-400'; ?>">
             <?php echo $spinwheel_active ? 'Promo Active' : 'Promo Inactive'; ?>
           </span>

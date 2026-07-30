@@ -327,7 +327,7 @@ $display_subtotalWithGR = round($subtotalWithGR, 2);
 $display_vat = round($vat, 2);
 $display_finalTotal = round($finalTotal, 2);
 
-require_once '../../vendor/autoload.php';
+require_once ROOT_PATH . 'vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -455,7 +455,7 @@ try {
         ],
     ]);
 
-    $logoPath = 'img/realiving_logo.png';
+    $logoPath = ROOT_PATH . 'realiving_admin/quotation-management/quotation-management/img/realiving_logo.png';
     if (file_exists($logoPath)) {
         /** @var \PhpOffice\PhpSpreadsheet\Worksheet\Drawing $drawing */
         $drawing = new Drawing();

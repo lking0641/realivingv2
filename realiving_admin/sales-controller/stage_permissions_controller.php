@@ -1,15 +1,7 @@
 <?php
 // stage_permissions_controller.php
-session_start();
-include '../../connection/connection.php';
-include '../design/mainbody.php';
-include '../checkrole/checkrole.php';
+include $includes ['mainbody'];
 require_role(['sales', 'general_manager', 'operational_manager']); // Only superadmin can manage permissions
-
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
 
 // Fetch all admins with their clients
 $adminsStmt = $conn->prepare("
@@ -698,7 +690,7 @@ while ($row = $roleStagesResult->fetch_assoc()) {
             document.getElementById('modalClientCount').textContent = clientCount;
 
             // Fetch current permissions
-            const response = await fetch('get_stage_permissions.php?admin_id=' + adminId);
+            const response = await fetch('<?= BASE_URL ?>get-stage-permissions?admin_id=' + adminId);
             const data = await response.json();
             
             // Populate stages list
@@ -769,7 +761,7 @@ while ($row = $roleStagesResult->fetch_assoc()) {
             const enabledStages = Array.from(checkboxes).map(cb => cb.dataset.stage);
 
             try {
-                const response = await fetch('save_stage_permissions.php', {
+                const response = await fetch('<?= BASE_URL ?>save-stage-permissions', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

@@ -1112,7 +1112,7 @@ function fileIcon($ext)
                                 </div>
                                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
                                     <span class="fstatus approved"><i class="fas fa-check-circle"></i> Approved PO</span>
-                                    <a href="../../<?= htmlspecialchars($pof['file_path']) ?>?v=<?= filemtime(realpath('../../' . $pof['file_path'])) ?: time() ?>"
+                                    <a href="<?= BASE_URL . htmlspecialchars($pof['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $pof['file_path']) ? filemtime(ROOT_PATH . $pof['file_path']) : time() ?>"
                                         target="_blank" class="btn btn-view">
                                         <i class="fas fa-eye"></i> View
                                     </a>
@@ -1158,7 +1158,7 @@ function fileIcon($ext)
                                                     KB</span>
                                             </div>
                                         </div>
-                                        <a href="../../<?= htmlspecialchars($rc['file_path']) ?>?v=<?= filemtime(realpath('../../' . $rc['file_path'])) ?: time() ?>"
+                                        <a href="<?= BASE_URL . htmlspecialchars($rc['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $rc['file_path']) ? filemtime(ROOT_PATH . $rc['file_path']) : time() ?>"
                                             target="_blank" class="btn btn-view" style="flex-shrink:0;">
                                             <i class="fas fa-eye"></i> View
                                         </a>
@@ -1201,7 +1201,7 @@ function fileIcon($ext)
                                 </div>
                                 <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
                                     <span class="fstatus approved"><i class="fas fa-check-circle"></i> Approved PO</span>
-                                    <a href="../../<?= htmlspecialchars($pof['file_path']) ?>" target="_blank" class="btn btn-view">
+                                    <a href="<?= BASE_URL . htmlspecialchars($pof['file_path']) ?>" target="_blank" class="btn btn-view">
                                         <i class="fas fa-eye"></i> View
                                     </a>
                                     <span
@@ -1247,7 +1247,7 @@ function fileIcon($ext)
                                                     KB</span>
                                             </div>
                                         </div>
-                                        <a href="../../<?= htmlspecialchars($rc['file_path']) ?>" target="_blank" class="btn btn-view"
+                                        <a href="<?= BASE_URL . htmlspecialchars($rc['file_path']) ?>" target="_blank" class="btn btn-view"
                                             style="flex-shrink:0;">
                                             <i class="fas fa-eye"></i> View
                                         </a>
@@ -1314,7 +1314,7 @@ function fileIcon($ext)
                                         <i class="fas <?= $osc['icon'] ?>"></i> <?= $osc['label'] ?>
                                     </span>
                                     <div style="display:flex;gap:6px;align-items:center;">
-                                        <a href="../../<?= htmlspecialchars($bom['file_path']) ?>?v=<?= filemtime(realpath('../../' . $bom['file_path'])) ?: time() ?>"
+                                        <a href="<?= BASE_URL . htmlspecialchars($bom['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $bom['file_path']) ? filemtime(ROOT_PATH . $bom['file_path']) : time() ?>"
                                             target="_blank" class="btn btn-view">
                                             <i class="fas fa-eye"></i> View BOM
                                         </a>
@@ -1498,7 +1498,7 @@ function fileIcon($ext)
                                                     <?php else: ?><i class="fas fa-clock"></i><?php endif; ?>
                                                     <?= ucfirst($poStatus) ?>
                                                 </span>
-                                                <a href="../../<?= htmlspecialchars($po['file_path']) ?>?v=<?= filemtime(realpath('../../' . $po['file_path'])) ?: time() ?>"
+                                                <a href="<?= BASE_URL . htmlspecialchars($po['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $po['file_path']) ? filemtime(ROOT_PATH . $po['file_path']) : time() ?>"
                                                     target="_blank" class="btn btn-view">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
@@ -1766,7 +1766,7 @@ function fileIcon($ext)
                             ?>
                             <?php if ($canApprove && !$myReview && $gmOmCanActNow && !$gmOmAlreadyHandled): ?>
                                 <div class="file-actions">
-                                    <a href="../../<?= htmlspecialchars($f['file_path']) ?>?v=<?= filemtime(realpath('../../' . $f['file_path'])) ?: time() ?>"
+                                    <a href="<?= BASE_URL . htmlspecialchars($f['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $f['file_path']) ? filemtime(ROOT_PATH . $f['file_path']) : time() ?>"
                                         target="_blank" class="btn btn-view"><i class="fas fa-eye"></i> View File</a>
                                     <button class="btn btn-approve" onclick="approveFile(<?= $f['id'] ?>)"><i
                                             class="fas fa-check-circle"></i> Approve</button>
@@ -1795,7 +1795,7 @@ function fileIcon($ext)
                                 </div>
                             <?php else: ?>
                                 <div class="file-actions">
-                                    <a href="../../<?= htmlspecialchars($f['file_path']) ?>?v=<?= filemtime(realpath('../../' . $f['file_path'])) ?: time() ?>"
+                                    <a href="<?= BASE_URL . htmlspecialchars($f['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $f['file_path']) ? filemtime(ROOT_PATH . $f['file_path']) : time() ?>"
                                         target="_blank" class="btn btn-view"><i class="fas fa-eye"></i> View File</a>
                                     <?php if ($canApprove && ($myReview || $gmOmAlreadyHandled)): ?>
                                         <span
@@ -1916,11 +1916,11 @@ function fileIcon($ext)
                                     </div>
                                     <div style="display:flex;gap:6px;">
                                         <?php if ($ntpViewable): ?>
-                                            <a href="../../<?= htmlspecialchars($ntp['file_path']) ?>" target="_blank" class="btn btn-view">
+                                            <a href="<?= BASE_URL . htmlspecialchars($ntp['file_path']) ?>" target="_blank" class="btn btn-view">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                         <?php endif; ?>
-                                        <a href="../../<?= htmlspecialchars($ntp['file_path']) ?>"
+                                        <a href="<?= BASE_URL . htmlspecialchars($ntp['file_path']) ?>"
                                             download="<?= htmlspecialchars($ntp['file_name']) ?>" class="btn btn-view"
                                             style="background:#dcfce7;color:#166534;border-color:#86efac;">
                                             <i class="fas fa-download"></i>

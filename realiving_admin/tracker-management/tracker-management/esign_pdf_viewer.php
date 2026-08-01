@@ -2,7 +2,7 @@
 // esign_pdf_viewer.php
 // Place at: realiving_admin/tracker_management/esign_pdf_viewer.php
 session_start();
-include '../../connection/connection.php';
+include $includes ['connection'];
 
 if (!isset($_SESSION['admin_id'])) {
     echo json_encode(['error' => 'Not authenticated']);
@@ -35,11 +35,12 @@ $sigStmt->execute();
 $sigRow = $sigStmt->get_result()->fetch_assoc();
 $rawSig = $sigRow['e_signature'] ?? '';
 $cleanSig = preg_replace('#^(\.\./)+#', '', $rawSig);
-$sigSrc = '../../' . htmlspecialchars($cleanSig);
+$sigSrc = BASE_URL . htmlspecialchars($cleanSig);
 $userName = htmlspecialchars($sigRow['full_name'] ?? 'Approver');
 
-$absFilePath = dirname(dirname(dirname(__FILE__))) . '/' . preg_replace('#^(\.\./)+#', '', $file['file_path']);
-$pdfSrc = '../../' . htmlspecialchars($file['file_path']) . '?v=' . (file_exists($absFilePath) ? filemtime($absFilePath) : time());
+$cleanFilePath = preg_replace('#^(\.\./)+#', '', $file['file_path']);
+$absFilePath = ROOT_PATH . $cleanFilePath;
+$pdfSrc = BASE_URL . htmlspecialchars($cleanFilePath) . '?v=' . (file_exists($absFilePath) ? filemtime($absFilePath) : time());
 ?>
 <!DOCTYPE html>
 <html lang="en">

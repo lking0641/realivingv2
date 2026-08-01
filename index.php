@@ -78,6 +78,12 @@ $routes = [
   'insert-dimension-edit' => 'realiving_admin/realiving_sales/product-management/insert_dimension_edit.php',
   'link-product-addons' => 'realiving_admin/realiving_sales/product-management/link_product_addons.php',
   'view-addons' => 'realiving_admin/realiving_sales/product-management/view_addons.php',
+  'add-addon' => 'realiving_admin/realiving_sales/product-management/add_addon.php',
+  'delete-insert-addon' => 'realiving_admin/realiving_sales/product-management/delete_addon.php',
+  'edit-addon' => 'realiving_admin/realiving_sales/product-management/edit_addon.php',
+  'view-addon-details' => 'realiving_admin/realiving_sales/product-management/view_addon_details.php',
+  
+
 
   //PROJECT MANAGEMENT
   'projects-dashboard' => 'realiving_admin/realiving_sales/project-management/projects_dashboard.php',
@@ -186,6 +192,7 @@ $routes = [
   //TRACKER MANAGEMENT
   'stage-files' => 'realiving_admin/tracker-management/tracker-management/stage_files.php',
   'unified-project-tracker' => 'realiving_admin/tracker-management/tracker-management/unified_project_tracker.php',
+  'esign-pdf-viewer' => 'realiving_admin/tracker-management/tracker-management/esign_pdf_viewer.php',
 
   //TRACKER PAYMENT
   'add-collection-billing' => 'realiving_admin/tracker-management/tracker-payment/add_collection_billing.php',
@@ -305,6 +312,7 @@ $routes = [
   'get-user-notificaitons' => 'realiving_admin/get_notifications/get_user_notifications.php',
   'get-td-approval-counts' => 'realiving_admin/get_notifications/get_td_approval_counts.php',
   'get-inquiry-counts' => 'realiving_admin/get_notifications/get_inquiry_counts.php',
+  'get-notifications' => 'realiving_admin/get_notifications/get_notifications.php',
 
   //INQUIRY-FORM
   'inquiry' => 'realiving_user/inquiry_form/inquiry.php',

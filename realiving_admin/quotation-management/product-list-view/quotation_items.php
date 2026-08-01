@@ -2,7 +2,7 @@
 //quotation_items.php
 include $includes ['mainbody'];
 // Allow only sales and superadmin
-require_role(['superadmin', 'sales', 'designer', 'technical_designer', 'operational_manager']);
+require_role(['superadmin', 'sales', 'designer', 'technical_designer', 'project_coordinator']);
 
 $admin_id = $_SESSION['admin_id'];
 

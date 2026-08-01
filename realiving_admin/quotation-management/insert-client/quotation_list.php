@@ -2,7 +2,7 @@
 //qoutation_list.php
 include $includes ['mainbody'];
 // Allow only sales and superadmin
-require_role(['sales', 'designer', 'technical_designer']);
+require_role(['sales', 'designer', 'technical_designer', 'project_coordinator']);
 
 $admin_id = $_SESSION['admin_id'];
 $admin_role = $_SESSION['role'] ?? '';

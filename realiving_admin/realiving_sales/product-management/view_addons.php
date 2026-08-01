@@ -15,7 +15,7 @@ if ($_SESSION['admin_role'] === 'designer') {
 
     if (empty($headRow['is_head'])) {
         $_SESSION['noti'] = 'Access Denied: Only head designers can access this page.';
-        header("Location: ../../realiving_admin/tracker_site_visit/designer_layout_list.php");
+        header("Location:" . BASE_URL . "designer-layout-list");
         exit();
     }
 }
@@ -332,7 +332,7 @@ $conn->close();
                     <h1 class="adm-title">Product Accessories</h1>
                     <p class="adm-subtitle mt-1">Browse and manage add-ons and accessories by category.</p>
                 </div>
-                <a href="add_addon.php" class="adm-btn">
+                <a href="<?= BASE_URL ?>add-addon" class="adm-btn">
                     <i class="fas fa-plus"></i>
                     <span>Add New Accessory</span>
                 </a>
@@ -432,7 +432,7 @@ $conn->close();
                         <!-- Addon Image -->
                         <div class="relative">
                             <?php if (!empty($row['addon_image_path'])): ?>
-                                <img src="../../realiving_user/images/product_addons/<?php echo htmlspecialchars($row['addon_image_path']); ?>"
+                                <img src="<?= BASE_URL ?>/realiving_user/images/product_addons/<?php echo htmlspecialchars($row['addon_image_path']); ?>"
                                     alt="<?php echo htmlspecialchars($row['addon_name']); ?>"
                                     class="addon-image">
                             <?php else: ?>
@@ -507,7 +507,7 @@ $conn->close();
                             <i class="fas fa-rotate-left"></i> Clear Filter
                         </a>
                     <?php endif; ?>
-                    <a href="add_addon.php" class="adm-btn">
+                    <a href="<?= BASE_URL ?>add-addon" class="adm-btn">
                         <i class="fas fa-plus"></i> Add New Accessory
                     </a>
                 </div>
@@ -517,16 +517,16 @@ $conn->close();
 
     <script>
         function viewAddon(addonId) {
-            window.location.href = 'view_addon_details.php?id=' + addonId;
+            window.location.href = 'view-addon-details?id=' + addonId;
         }
 
         function editAddon(addonId) {
-            window.location.href = 'edit_addon.php?id=' + addonId;
+            window.location.href = 'edit-addon?id=' + addonId;
         }
 
         function deleteAddon(addonId, addonName) {
             if (confirm(`Are you sure you want to delete "${addonName}"?\n\nThis action cannot be undone.`)) {
-                window.location.href = 'delete_addon.php?id=' + addonId;
+                window.location.href = 'delete-insert-addon?id=' + addonId;
             }
         }
     </script>

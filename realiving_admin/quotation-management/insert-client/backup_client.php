@@ -4,7 +4,7 @@ session_start();
 include $includes ['connection'];
 include $includes ['checkrole'];
 
-require_role(['sales', 'designer', 'technical_designer']);
+require_role(['sales', 'designer', 'technical_designer','project_coordinator']);
 
 $admin_id  = $_SESSION['admin_id'];
 $client_id = isset($_GET['client_id']) ? intval($_GET['client_id']) : 0;

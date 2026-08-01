@@ -12,7 +12,7 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-require_role(['sales', 'designer', 'technical_designer']);
+require_role(['sales', 'designer', 'technical_designer','project_coordinator']);
 
 $admin_id = $_SESSION['admin_id'];
 $client_id = isset($_POST['client_id']) ? intval($_POST['client_id']) : 0;

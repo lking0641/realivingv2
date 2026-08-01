@@ -119,7 +119,7 @@ include $includes ['checkrole'];
       'designer' => ['designer_dashboard', 'designer_site_visit', 'designer_2d3d', 'designer_quotation', 'designer_client_tracker', 'sales_product'],
       'technical_designer' => ['technical_designer_dashboard', 'technical_designer_management', 'technical_designer_quotation'],
       'accounting' => ['accounting_dashboard'],
-      'project_coordinator' => ['project_dashboard', 'project_timeline'],
+      'project_coordinator' => ['project_dashboard', 'project_timeline', 'project_coordinator_quotation', 'ps_sales_tracker'],
     ];
     return isset($permissions[$role]) && in_array($section, $permissions[$role]);
   }
@@ -999,6 +999,26 @@ include $includes ['checkrole'];
               </a>
             <?php endif; ?>
 
+            <?php if (hasAccess($user_role, 'project_coordinator_quotation')): ?>
+              <a href="quotation-list" data-section="quotation_management"
+                class="nav-link text-dark hover:text-primary text-sm transition-colors">
+                <div class="flex items-center space-x-1">
+                  <i class="ri-file-list-3-line text-lg"></i>
+                  <span>Quotation</span>
+                </div>
+              </a>
+            <?php endif; ?>
+
+            <?php if (hasAccess($user_role, 'ps_sales_tracker')): ?>
+              <a href="client-tracker-list" data-section="sales_tracker"
+                class="nav-link text-dark hover:text-primary text-sm transition-colors">
+                <div class="flex items-center space-x-1">
+                  <i class="ri-map-pin-time-line text-lg"></i>
+                  <span>Client Tracker</span>
+                </div>
+              </a>
+            <?php endif; ?>
+
           </div>
           <!-- ============================================================ -->
           <!--                END DESKTOP NAVIGATION                        -->
@@ -1565,6 +1585,20 @@ include $includes ['checkrole'];
             <a href="coordinator-timeline"
               class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
               <i class="ri-settings-3-line text-lg"></i><span>Timeline Management</span>
+            </a>
+          <?php endif; ?>
+
+          <?php if (hasAccess($user_role, 'project_coordinator_quotation')): ?>
+            <a href="quotation-list" data-section="quotation_management"
+              class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
+              <i class="ri-file-list-3-line text-lg"></i><span>Quotation</span>
+            </a>
+          <?php endif; ?>
+
+          <?php if (hasAccess($user_role, 'sales_tracker')): ?>
+            <a href="client-tracker-list" data-section="ps_sales_tracker"
+              class="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-primary rounded-lg flex items-center space-x-3 transition-all duration-200 mb-1">
+              <i class="ri-map-pin-time-line text-lg"></i><span>Client Tracker</span>
             </a>
           <?php endif; ?>
 

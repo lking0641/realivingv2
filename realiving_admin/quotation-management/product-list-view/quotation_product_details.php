@@ -1,7 +1,7 @@
 <?php
 //quotation_product_details.php
 include $includes ['mainbody'];
-require_role(['admin1', 'superadmin', 'sales', 'designer', 'technical_designer', 'operational_manager']);
+require_role(['admin1', 'superadmin', 'sales', 'designer', 'technical_designer','project_coordinator']);
 
 if (!isset($_SESSION['admin_id'])) {
   header("Location: ../login.php");

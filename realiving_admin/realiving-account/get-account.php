@@ -10,10 +10,17 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 $id = (int) $_SESSION['admin_id'];
-$result = $conn->query("SELECT full_name, email, role, e_signature FROM account WHERE id = $id LIMIT 1");
+$stmt = $conn->prepare("SELECT full_name, email, role, e_signature FROM account WHERE id = ? LIMIT 1");
+$stmt->bind_param('i', $id);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($row = $result->fetch_assoc()) {
+    if (!empty($row['e_signature'])) {
+        $row['e_signature'] = BASE_URL . $row['e_signature'];
+    }
     echo json_encode(['success' => true, ...$row]);
 } else {
     echo json_encode(['success' => false, 'message' => 'Account not found']);
 }
+$stmt->close();

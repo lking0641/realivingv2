@@ -1,7 +1,7 @@
 <?php
 // client_tracker_list.php
 include $includes ['mainbody'];
-require_role(['admin1', 'superadmin', 'sales', 'designer', 'technical_designer']);
+require_role(['admin1', 'superadmin', 'sales', 'designer', 'technical_designer', 'project_coordinator']);
 
 $admin_id = $_SESSION['admin_id'];
 

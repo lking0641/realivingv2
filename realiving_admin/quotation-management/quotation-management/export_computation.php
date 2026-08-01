@@ -3,7 +3,7 @@
 session_start();
 include $includes ['connection'];
 include $includes ['checkrole'];
-require_role(['designer', 'technical_designer', 'sales']);
+require_role(['designer', 'technical_designer', 'sales', 'project_coordinator']);
 
 if (!isset($_SESSION['admin_id'])) {
   header("Location: ../login.php");

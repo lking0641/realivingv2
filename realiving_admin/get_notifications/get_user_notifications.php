@@ -224,8 +224,8 @@ foreach ($clients as $cid => $cinfo) {
         }
     }
 
-    // ── 2b. Rejected 2D/3D layout — notify the assigned designer ─────────
-    if (!$isSalesRole && in_array($currentRole, ['designer', 'technical_designer'])) {
+    // ── 2b. Rejected 2D/3D layout — notify the assigned designer only ─────
+    if (!$isSalesRole && $currentRole === 'designer') {
         $rejLayoutStmt = $conn->prepare("
             SELECT la.id, la.area, la.responded_at
             FROM layout_approvals la
@@ -235,6 +235,14 @@ foreach ($clients as $cid => $cinfo) {
                   SELECT 1 FROM user_info u
                   WHERE u.id = la.client_id
                     AND (u.designer1_id = ? OR u.designer2_id = ? OR u.technical_designer_id = ?)
+              )
+              AND NOT EXISTS (
+                  SELECT 1 FROM layout_approvals la2
+                  WHERE la2.client_id = la.client_id
+                    AND la2.area = la.area
+                    AND (la2.room_unit_number <=> la.room_unit_number)
+                    AND la2.status = 'rejected'
+                    AND la2.responded_at > la.responded_at
               )
             ORDER BY la.responded_at DESC
         ");

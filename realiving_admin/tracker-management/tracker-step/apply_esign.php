@@ -122,16 +122,15 @@ if (isset($sequentialStages[$stageName]) && in_array($reviewerRole, ['general_ma
 }
 
 // ── Apply e-signature to PDF ─────────────────────────────────────
-$doc_root = dirname(dirname(dirname(__FILE__)));
-
 if ($action === 'approved' && $apply_sign && $sigPath) {
 
     // Clean path — strip any leading ../../
     $cleanFilePath = preg_replace('#^(\.\./)+#', '', $approval['file_path']);
-    $absFilePath = $doc_root . '/' . $cleanFilePath;
+    $absFilePath = ROOT_PATH . $cleanFilePath;
 
-    $cleanFilePath = preg_replace('#^(\.\./)+#', '', $approval['file_path']);
-    $absFilePath = $doc_root . '/' . $cleanFilePath;
+    // Signature is stored as a relative path (e.g. uploads/signatures/sig_1_123.png)
+    $cleanSignPath = preg_replace('#^(\.\./)+#', '', $sigPath);
+    $absSignPath = ROOT_PATH . $cleanSignPath;
 
     if (!file_exists($absFilePath)) {
         echo json_encode(['success' => false, 'error' => 'PDF file not found on server.']);

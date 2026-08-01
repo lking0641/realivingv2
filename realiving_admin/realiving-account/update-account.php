@@ -32,25 +32,31 @@ if (!empty($_FILES['e_signature']['tmp_name'])) {
         exit;
     }
 
-    $uploadDir = '../../uploads/signatures/';
+    $uploadDir = ROOT_PATH . 'uploads/signatures/';
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
 
-    $signaturePath = $uploadDir . 'sig_' . $id . '_' . time() . '.png';
+    $sigRelativePath = 'uploads/signatures/sig_' . $id . '_' . time() . '.png'; // stored in DB, used to build URL
+    $sigAbsolutePath = ROOT_PATH . $sigRelativePath;                            // used for actual file I/O
 
     // Delete old signature before saving new one
     $oldSigStmt = $conn->prepare("SELECT e_signature FROM account WHERE id = ?");
     $oldSigStmt->bind_param('i', $id);
     $oldSigStmt->execute();
     $oldSigRow = $oldSigStmt->get_result()->fetch_assoc();
-    if (!empty($oldSigRow['e_signature']) && file_exists($oldSigRow['e_signature'])) {
-        unlink($oldSigRow['e_signature']);
+    if (!empty($oldSigRow['e_signature'])) {
+        $oldAbsolutePath = ROOT_PATH . $oldSigRow['e_signature'];
+        if (file_exists($oldAbsolutePath)) {
+            unlink($oldAbsolutePath);
+        }
     }
     $oldSigStmt->close();
 
-    if (!move_uploaded_file($file['tmp_name'], $signaturePath)) {
+    if (!move_uploaded_file($file['tmp_name'], $sigAbsolutePath)) {
         echo json_encode(['success' => false, 'message' => 'Failed to upload signature.']);
         exit;
     }
+
+    $signaturePath = $sigRelativePath; // this is what gets saved to the DB below
 }
 
 if (!$fullName || !$email) {
@@ -118,7 +124,7 @@ if ($newPass) {
 if ($stmt->execute()) {
     $responseData = ['success' => true, 'message' => 'Account updated successfully!'];
     if ($signaturePath) {
-        $responseData['e_signature'] = $signaturePath;
+        $responseData['e_signature'] = BASE_URL . $signaturePath;
     }
     echo json_encode($responseData);
 } else {

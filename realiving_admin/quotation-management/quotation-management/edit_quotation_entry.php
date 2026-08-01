@@ -2,7 +2,7 @@
 // edit_quotation_entry.php
 // Edit an existing quotation entry (customized or fixed size)
 include $includes ['mainbody'];
-require_role(['admin1', 'superadmin', 'sales', 'designer', 'technical_designer', 'operational_manager']);
+require_role(['admin1', 'superadmin', 'sales', 'designer', 'technical_designer', 'project_coordinator']);
 
 $admin_id = $_SESSION['admin_id'];
 

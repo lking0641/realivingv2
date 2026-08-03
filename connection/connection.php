@@ -18,9 +18,9 @@ if ($is_localhost) {
 } else {
     // PRODUCTION Configuration
     $host = "localhost";
-    $username = "u565655483_realiving";
-    $password = "@Realiving01";
-    $database = "u565655483_realiving";
+    $username = "u565655483_realivingv2";
+    $password = "Realiving01";
+    $database = "u565655483_realivingv2";
 }
 
 $conn = new mysqli($host, $username, $password, $database);

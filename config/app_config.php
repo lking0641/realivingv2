@@ -8,14 +8,14 @@ if (!defined('BASE_URL')) {
         define('BASE_URL', 'http://localhost/realivingv2/');
         define('ROOT_PATH', 'C:/xampp/htdocs/realivingv2/');
     } else {
-        define('BASE_URL', 'https://realivingdesigncenter.com/');
+        define('BASE_URL', 'https://test.realivingdesigncenter.com/');
         define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . '/');
     }
 
     define('BASE_ASSET', BASE_URL . '');
     define('CLIENT_ASSET', BASE_URL . 'realiving_user');
     define('PAGES_PATH', ROOT_PATH . 'realiving_user/');
-    
+
     define('ADMIN_ASSET', BASE_URL . 'realiving_admin');
     define('ADMIN_PATH', ROOT_PATH . 'realiving_admin/');
 

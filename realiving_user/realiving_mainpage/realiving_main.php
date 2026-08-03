@@ -46,6 +46,7 @@ $hero_result = $conn->query($hero_query);
 
 #heroSlider > .relative.z-10{
   padding-left: var(--sb-current-offset);
+  padding-right: var(--sb-current-offset);
   box-sizing: border-box;
 }
 
@@ -310,7 +311,7 @@ $hero_result = $conn->query($hero_query);
 
           <iframe data-src="https://kd20-realiving.yfcad.com/pano?id=56834458&uid=24597"
   title="Realiving Design Center 360° Virtual Tour"
-  allow="fullscreen; autoplay"
+  allow="fullscreen"
   class="absolute inset-0 w-full h-full border-0"></iframe>
 
           <!-- Logo overlay — frosted glass, matches sidebar's frosted-glass language -->

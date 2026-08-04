@@ -496,7 +496,7 @@ if ($d1Date > $visitDeadline): ?>
                                         style="font-size:11px; font-weight:700; color:#065f46; margin-bottom:5px; display:flex; align-items:center; gap:5px;">
                                         <i class="fas fa-camera"></i> Proof Photo
                                     </div>
-                                    <img src="../../uploads/site_visit_photos/<?= htmlspecialchars($visit['designer1_photo']) ?>"
+                                    <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($visit['designer1_photo']) ?>"
                                         alt="Proof"
                                         style="max-width:100%; max-height:240px; border-radius:8px; border:2px solid #bbf7d0; object-fit:cover; display:block; cursor:pointer;"
                                         onclick="openPhotoModal(this.src)">
@@ -588,7 +588,7 @@ if ($d2Date > $visitDeadline): ?>
                                             style="font-size:11px; font-weight:700; color:#065f46; margin-bottom:5px; display:flex; align-items:center; gap:5px;">
                                             <i class="fas fa-camera"></i> Proof Photo
                                         </div>
-                                        <img src="../../uploads/site_visit_photos/<?= htmlspecialchars($visit['designer2_photo']) ?>"
+                                        <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($visit['designer2_photo']) ?>"
                                             alt="Proof"
                                             style="max-width:100%; max-height:240px; border-radius:8px; border:2px solid #bbf7d0; object-fit:cover; display:block; cursor:pointer;"
                                             onclick="openPhotoModal(this.src)">

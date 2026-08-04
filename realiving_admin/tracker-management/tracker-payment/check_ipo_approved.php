@@ -1,7 +1,7 @@
 <?php
 session_start();
 ob_start();
-include $includes ['conncetion'];
+include $includes ['connection'];
 ob_clean();
 header('Content-Type: application/json');
 

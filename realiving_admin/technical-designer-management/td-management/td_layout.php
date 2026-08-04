@@ -72,7 +72,7 @@ if (!$isAssigned && !$canViewAll)
 $isTDHead = ($me['role'] === 'technical_designer' && $me['is_head'] == 1);
 
 // Back URL
-$backToList = BASE_URL . 'td_layout-list';
+$backToList = BASE_URL . 'td-layout-list';
 $backToTracker = BASE_URL . 'unified-project-tracker?client_id=' . $client_id;
 
 // Fetch revision log for this client

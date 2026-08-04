@@ -2,11 +2,6 @@
 // payment_tracker.php
 include $includes ['mainbody'];
 
-if (!isset($_SESSION['admin_id'])) {
-    header("Location: ../login.php");
-    exit();
-}
-
 $admin_id = $_SESSION['admin_id'];
 $client_id = isset($_GET['client_id']) ? intval($_GET['client_id']) : 0;
 
@@ -2197,9 +2192,15 @@ if ($business_type === 'Project') {
                                                     <button class="btn btn-sm btn-gray" onclick="openRejectModal(<?= $payment['id'] ?>)">
                                                         <i class="fas fa-times"></i> Reject
                                                     </button>
-                                                    <button class="btn btn-sm btn-green" onclick="quickApprove(<?= $payment['id'] ?>)">
-                                                        <i class="fas fa-check"></i> Approve & Mark Paid
-                                                    </button>
+                                                    <?php if (stripos($payment['payment_type'], 'Down Payment') !== false): ?>
+                                                        <button class="btn btn-sm btn-green" onclick="approvePayment(<?= $payment['id'] ?>)">
+                                                            <i class="fas fa-check"></i> Approve & Upload NTP
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <button class="btn btn-sm btn-green" onclick="quickApprove(<?= $payment['id'] ?>)">
+                                                            <i class="fas fa-check"></i> Approve & Mark Paid
+                                                        </button>
+                                                    <?php endif; ?>
                                                 </div>
                                             <?php endif; ?>
                                         </div>
@@ -2566,6 +2567,11 @@ function quickApprove(paymentId) {
 function closeQuickApproveModal() {
     document.getElementById('quickApproveModal').classList.remove('open');
     pendingQuickApproveId = null;
+    const btn = document.querySelector('#quickApproveModal .btn-green');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Yes, Approve & Mark Paid';
+    }
 }
 
 async function doQuickApprove() {
@@ -2577,14 +2583,21 @@ async function doQuickApprove() {
 
     try {
         const res = await fetch('<?= BASE_URL ?>check-ipo-approved?client_id=' + CLIENT_ID);
+
+        if (!res.ok) {
+            throw new Error('Server returned HTTP ' + res.status);
+        }
+
         const data = await res.json();
+
         if (!data.approved) {
-            showToast('Cannot approve payment. Internal P.O to Accounting stage must be fully approved first.', 'error');
+            showToast('Cannot approve: "Internal P.O to Accounting" stage must be fully approved first.', 'error');
             closeQuickApproveModal();
             return;
         }
     } catch (e) {
-        showToast('Could not verify Internal P.O approval status.', 'error');
+        console.error('IPO verification failed:', e);
+        showToast('Could not verify Internal P.O status — please refresh and try again.', 'error');
         closeQuickApproveModal();
         return;
     }
@@ -2657,13 +2670,20 @@ async function doToggleSplit() {
 async function approvePayment(paymentId) {
     try {
         const res = await fetch('<?= BASE_URL ?>check-ipo-approved?client_id=' + CLIENT_ID);
+
+        if (!res.ok) {
+            throw new Error('Server returned HTTP ' + res.status);
+        }
+
         const data = await res.json();
+
         if (!data.approved) {
-            showToast('Cannot approve payment. Internal P.O to Accounting stage must be fully approved first.', 'error');
+            showToast('Cannot approve: "Internal P.O to Accounting" stage must be fully approved first.', 'error');
             return;
         }
     } catch (e) {
-        showToast('Could not verify Internal P.O approval status.', 'error');
+        console.error('IPO verification failed:', e);
+        showToast('Could not verify Internal P.O status — please refresh and try again.', 'error');
         return;
     }
 

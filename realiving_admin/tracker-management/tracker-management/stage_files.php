@@ -3250,7 +3250,7 @@ $stageTypeLabel = $isApproval ? 'Approval Required' : ($isFileUpload ? 'File Upl
         // ── Internal P.O to Accounting approval functions ──────────────────
         async function requestInternalPoApproval() {
             try {
-                const res = await fetch('<?= BASE_URL ?>request-internal-po-approval', {
+                const res = await fetch('<?= BASE_URL ?>internal-po-review', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'request_approval', client_id: <?= $client_id ?>, stage_id: STAGE_ID })
                 });
@@ -3263,7 +3263,7 @@ $stageTypeLabel = $isApproval ? 'Approval Required' : ($isFileUpload ? 'File Upl
         async function reviewInternalPo(approvalId, action, reviewer) {
             if (!confirm(action === 'approve' ? 'Approve all files for this stage?' : 'Reject?')) return;
             try {
-                const res = await fetch('<?= BASE_URL ?>review-internal-po', {
+                const res = await fetch('<?= BASE_URL ?>internal-po-review', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: action, approval_id: approvalId, client_id: <?= $client_id ?>, stage_id: STAGE_ID, remark: '' })
                 });
@@ -3286,7 +3286,7 @@ $stageTypeLabel = $isApproval ? 'Approval Required' : ($isFileUpload ? 'File Upl
             const remark = document.getElementById('ipo-remark-' + reviewer).value.trim();
             if (!remark) { toast('Please enter a remark before rejecting.', true); return; }
             try {
-                const res = await fetch('<?= BASE_URL ?>submit-internal-po-reject', {
+                const res = await fetch('<?= BASE_URL ?>internal-po-review', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'reject', approval_id: approvalId, client_id: <?= $client_id ?>, stage_id: STAGE_ID, remark: remark })
                 });
@@ -3299,7 +3299,7 @@ $stageTypeLabel = $isApproval ? 'Approval Required' : ($isFileUpload ? 'File Upl
         async function resetInternalPoApproval(approvalId) {
             if (!confirm('Reset the rejection and re-request approval?')) return;
             try {
-                const res = await fetch('<?= BASE_URL ?>reset-internal-po-approval', {
+                const res = await fetch('<?= BASE_URL ?>internal-po-review', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'reset', approval_id: approvalId, client_id: <?= $client_id ?>, stage_id: STAGE_ID })
                 });

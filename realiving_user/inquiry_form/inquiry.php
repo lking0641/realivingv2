@@ -168,13 +168,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
 ?>
 
 <!-- HTML Form Display with Tailwind CSS -->
-<div id="popupForm" class="hidden fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-5">
-    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-7 sm:p-10 animate-fadeIn relative">
-        <span id="closeFormBtn" class="absolute top-5 right-6 text-2xl text-gray-800 cursor-pointer hover:text-black sm:top-4 sm:right-4">&times;</span>
-        
-        <h2 class="font-serif text-2xl text-center text-amber-950 mt-0 mb-6 sm:text-3xl">Send an Inquiry</h2>
-        
-        <form id="inquiryFormElement" class="space-y-4">
+<div id="popupForm" class="hidden fixed inset-0 z-[9999] flex justify-center bg-black/50 backdrop-blur-sm p-5 overflow-y-auto" style="align-items: safe center;">
+    <div class="bg-white rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto animate-fadeIn relative">
+        <div class="sticky top-0 z-10 bg-white flex items-center justify-between px-5 pt-6 pb-3 sm:px-10 sm:pt-8 sm:pb-4 border-b border-gray-100">
+            <h2 class="font-serif text-xl text-amber-950 sm:text-3xl">Send an Inquiry</h2>
+            <span id="closeFormBtn" class="text-2xl text-gray-800 cursor-pointer hover:text-black leading-none">&times;</span>
+        </div>
+
+        <form id="inquiryFormElement" class="space-y-4 px-5 pb-7 pt-4 sm:px-10 sm:pb-10">
             <div class="mb-4">
                 <label for="inq_name" class="block font-semibold text-sm mb-1.5">NAME</label>
                 <input type="text" id="inq_name" name="name" placeholder="ENTER YOUR NAME" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors" >
@@ -207,12 +208,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
             </div>
 
             <!-- reCAPTCHA -->
-            <div class="flex justify-center mb-2 scale-95 origin-center sm:scale-100">
-                <div id="inquiry-recaptcha" class="g-recaptcha"
-                    data-sitekey="<?php echo RECAPTCHA_SITE_KEY; ?>"
-                    data-callback="inquiryRecaptchaCallback"
-                    data-expired-callback="inquiryRecaptchaExpiredCallback"
-                    data-error-callback="inquiryRecaptchaErrorCallback">
+            <div class="flex justify-center mb-2">
+                <div style="width:228px; height:78px; overflow:hidden;" class="sm:w-[304px] sm:h-[78px]">
+                    <div id="inquiry-recaptcha" class="g-recaptcha origin-top-left scale-75 sm:scale-100"
+                        data-sitekey="<?php echo RECAPTCHA_SITE_KEY; ?>"
+                        data-callback="inquiryRecaptchaCallback"
+                        data-expired-callback="inquiryRecaptchaExpiredCallback"
+                        data-error-callback="inquiryRecaptchaErrorCallback">
+                    </div>
                 </div>
             </div>
 

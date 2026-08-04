@@ -16,6 +16,10 @@ if (!defined('BASE_URL')) {
     define('CLIENT_ASSET', BASE_URL . 'realiving_user');
     define('PAGES_PATH', ROOT_PATH . 'realiving_user/');
 
+    // Cache-busting version for output.css — auto-updates whenever the file changes
+    $cssFilePath = ROOT_PATH . 'assets/css/output.css';
+    define('CSS_VERSION', file_exists($cssFilePath) ? filemtime($cssFilePath) : time());
+
     define('ADMIN_ASSET', BASE_URL . 'realiving_admin');
     define('ADMIN_PATH', ROOT_PATH . 'realiving_admin/');
 

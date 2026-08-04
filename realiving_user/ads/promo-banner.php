@@ -13,10 +13,6 @@
 
 <body>
   <?php
-  // Include connection if not already included
-  if (!isset($conn)) {
-    include '../connection/connection.php';
-  }
 
   // Fetch active ads banner
   $ads_query = "SELECT * FROM ads_banner WHERE is_active = 1 LIMIT 1";

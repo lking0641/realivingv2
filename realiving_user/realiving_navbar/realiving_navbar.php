@@ -1007,6 +1007,9 @@ function sb_is_active($slug, $current)
      via document.write BEFORE the aside is parsed — kaya naka-tamang
      width na agad ito sa unang paint, walang expand→collapse flash.
 ═══════════════════════════════ -->
+<head>
+  <link rel="stylesheet" href="<?= BASE_ASSET ?>assets/css/output.css?v=<?= CSS_VERSION ?>">
+</head>
 <script>
   try {
     if (localStorage.getItem('sb_collapsed') === '1') {

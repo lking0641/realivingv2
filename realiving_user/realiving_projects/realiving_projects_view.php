@@ -209,7 +209,6 @@ $badge_class = $badge_colors[$cat] ?? 'bg-gray-100 text-gray-600 border border-g
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
 
     <title><?php echo htmlspecialchars($project['title']); ?> - Project Details | Realiving Design Center</title>
-    <link rel="stylesheet" href="<?= BASE_ASSET ?>assets/css/output.css">
 
     <script src="<?php echo RECAPTCHA_SCRIPT_URL; ?>" async defer></script>
 

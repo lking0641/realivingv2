@@ -49,7 +49,6 @@ if (empty($latest_news) && !empty($all_news)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($header_title); ?> | Realiving Design Center</title>
-    <link rel="stylesheet" href="<?= BASE_ASSET ?>assets/css/output.css">
     <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap"
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">

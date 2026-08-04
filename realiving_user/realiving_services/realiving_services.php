@@ -20,8 +20,6 @@ include $includes['header'];
     rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
 
-  <link rel="stylesheet" href="<?= BASE_ASSET ?>assets/css/output.css">
-
   <style>
     html { scroll-behavior: smooth; }
 

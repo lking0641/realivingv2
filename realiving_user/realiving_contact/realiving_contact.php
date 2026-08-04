@@ -149,8 +149,6 @@ unset($_SESSION['contact_form_errors']);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
 
-    <link rel="stylesheet" href="<?= BASE_ASSET ?>assets/css/output.css">
-
     <style>
         /* Mechanical modal-lock rule — the JS toggles this literal class
            name directly on <html>/<body>, so it needs a real CSS rule

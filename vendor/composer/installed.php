@@ -3,7 +3,7 @@
         'name' => 'realiving/realivingv2',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'c40c83a5ae36570abb7b7b84cc28c007377fd87e',
+        'reference' => 'ba92cb2771dd5a153588704618dd91a639097554',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -154,7 +154,7 @@
         'realiving/realivingv2' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'c40c83a5ae36570abb7b7b84cc28c007377fd87e',
+            'reference' => 'ba92cb2771dd5a153588704618dd91a639097554',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

@@ -14,7 +14,13 @@ $hero_result = $conn->query($hero_query);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Realiving Design Center</title>
+  <meta name="description" content="Realiving Design Center — Custom cabinet design, fabrication, delivery, and installation. Transform your space with timeless design.">
   <link rel="icon" type="image/png" href="<?= CLIENT_ASSET ?>/images/logo/favicon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 
   <link
     href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@400;500;600&display=swap&font-display=swap"
@@ -119,7 +125,7 @@ $hero_result = $conn->query($hero_query);
         </p>
 
         <div class="flex flex-col items-center gap-4 sm:flex-row">
-          <a href="javascript:void(0);"
+          <a href="<?= BASE_URL ?>inquiry"
             class="openFormBtn inline-flex items-center gap-2 bg-white px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[2px] text-[#2F1200] transition-all duration-300 hover:bg-[#2F1200] hover:text-white sm:px-9 sm:py-4">
             <i class="fa-solid fa-paper-plane text-[10px]"></i> Inquire Now
           </a>
@@ -151,7 +157,7 @@ $hero_result = $conn->query($hero_query);
 
         <!-- Section Header -->
         <div class="text-center mb-16">
-          <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#c4905c] mb-3">
+          <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#8a6236] mb-3">
             What We Offer
           </span>
           <h2 class="text-3xl sm:text-4xl font-bold text-[#2f1200] font-montserrat uppercase tracking-wide mb-4">
@@ -279,7 +285,7 @@ $hero_result = $conn->query($hero_query);
 
       <!-- Section Header — matched to Services header style -->
       <div class="text-center mb-14">
-        <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#c4905c] mb-3">
+        <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#8a6236] mb-3">
           Step Inside
         </span>
         <h2 class="text-3xl sm:text-4xl font-bold text-[#2f1200] font-montserrat uppercase tracking-wide mb-4">
@@ -333,7 +339,7 @@ $hero_result = $conn->query($hero_query);
       </div>
 
       <!-- Caption -->
-      <p class="text-center text-xs text-gray-400 mt-5 font-montserrat">
+      <p class="text-center text-xs text-gray-600 mt-5 font-montserrat">
         <i class="ri-cursor-line mr-1"></i>
         Click and drag to explore &middot; Scroll to zoom
       </p>
@@ -378,7 +384,7 @@ $hero_result = $conn->query($hero_query);
     <div class="max-w-7xl mx-auto px-5">
 
       <div class="text-center mb-10">
-        <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#c4905c] mb-3">
+        <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#8a6236] mb-3">
           Latest Updates
         </span>
         <h2 class="text-3xl sm:text-4xl font-bold text-[#2f1200] font-montserrat uppercase tracking-wide mb-4">
@@ -418,7 +424,7 @@ $hero_result = $conn->query($hero_query);
             </div>
 
             <div class="p-4">
-              <span class="block font-montserrat text-[9px] font-bold tracking-[2px] uppercase text-[#c4905c] mb-1.5">
+              <span class="block font-montserrat text-[9px] font-bold tracking-[2px] uppercase text-[#8a6236] mb-1.5">
                 ✦ Update
               </span>
               <p class="font-montserrat text-[13px] text-[#2f1200] leading-relaxed line-clamp-2">
@@ -630,7 +636,7 @@ $hero_result = $conn->query($hero_query);
           </p>
 
           <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <a href="javascript:void(0);"
+            <a href="<?= BASE_URL ?>inquiry"
               class="openFormBtn group inline-flex items-center gap-2.5 bg-white text-[#2f1200] font-montserrat font-bold text-[11px] tracking-[2px] uppercase px-8 py-4 rounded-full transition-all duration-300 hover:bg-[#2f1200] hover:text-white shadow-lg">
               Inquire Now
               <i class="ri-arrow-right-line text-sm transition-transform duration-300 group-hover:translate-x-1"></i>
@@ -672,7 +678,7 @@ $hero_result = $conn->query($hero_query);
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
         <div>
-          <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#c4905c] mb-3">
+          <span class="inline-block font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#8a6236] mb-3">
             Stay In The Loop
           </span>
           <h2 class="text-3xl sm:text-4xl font-bold text-[#2f1200] font-montserrat uppercase tracking-wide">
@@ -699,7 +705,7 @@ $hero_result = $conn->query($hero_query);
           <div class="absolute inset-0 bg-gradient-to-t from-[#0e0704]/90 via-[#0e0704]/20 to-transparent"></div>
 
           <div class="absolute top-5 left-5 flex items-center gap-2">
-            <span class="inline-flex items-center gap-1.5 bg-[#e63946] text-white font-montserrat text-[9px] font-bold tracking-[1.5px] uppercase px-3 py-1.5 rounded-full">
+            <span class="inline-flex items-center gap-1.5 bg-[#c1121f] text-white font-montserrat text-[9px] font-bold tracking-[1.5px] uppercase px-3 py-1.5 rounded-full">
               <i class="ri-flashlight-fill"></i> Latest
             </span>
             <span class="font-montserrat text-[9px] font-bold tracking-[1.5px] uppercase text-white px-3 py-1.5 rounded-full"
@@ -736,13 +742,13 @@ $hero_result = $conn->query($hero_query);
               </div>
 
               <div class="flex-1 min-w-0">
-                <span class="inline-block font-montserrat text-[9px] font-bold tracking-[1.5px] uppercase text-[#c4905c] mb-1.5">
+                <span class="inline-block font-montserrat text-[9px] font-bold tracking-[1.5px] uppercase text-[#8a6236] mb-1.5">
                   <?= htmlspecialchars($row['category']) ?>
                 </span>
                 <h4 class="font-montserrat font-semibold text-[#2f1200] text-[13px] sm:text-sm leading-snug mb-1.5 line-clamp-2 group-hover:text-[#c4905c] transition-colors duration-300">
                   <?= htmlspecialchars($row['title']) ?>
                 </h4>
-                <span class="font-montserrat text-[10px] text-gray-400">
+                <span class="font-montserrat text-[10px] text-gray-600">
                   <?= date('M d, Y', strtotime($row['date_uploaded'])) ?>
                 </span>
               </div>

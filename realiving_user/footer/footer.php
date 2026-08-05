@@ -34,7 +34,7 @@
 
     <!-- ═══ CTA STRIP ═══ -->
     <div class="flex flex-col items-center text-center pb-12 sm:pb-16 border-b-2 border-[#c4905c]/50">
-      <span class="font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#c4905c] mb-4">
+      <span class="font-montserrat text-[10px] font-bold tracking-[3px] uppercase text-[#8a6236] mb-4">
         Design &bull; Fabricate &bull; Install
       </span>
       <h2 class="max-w-2xl font-normal leading-[1.2] text-3xl sm:text-4xl md:text-5xl mb-8 text-[#2f1200]"
@@ -42,7 +42,7 @@
         Let's build a space that feels like you.
       </h2>
       <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-        <a href="javascript:void(0);" class="openFormBtn inline-flex items-center justify-center gap-2 bg-[#2f1200] px-8 py-3.5 w-full sm:w-auto
+        <a href="<?= BASE_URL ?>inquiry" class="openFormBtn inline-flex items-center justify-center gap-2 bg-[#2f1200] px-8 py-3.5 w-full sm:w-auto
                   text-[11px] font-montserrat font-semibold uppercase tracking-[2px] text-white
                   transition-all duration-300 hover:bg-[#c4905c] rounded-full">
           <i class="ri-send-plane-line text-[13px]"></i> Inquire Now
@@ -85,7 +85,7 @@
 
       <!-- Quick Links -->
       <div>
-        <p class="font-montserrat text-[10px] font-bold tracking-[2px] uppercase text-[#c4905c] mb-6 pb-2.5 border-b-2 border-[#c4905c] inline-block">
+        <p class="font-montserrat text-[10px] font-bold tracking-[2px] uppercase text-[#8a6236] mb-6 pb-2.5 border-b-2 border-[#c4905c] inline-block">
           Explore
         </p>
         <ul class="flex flex-col gap-3.5 font-montserrat text-[13px] text-[#5a3520]">
@@ -109,7 +109,7 @@
 
       <!-- Store Hours -->
       <div>
-        <p class="font-montserrat text-[10px] font-bold tracking-[2px] uppercase text-[#c4905c] mb-6 pb-2.5 border-b-2 border-[#c4905c] inline-block">
+        <p class="font-montserrat text-[10px] font-bold tracking-[2px] uppercase text-[#8a6236] mb-6 pb-2.5 border-b-2 border-[#c4905c] inline-block">
           Store Hours
         </p>
         <div class="flex flex-col font-montserrat text-[13px]">
@@ -130,7 +130,7 @@
 
       <!-- Contact -->
       <div class="col-span-2 lg:col-span-1">
-        <p class="font-montserrat text-[10px] font-bold tracking-[2px] uppercase text-[#c4905c] mb-6 pb-2.5 border-b-2 border-[#c4905c] inline-block">
+        <p class="font-montserrat text-[10px] font-bold tracking-[2px] uppercase text-[#8a6236] mb-6 pb-2.5 border-b-2 border-[#c4905c] inline-block">
           Get In Touch
         </p>
         <div class="flex flex-col gap-4 font-montserrat text-[13px] text-[#5a3520]">
@@ -153,10 +153,10 @@
 
     <!-- ═══ BOTTOM BAR ═══ -->
     <div class="flex flex-col sm:flex-row items-center justify-between gap-3 py-6 border-t-2 border-[#c4905c]/50">
-      <span class="font-montserrat text-[11px] text-[#5a3520]/70 text-center">
+      <span class="font-montserrat text-[11px] text-[#5a3520] text-center">
         &copy;2026 Realiving Design Center Corporation. All rights reserved.
       </span>
-      <span class="font-montserrat text-[11px] text-[#5a3520]/60 flex items-center gap-1.5">
+      <span class="font-montserrat text-[11px] text-[#5a3520] flex items-center gap-1.5">
         <i class="ri-map-pin-line"></i> Quezon City, Philippines
       </span>
     </div>

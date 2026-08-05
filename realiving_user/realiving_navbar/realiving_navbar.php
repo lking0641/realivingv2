@@ -1039,7 +1039,7 @@ function sb_is_active($slug, $current)
         style="display:none;">
     </span>
   </a>
-  <button id="sbCollapseBtn" class="sb-collapse-btn">
+  <button id="sbCollapseBtn" class="sb-collapse-btn" aria-label="Toggle sidebar">
     <i class="ri-arrow-left-s-line"></i>
   </button>
 </div>

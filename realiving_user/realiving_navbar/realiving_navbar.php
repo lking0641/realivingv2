@@ -1048,41 +1048,41 @@ function sb_is_active($slug, $current)
 
 <nav class="sb-nav">
   <a href="<?= BASE_URL ?>" class="sb-link home-link <?= sb_is_active('', $sb_current_slug) ? 'active' : '' ?>"
-    data-label="Home">
+    data-label="Home" aria-label="Home">
     <i class="ri-home-5-line"></i><span class="sb-text">Home</span>
   </a>
   <a href="<?= BASE_URL ?>projects"
     class="sb-link projects-link <?= sb_is_active('projects', $sb_current_slug) ? 'active' : '' ?>"
-    data-label="Projects">
+    data-label="Projects" aria-label="Projects">
     <i class="ri-building-4-line"></i><span class="sb-text">Projects</span>
   </a>
   <a href="<?= BASE_URL ?>concepts"
     class="sb-link concepts-link <?= sb_is_active('concepts', $sb_current_slug) ? 'active' : '' ?>"
-    data-label="Concepts">
+    data-label="Concepts" aria-label="Concepts">
     <i class="ri-lightbulb-flash-line"></i><span class="sb-text">Concepts</span>
   </a>
   <a href="<?= BASE_URL ?>about"
-    class="sb-link about-link <?= sb_is_active('about', $sb_current_slug) ? 'active' : '' ?>" data-label="About">
+    class="sb-link about-link <?= sb_is_active('about', $sb_current_slug) ? 'active' : '' ?>" data-label="About" aria-label="About">
     <i class="ri-information-line"></i><span class="sb-text">About</span>
   </a>
   <a href="<?= BASE_URL ?>services"
     class="sb-link services-link <?= sb_is_active('services', $sb_current_slug) ? 'active' : '' ?>"
-    data-label="Services">
+    data-label="Services" aria-label="Services">
     <i class="ri-tools-line"></i><span class="sb-text">Services</span>
   </a>
   <a href="<?= BASE_URL ?>news"
-    class="sb-link whatsnew-link <?= sb_is_active('news', $sb_current_slug) ? 'active' : '' ?>" data-label="What's New">
+    class="sb-link whatsnew-link <?= sb_is_active('news', $sb_current_slug) ? 'active' : '' ?>" data-label="What's New" aria-label="What's New">
     <i class="ri-newspaper-line"></i><span class="sb-text">What's New</span>
   </a>
   <div class="sb-divider"></div>
   <a href="<?= BASE_URL ?>contact"
-    class="sb-link contact-link <?= sb_is_active('contact', $sb_current_slug) ? 'active' : '' ?>" data-label="Contact">
+    class="sb-link contact-link <?= sb_is_active('contact', $sb_current_slug) ? 'active' : '' ?>" data-label="Contact" aria-label="Contact">
     <i class="ri-mail-line"></i><span class="sb-text">Contact</span>
   </a>
 </nav>
 
 <div class="sb-footer">
-  <a href="<?= BASE_URL ?>appointment" id="bookBtn" class="sb-book-btn">
+  <a href="<?= BASE_URL ?>appointment" id="bookBtn" class="sb-book-btn" aria-label="Book Now">
     <i class="ri-calendar-check-line"></i><span class="sb-text">Book Now</span>
   </a>
 </div>

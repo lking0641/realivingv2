@@ -49,9 +49,15 @@ $hero_result = $conn->query($hero_query);
 }
 
 #heroSlider > .relative.z-10{
-  padding-left: var(--sb-current-offset);
-  padding-right: var(--sb-current-offset);
+  position: absolute;
+  inset: 0;
+  left: var(--sb-current-offset);
+  width: auto;
   box-sizing: border-box;
+}
+
+#heroSlider > .absolute.bottom-8{
+  left: calc(50% + (var(--sb-current-offset) / 2));
 }
 
     @media (max-width: 767px) {

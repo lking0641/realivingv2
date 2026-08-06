@@ -3,6 +3,7 @@
 session_start();
 require_once __DIR__ . '/../config/app_config.php';
 include $includes['connection'];
+require_once __DIR__ . '/redirect_helper.php';
 
 // Check for timeout message
 $timeout_message = "";
@@ -10,48 +11,31 @@ if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $timeout_message = "Your session has expired due to inactivity. Please login again.";
 }
 
+// Check for Google sign-in errors and map them to friendly messages
+$google_error_messages = [
+    'google_not_linked'     => "This Google account isn't linked to any staff account yet. Please sign in with your password, then link Google from Account Settings.",
+    'google_denied'         => "Google sign-in was cancelled.",
+    'invalid_state'         => "Your sign-in request expired or was invalid. Please try again.",
+    'token_exchange_failed' => "Something went wrong verifying your Google account. Please try again.",
+    'token_verify_failed'   => "Something went wrong verifying your Google account. Please try again.",
+    'audience_mismatch'     => "Something went wrong verifying your Google account. Please try again.",
+    'email_not_verified'    => "Your Google account's email isn't verified. Please verify it with Google first.",
+    'session_expired'       => "Your session expired while linking. Please log in and try again.",
+];
+
+$google_error_message = "";
+if (isset($_GET['error']) && isset($google_error_messages[$_GET['error']])) {
+    $google_error_message = $google_error_messages[$_GET['error']];
+}
+
 // Prevent page caching
 header("Cache-Control: no-cache, no-store, must-revalidate");
 header("Pragma: no-cache");
 header("Expires: 0");
 
-$error_message = $timeout_message; // Use timeout message if available
+// Timeout message takes priority if both happen to be present
+$error_message = $timeout_message ?: $google_error_message;
 
-// Function to get redirect URL based on role
-function getRedirectUrl($role, $conn = null, $user_id = null) {
-    // Check is_head for designer and technical_designer
-    $is_head = false;
-    if ($conn && $user_id && in_array($role, ['designer', 'technical_designer'])) {
-        $headCheck = $conn->prepare("SELECT is_head FROM account WHERE id = ?");
-        $headCheck->bind_param("i", $user_id);
-        $headCheck->execute();
-        $headRow = $headCheck->get_result()->fetch_assoc();
-        $is_head = !empty($headRow['is_head']);
-    }
-
-    if ($role === 'designer') {
-        return $is_head
-            ? BASE_URL . 'all-clients-tracker-list'
-            : BASE_URL . 'designer-clients-list';
-    }
-
-    if ($role === 'technical_designer') {
-        return $is_head
-            ? BASE_URL . 'all-clients-tracker-list'
-            : BASE_URL . 'td-layout-list';
-    }
-
-    $redirects = [
-        'general_manager' => BASE_URL . 'manager-status-tracker',
-        'operational_manager' => BASE_URL . 'manager-status-tracker',
-        'sales' => BASE_URL . 'sales-dashboard',
-        'accounting' => BASE_URL . 'all-clients-tracker-list',
-        'project_coordinator' => BASE_URL . 'all-clients-tracker-list',
-        'admin1' => BASE_URL . 'admin-mainpage'
-    ];
-
-    return isset($redirects[$role]) ? $redirects[$role] : BASE_URL . 'admin-mainpage';
-}
 
 // Redirect to appropriate page if already logged in
 if (isset($_SESSION['admin_id']) && isset($_SESSION['admin_role'])) {
@@ -362,6 +346,38 @@ $conn->close();
                     Sign in to Dashboard
                 </button>
             </form>
+
+            <!-- ═══════════════════════════════
+     GOOGLE SIGN-IN — insert after </form>, before the
+     "Protected Admin Area" footer block
+═══════════════════════════════ -->
+
+<div class="flex items-center gap-3 my-6">
+    <span class="flex-1 h-px" style="background:rgba(255,255,255,0.25);"></span>
+    <span class="text-[10px] font-semibold tracking-[1.5px] uppercase" style="color:rgba(255,255,255,0.6);">or</span>
+    <span class="flex-1 h-px" style="background:rgba(255,255,255,0.25);"></span>
+</div>
+
+<a href="<?php echo BASE_URL; ?>google-login"
+   class="w-full py-3.5 rounded-xl font-semibold text-[13px] transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-3"
+   style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.4); color:#ffffff;
+          box-shadow:0 10px 24px -12px rgba(0,0,0,0.4);"
+   onmouseover="this.style.background='rgba(255,255,255,0.16)'; this.style.borderColor='rgba(255,255,255,0.7)';"
+   onmouseout="this.style.background='rgba(255,255,255,0.08)'; this.style.borderColor='rgba(255,255,255,0.4)';">
+    <svg width="18" height="18" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12
+        c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24
+        c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+        <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039
+        l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+        <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36
+        c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+        <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571
+        c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24
+        C44,22.659,43.862,21.35,43.611,20.083z"/>
+    </svg>
+    Sign in with Google
+</a>
 
             <div class="text-center mt-8 pt-6" style="border-top:1px solid rgba(255,255,255,0.25);">
                 <p class="text-[11px] flex items-center justify-center gap-1.5" style="color:rgba(255,255,255,0.75); text-shadow:0 1px 2px rgba(0,0,0,0.3);">

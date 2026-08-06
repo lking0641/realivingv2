@@ -317,6 +317,11 @@ $routes = [
   //INQUIRY-FORM
   'inquiry' => 'realiving_user/inquiry_form/inquiry.php',
 
+  //GOOGLE AUTH
+  'google-login' => 'loginpage/google_login.php',
+  'google-callback' => 'loginpage/google_callback.php',
+  'google-link' => 'loginpage/google_link.php',
+  'unlink-google' => 'loginpage/unlink_google.php',
 
 ];
 

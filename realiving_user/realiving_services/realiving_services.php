@@ -335,10 +335,6 @@ include $includes['header'];
                           type="video/<?= pathinfo($it['media'], PATHINFO_EXTENSION) ?>">
                         Your browser does not support the video tag.
                       </video>
-                      <button class="fullscreen-btn-service absolute bottom-3 right-3 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/60 text-white transition-all duration-300 hover:scale-110 hover:bg-black/80"
-                        onclick="toggleFullscreenService(this)" title="View Fullscreen">
-                        <i class="ri-fullscreen-line text-lg"></i>
-                      </button>
                     </div>
                   <?php else: ?>
                     <img src="<?= CLIENT_ASSET ?>/<?= htmlspecialchars($it['media']) ?>" alt="<?= htmlspecialchars($it['title']) ?>"
@@ -376,29 +372,6 @@ include $includes['header'];
   
 
   <script>
-    // Fullscreen functionality for service detail videos
-    function toggleFullscreenService(button) {
-      const videoWrapper = button.closest('.video-wrapper-service');
-      const video = videoWrapper.querySelector('video');
-
-      if (!document.fullscreenElement) {
-        if (video.requestFullscreen) {
-          video.requestFullscreen();
-        } else if (video.webkitRequestFullscreen) {
-          video.webkitRequestFullscreen();
-        } else if (video.msRequestFullscreen) {
-          video.msRequestFullscreen();
-        }
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) {
-          document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) {
-          document.msExitFullscreen();
-        }
-      }
-    }
 
     document.addEventListener('DOMContentLoaded', function () {
 

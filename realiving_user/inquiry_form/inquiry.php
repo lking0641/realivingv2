@@ -255,5 +255,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
 <!-- Cloudflare Turnstile Script (explicit render mode) -->
 <script src="<?php echo TURNSTILE_SCRIPT_URL; ?>?render=explicit" async defer></script>
 <script>window.BASE_URL = "<?= BASE_URL ?>";</script>
-<script src="<?= CLIENT_ASSET ?>/inquiry_form/inquiry.js" defer></script>
+<?php $inquiryJsPath = ROOT_PATH . 'realiving_user/inquiry_form/inquiry.js'; ?>
+<script src="<?= CLIENT_ASSET ?>/inquiry_form/inquiry.js?v=<?= file_exists($inquiryJsPath) ? filemtime($inquiryJsPath) : time() ?>" defer></script>
 

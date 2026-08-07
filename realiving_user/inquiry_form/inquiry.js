@@ -28,9 +28,15 @@ document.addEventListener("DOMContentLoaded", function () {
   let inquiryTurnstileWidgetId = null;
 
   function renderInquiryTurnstile() {
-    if (typeof turnstile === 'undefined') return;
     const el = document.getElementById('inquiry-turnstile');
     if (!el || inquiryTurnstileWidgetId !== null) return; // already rendered
+
+    if (typeof turnstile === 'undefined') {
+      // Cloudflare's script hasn't finished loading yet — try again shortly
+      // instead of silently giving up (this was the bug)
+      setTimeout(renderInquiryTurnstile, 100);
+      return;
+    }
 
     inquiryTurnstileWidgetId = turnstile.render(el, {
       sitekey: el.getAttribute('data-sitekey'),

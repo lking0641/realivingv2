@@ -76,18 +76,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
             throw new Exception('Message must be between 1 and 1000 characters.');
         }
 
-        // Validate reCAPTCHA
-        $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
+        // Validate Turnstile
+        $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
 
-        if (empty($recaptchaResponse)) {
-            throw new Exception('Please complete the reCAPTCHA verification.');
+        if (empty($turnstileResponse)) {
+            throw new Exception('Please complete the verification check.');
         }
 
-        // Verify reCAPTCHA with Google
-        $verifyURL = RECAPTCHA_VERIFY_URL;
+        // Verify Turnstile with Cloudflare
+        $verifyURL = TURNSTILE_VERIFY_URL;
         $verifyData = [
-            'secret' => RECAPTCHA_SECRET_KEY,
-            'response' => $recaptchaResponse,
+            'secret' => TURNSTILE_SECRET_KEY,
+            'response' => $turnstileResponse,
             'remoteip' => $_SERVER['REMOTE_ADDR']
         ];
 
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
         $responseData = json_decode($verifyResponse);
 
         if (!$responseData->success) {
-            throw new Exception('reCAPTCHA verification failed. Please try again.');
+            throw new Exception('Verification failed. Please try again.');
         }
 
         // Get assigned sales agent
@@ -207,16 +207,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
                 <textarea id="inq_message" name="message" rows="4" placeholder="TYPE YOUR MESSAGE HERE" required class="w-full px-3 py-2.5 border border-gray-300 text-xs tracking-widest focus:border-amber-950 focus:outline-none transition-colors"></textarea>
             </div>
 
-            <!-- reCAPTCHA -->
+            <!-- Cloudflare Turnstile (explicit render — see inquiry.js) -->
             <div class="flex justify-center mb-2">
-                <div class="w-[228px] h-[78px] overflow-hidden sm:w-[304px] sm:h-[78px] sm:overflow-visible">
-                    <div id="inquiry-recaptcha" class="g-recaptcha origin-top-left scale-75 sm:scale-100"
-                        data-sitekey="<?php echo RECAPTCHA_SITE_KEY; ?>"
-                        data-callback="inquiryRecaptchaCallback"
-                        data-expired-callback="inquiryRecaptchaExpiredCallback"
-                        data-error-callback="inquiryRecaptchaErrorCallback">
-                    </div>
-                </div>
+                <div id="inquiry-turnstile" data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>"></div>
             </div>
 
             <button type="submit" class="submit-btn w-full py-3 bg-amber-950 text-white border-none tracking-widest text-sm cursor-pointer transition-colors hover:bg-amber-900 disabled:bg-gray-300 disabled:cursor-not-allowed">SUBMIT INQUIRY</button>
@@ -259,8 +252,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ajax_submit'])) {
     </div>
 </div>
 
-<!-- reCAPTCHA Script -->
-<script src="<?php echo RECAPTCHA_SCRIPT_URL; ?>" async defer></script>
+<!-- Cloudflare Turnstile Script (explicit render mode) -->
+<script src="<?php echo TURNSTILE_SCRIPT_URL; ?>?render=explicit" async defer></script>
 <script>window.BASE_URL = "<?= BASE_URL ?>";</script>
 <script src="<?= CLIENT_ASSET ?>/inquiry_form/inquiry.js" defer></script>
 

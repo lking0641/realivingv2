@@ -24,12 +24,29 @@ document.addEventListener("DOMContentLoaded", function () {
     return;
   }
 
+  // Track the rendered Turnstile widget ID so we can reset/remove it properly
+  let inquiryTurnstileWidgetId = null;
+
+  function renderInquiryTurnstile() {
+    if (typeof turnstile === 'undefined') return;
+    const el = document.getElementById('inquiry-turnstile');
+    if (!el || inquiryTurnstileWidgetId !== null) return; // already rendered
+
+    inquiryTurnstileWidgetId = turnstile.render(el, {
+      sitekey: el.getAttribute('data-sitekey'),
+      callback: window.inquiryTurnstileCallback,
+      'expired-callback': window.inquiryTurnstileExpiredCallback,
+      'error-callback': window.inquiryTurnstileErrorCallback
+    });
+  }
+
   // Open inquiry form
   openButtons.forEach(function (btn) {
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       popupForm.style.display = "flex";
       document.body.style.overflow = 'hidden';
+      renderInquiryTurnstile(); // only fetch a token now, not on page load
     });
   });
 
@@ -48,13 +65,15 @@ document.addEventListener("DOMContentLoaded", function () {
     // Reset form
     inquiryForm.reset();
 
-    // Reset reCAPTCHA
-    window.inquiryRecaptchaToken = '';
-    if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+    // Remove Turnstile widget entirely so it stops holding/refreshing
+    // a token in the background while the popup is closed
+    window.inquiryTurnstileToken = '';
+    if (typeof turnstile !== 'undefined' && inquiryTurnstileWidgetId !== null) {
       try {
-        grecaptcha.reset();
+        turnstile.remove(inquiryTurnstileWidgetId);
+        inquiryTurnstileWidgetId = null;
       } catch (e) {
-        console.warn("⚠️ Could not reset reCAPTCHA:", e);
+        console.warn("⚠️ Could not remove Turnstile widget:", e);
       }
     }
 
@@ -133,14 +152,11 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Check reCAPTCHA (use the token captured by the callback, since
-    // multiple g-recaptcha widgets can exist on one page — grecaptcha.getResponse()
-    // with no widget ID always reads widget #0, which may not be this form's widget)
-    if (!window.inquiryRecaptchaToken || window.inquiryRecaptchaToken.length === 0) {
-      showError('Please complete the reCAPTCHA verification by checking the box.');
+    // Check Turnstile token (captured via the callback)
+    if (!window.inquiryTurnstileToken || window.inquiryTurnstileToken.length === 0) {
+      showError('Please complete the verification check.');
       return;
     }
-    const recaptchaResponse = window.inquiryRecaptchaToken;
 
     const formData = new FormData(inquiryForm);
 
@@ -197,8 +213,8 @@ document.addEventListener("DOMContentLoaded", function () {
         submitBtn.disabled = false;
         submitBtn.textContent = "SUBMIT INQUIRY";
 
-        if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
-          grecaptcha.reset();
+        if (typeof turnstile !== 'undefined' && inquiryTurnstileWidgetId !== null) {
+          turnstile.reset(inquiryTurnstileWidgetId);
         }
 
         showError('Network error: ' + error.message + '. Please check your connection and try again.');
@@ -217,11 +233,11 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Error: " + message);
     }
 
-    // Reset reCAPTCHA when showing error (except for reCAPTCHA-specific errors)
-    if (typeof grecaptcha !== 'undefined' && grecaptcha.reset &&
-      !message.includes('reCAPTCHA')) {
+    // Reset Turnstile when showing error (except for verification-specific errors)
+    if (typeof turnstile !== 'undefined' && inquiryTurnstileWidgetId !== null &&
+      !message.includes('verification')) {
       setTimeout(() => {
-        grecaptcha.reset();
+        turnstile.reset(inquiryTurnstileWidgetId);
       }, 100);
     }
   }
@@ -244,20 +260,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // reCAPTCHA callback functions for inquiry form (must be global)
-  // The token is captured here directly from the widget that was actually
-  // checked, avoiding the multi-widget getResponse() ambiguity.
-  window.inquiryRecaptchaCallback = function (token) {
-    window.inquiryRecaptchaToken = token;
+  // Turnstile callback functions for inquiry form (must be global)
+  window.inquiryTurnstileCallback = function (token) {
+    window.inquiryTurnstileToken = token;
   };
 
-  window.inquiryRecaptchaExpiredCallback = function () {
-    window.inquiryRecaptchaToken = '';
-    showError('reCAPTCHA verification expired. Please verify again.');
+  window.inquiryTurnstileExpiredCallback = function () {
+    window.inquiryTurnstileToken = '';
+    showError('Verification expired. Please verify again.');
   };
 
-  window.inquiryRecaptchaErrorCallback = function () {
-    window.inquiryRecaptchaToken = '';
-    showError('reCAPTCHA error. Please refresh and try again.');
+  window.inquiryTurnstileErrorCallback = function () {
+    window.inquiryTurnstileToken = '';
+    showError('Verification error. Please refresh and try again.');
   };
 });

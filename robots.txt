@@ -1,0 +1,6 @@
+User-agent: *
+   Allow: /
+   Disallow: /realiving_admin/
+   Disallow: /loginpage/
+
+   Sitemap: https://test.realivingdesigncenter.com/sitemap.xml

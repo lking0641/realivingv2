@@ -60,6 +60,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $otherService = ($serviceType === 'others') ? sanitizeInput($_POST['otherService'] ?? '') : null;
         $notes = sanitizeInput($_POST['notes'] ?? '');
 
+        // === VALIDATE TURNSTILE ===
+        require_once $includes['recaptcha'];
+        $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
+
+        if (empty($turnstileResponse)) {
+            throw new Exception('Please complete the verification check.');
+        }
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, TURNSTILE_VERIFY_URL);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
+            'secret' => TURNSTILE_SECRET_KEY,
+            'response' => $turnstileResponse,
+            'remoteip' => $_SERVER['REMOTE_ADDR']
+        ]));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        $verifyResponse = curl_exec($ch);
+        curl_close($ch);
+        $responseData = json_decode($verifyResponse);
+
+        if (!$responseData || !$responseData->success) {
+            throw new Exception('Verification failed. Please try again.');
+        }
+
         // === VALIDATE REQUIRED FIELDS ===
         if (empty($firstName)) {
             throw new Exception('First name is required.');

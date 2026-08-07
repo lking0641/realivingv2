@@ -23,6 +23,7 @@ include $includes['connection'];
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <script src="<?php require_once $includes['recaptcha']; echo TURNSTILE_SCRIPT_URL; ?>" async defer></script>
 </head>
 
 <body class="appointment-page no-hero bg-[#faf8f4] text-[#241205]" style="font-family:'Montserrat',sans-serif;">
@@ -267,6 +268,14 @@ include $includes['connection'];
                         <p class="text-[11px] text-[#a3907a] leading-relaxed mt-5">
                             By confirming, you agree to our appointment scheduling policy. You'll receive a confirmation once your slot is secured.
                         </p>
+
+                        <div class="mt-5 flex justify-center" id="fg-turnstile">
+                            <div class="cf-turnstile" data-sitekey="<?php require_once $includes['recaptcha'];
+                            echo TURNSTILE_SITE_KEY; ?>" data-callback="appointmentTurnstileCallback"
+                                data-expired-callback="appointmentTurnstileExpiredCallback"
+                                data-error-callback="appointmentTurnstileErrorCallback"></div>
+                        </div>
+                        <p id="step3Err" class="ferr text-[11px] text-[#b84040] mt-2 text-center hidden"><span class="font-bold">!</span> Please complete the verification check.</p>
                     </div>
 
                     <div class="flex items-center justify-between px-5 sm:px-10 py-6 border-t border-[#f0ebe4]">
@@ -640,6 +649,14 @@ include $includes['connection'];
 
         document.getElementById('apptForm').addEventListener('submit', async e => {
             e.preventDefault();
+
+            if (typeof turnstile === 'undefined' || !turnstile.getResponse()) {
+                document.getElementById('step3Err').classList.remove('hidden');
+                document.getElementById('step3Err').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+            document.getElementById('step3Err').classList.add('hidden');
+
             const btn = document.getElementById('submitBtn');
             btn.disabled = true; btn.innerHTML = 'Submitting…';
 
@@ -652,6 +669,7 @@ include $includes['connection'];
                     pickedDate = null; pickedTime = null; pickedTimeLabel = null;
                     document.getElementById('timeSlotWrap').classList.add('hidden');
                     document.getElementById('fg-otherService').classList.add('hidden');
+                    if (typeof turnstile !== 'undefined' && turnstile.reset) turnstile.reset();
                     drawCal(cMonth, cYear);
                     goToStep(1);
                 } else {
@@ -685,6 +703,16 @@ include $includes['connection'];
         }
 
         drawCal(cMonth, cYear);
+
+        window.appointmentTurnstileCallback = function () {
+            document.getElementById('step3Err').classList.add('hidden');
+        };
+        window.appointmentTurnstileExpiredCallback = function () {
+            document.getElementById('step3Err').classList.remove('hidden');
+        };
+        window.appointmentTurnstileErrorCallback = function () {
+            document.getElementById('step3Err').classList.remove('hidden');
+        };
     </script>
 </body>
 

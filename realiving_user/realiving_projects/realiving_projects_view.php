@@ -143,16 +143,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
     if ($contact_project_id <= 0)
         $contact_errors['project'] = 'Invalid project';
 
-    $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
-    if (empty($recaptchaResponse)) {
-        $contact_errors['recaptcha'] = 'Please complete the reCAPTCHA verification.';
+    $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
+    if (empty($turnstileResponse)) {
+        $contact_errors['recaptcha'] = 'Please complete the verification check.';
     } else {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, RECAPTCHA_VERIFY_URL);
+        curl_setopt($ch, CURLOPT_URL, TURNSTILE_VERIFY_URL);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-            'secret' => RECAPTCHA_SECRET_KEY,
-            'response' => $recaptchaResponse,
+            'secret' => TURNSTILE_SECRET_KEY,
+            'response' => $turnstileResponse,
             'remoteip' => $_SERVER['REMOTE_ADDR']
         ]));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
         curl_close($ch);
         $responseData = json_decode($verifyResponse);
         if (!$responseData->success) {
-            $contact_errors['recaptcha'] = 'reCAPTCHA verification failed. Please try again.';
+            $contact_errors['recaptcha'] = 'Verification failed. Please try again.';
         }
     }
 
@@ -210,7 +210,7 @@ $badge_class = $badge_colors[$cat] ?? 'bg-gray-100 text-gray-600 border border-g
 
     <title><?php echo htmlspecialchars($project['title']); ?> - Project Details | Realiving Design Center</title>
 
-    <script src="<?php echo RECAPTCHA_SCRIPT_URL; ?>" async defer></script>
+    <script src="<?php echo TURNSTILE_SCRIPT_URL; ?>" async defer></script>
 
     <style>
         /* Small bits that genuinely need raw CSS: keyframe animations, the
@@ -464,10 +464,10 @@ $badge_class = $badge_colors[$cat] ?? 'bg-gray-100 text-gray-600 border border-g
                         </div>
 
                         <div class="form-group flex flex-col items-center my-2">
-                            <div class="g-recaptcha scale-[0.88] origin-center" data-sitekey="<?php echo RECAPTCHA_SITE_KEY; ?>"
-                                data-callback="projectRecaptchaCallback"
-                                data-expired-callback="projectRecaptchaExpiredCallback"
-                                data-error-callback="projectRecaptchaErrorCallback"></div>
+                            <div class="cf-turnstile" data-sitekey="<?php echo TURNSTILE_SITE_KEY; ?>"
+                                data-callback="projectTurnstileCallback"
+                                data-expired-callback="projectTurnstileExpiredCallback"
+                                data-error-callback="projectTurnstileErrorCallback"></div>
                             <?php if (isset($contact_errors['recaptcha'])): ?>
                                 <span class="block text-red-500 font-montserrat text-[11px] mt-1"><?php echo $contact_errors['recaptcha']; ?></span>
                             <?php endif; ?>
@@ -968,19 +968,19 @@ $product_image = !empty($product['item_image_path'])
                     alert('Location should only contain letters, numbers, spaces, commas, hyphens, and periods.');
                     locInput.classList.add('border-red-500'); locInput.focus(); e.preventDefault(); return;
                 }
-                if (typeof grecaptcha !== 'undefined') {
-                    if (!grecaptcha.getResponse()) {
-                        alert('Please complete the reCAPTCHA verification.'); e.preventDefault();
+                if (typeof turnstile !== 'undefined') {
+                    if (!turnstile.getResponse()) {
+                        alert('Please complete the verification check.'); e.preventDefault();
                     }
                 } else {
-                    alert('reCAPTCHA is not loaded. Please refresh the page.'); e.preventDefault();
+                    alert('Verification widget is not loaded. Please refresh the page.'); e.preventDefault();
                 }
             });
         });
 
-        window.projectRecaptchaCallback = () => { };
-        window.projectRecaptchaExpiredCallback = () => alert('reCAPTCHA expired. Please verify again.');
-        window.projectRecaptchaErrorCallback = () => alert('reCAPTCHA error. Please refresh and try again.');
+        window.projectTurnstileCallback = () => { };
+        window.projectTurnstileExpiredCallback = () => alert('Verification expired. Please verify again.');
+        window.projectTurnstileErrorCallback = () => alert('Verification error. Please refresh and try again.');
     </script>
 
     <?php $conn->close(); ?>

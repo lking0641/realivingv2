@@ -67,17 +67,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $errors[] = 'Message must be between 1 and 1000 characters.';
     }
 
-    // Validate reCAPTCHA
-    $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
+    // Validate Turnstile
+    $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
 
-    if (empty($recaptchaResponse)) {
-        $errors[] = 'Please complete the reCAPTCHA verification.';
+    if (empty($turnstileResponse)) {
+        $errors[] = 'Please complete the verification check.';
     } else {
-        // Verify reCAPTCHA with Google
-        $verifyURL = RECAPTCHA_VERIFY_URL;
+        // Verify Turnstile with Cloudflare
+        $verifyURL = TURNSTILE_VERIFY_URL;
         $verifyData = [
-            'secret' => RECAPTCHA_SECRET_KEY,
-            'response' => $recaptchaResponse,
+            'secret' => TURNSTILE_SECRET_KEY,
+            'response' => $turnstileResponse,
             'remoteip' => $_SERVER['REMOTE_ADDR']
         ];
 
@@ -92,7 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         $responseData = json_decode($verifyResponse);
 
         if (!$responseData->success) {
-            $errors[] = 'reCAPTCHA verification failed. Please try again.';
+            $errors[] = 'Verification failed. Please try again.';
         }
     }
 
@@ -327,17 +327,17 @@ unset($_SESSION['contact_form_errors']);
                             <div class="flex flex-col gap-1.5">
                                 <label for="message" class="text-[11px] font-bold uppercase tracking-[1px] text-[#2f1200]">Message</label>
                                 <textarea id="message" name="message" rows="6" placeholder="Type your message here..." required
-                                    minlength="10" maxlength="1000"
+                                    minlength="1" maxlength="1000"
                                     class="w-full px-4 py-2.5 border border-[#d4b896] bg-white text-[14px] text-[#2f1200] placeholder:text-gray-400 focus:outline-none focus:border-[#2f1200] focus:ring-2 focus:ring-[#2f1200]/10 transition-colors resize-y min-h-[120px]"></textarea>
                             </div>
 
-                            <!-- reCAPTCHA -->
+                            <!-- Cloudflare Turnstile -->
                             <div>
-                                <div id="contact-recaptcha" class="g-recaptcha origin-top-left scale-[0.93] sm:scale-100"
+                                <div id="contact-turnstile" class="cf-turnstile"
                                     data-sitekey="<?php require_once $includes ['recaptcha'];
-                                    echo RECAPTCHA_SITE_KEY; ?>" data-callback="contactRecaptchaCallback"
-                                    data-expired-callback="contactRecaptchaExpiredCallback"
-                                    data-error-callback="contactRecaptchaErrorCallback"></div>
+                                    echo TURNSTILE_SITE_KEY; ?>" data-callback="contactTurnstileCallback"
+                                    data-expired-callback="contactTurnstileExpiredCallback"
+                                    data-error-callback="contactTurnstileErrorCallback"></div>
                             </div>
 
                             <div class="mt-1">
@@ -389,8 +389,8 @@ unset($_SESSION['contact_form_errors']);
 
     
 
-    <!-- reCAPTCHA Script -->
-    <script src="<?php echo RECAPTCHA_SCRIPT_URL; ?>" async defer></script>
+    <!-- Cloudflare Turnstile Script -->
+    <script src="<?php echo TURNSTILE_SCRIPT_URL; ?>" async defer></script>
 
     <script>
         document.querySelectorAll('.faq-item').forEach(item => {
@@ -444,16 +444,16 @@ unset($_SESSION['contact_form_errors']);
                 return false;
             }
 
-            // Check reCAPTCHA
-            if (typeof grecaptcha !== 'undefined') {
-                const recaptchaResponse = grecaptcha.getResponse();
-                if (!recaptchaResponse || recaptchaResponse.length === 0) {
-                    alert('Please complete the reCAPTCHA verification by checking the box.');
+            // Check Turnstile
+            if (typeof turnstile !== 'undefined') {
+                const turnstileResponse = turnstile.getResponse();
+                if (!turnstileResponse || turnstileResponse.length === 0) {
+                    alert('Please complete the verification check.');
                     e.preventDefault();
                     return false;
                 }
             } else {
-                alert('reCAPTCHA is not loaded. Please refresh the page and try again.');
+                alert('Verification widget is not loaded. Please refresh the page and try again.');
                 e.preventDefault();
                 return false;
             }
@@ -461,19 +461,19 @@ unset($_SESSION['contact_form_errors']);
             return true;
         });
 
-        // reCAPTCHA callback functions for contact form
-        window.contactRecaptchaCallback = function () {
-            console.log("✅ Contact form reCAPTCHA verified");
+        // Turnstile callback functions for contact form
+        window.contactTurnstileCallback = function () {
+            console.log("✅ Contact form Turnstile verified");
         };
 
-        window.contactRecaptchaExpiredCallback = function () {
-            console.warn("⚠️ Contact form reCAPTCHA expired");
-            alert('reCAPTCHA verification expired. Please verify again.');
+        window.contactTurnstileExpiredCallback = function () {
+            console.warn("⚠️ Contact form Turnstile expired");
+            alert('Verification expired. Please verify again.');
         };
 
-        window.contactRecaptchaErrorCallback = function () {
-            console.error("❌ Contact form reCAPTCHA error");
-            alert('reCAPTCHA error. Please refresh and try again.');
+        window.contactTurnstileErrorCallback = function () {
+            console.error("❌ Contact form Turnstile error");
+            alert('Verification error. Please refresh and try again.');
         };
 
         // Thank You Modal Script
@@ -509,13 +509,13 @@ unset($_SESSION['contact_form_errors']);
                                 modalKeyHandler = null;
                             }
 
-                            // Reset reCAPTCHA if available
-                            if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+                            // Reset Turnstile if available
+                            if (typeof turnstile !== 'undefined' && turnstile.reset) {
                                 try {
-                                    grecaptcha.reset();
-                                    console.log("✅ reCAPTCHA reset after modal close");
+                                    turnstile.reset();
+                                    console.log("✅ Turnstile reset after modal close");
                                 } catch (e) {
-                                    console.warn("⚠️ Could not reset reCAPTCHA:", e);
+                                    console.warn("⚠️ Could not reset Turnstile:", e);
                                 }
                             }
                         }

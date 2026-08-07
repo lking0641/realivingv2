@@ -103,11 +103,11 @@ $submitted_style = '';
           <span class="error-text"><?php echo $inquiry_errors['terms']; ?></span>
         <?php endif; ?>
 
-        <!-- reCAPTCHA -->
+        <!-- Cloudflare Turnstile -->
         <div class="recaptcha-container">
-          <div id="concept-recaptcha" class="g-recaptcha" data-sitekey="<?php require_once $includes['recaptcha'];
-          echo RECAPTCHA_SITE_KEY; ?>" data-callback="conceptRecaptchaCallback"
-            data-expired-callback="conceptRecaptchaExpiredCallback" data-error-callback="conceptRecaptchaErrorCallback">
+          <div id="concept-turnstile" class="cf-turnstile" data-sitekey="<?php require_once $includes['recaptcha'];
+          echo TURNSTILE_SITE_KEY; ?>" data-callback="conceptTurnstileCallback"
+            data-expired-callback="conceptTurnstileExpiredCallback" data-error-callback="conceptTurnstileErrorCallback">
           </div>
           <?php if (isset($inquiry_errors['recaptcha'])): ?>
             <span class="error-text"><?php echo $inquiry_errors['recaptcha']; ?></span>
@@ -121,8 +121,8 @@ $submitted_style = '';
 </div>
 
 <script src="<?= CLIENT_ASSET ?>/inquiry_form/concept.js"></script>
-<!-- reCAPTCHA Script -->
-<script src="<?php echo RECAPTCHA_SCRIPT_URL; ?>" async defer></script>
+<!-- Cloudflare Turnstile Script -->
+<script src="<?php echo TURNSTILE_SCRIPT_URL; ?>" async defer></script>
 
 <script>
   // Handle "Other" option to show/hide additional info textarea

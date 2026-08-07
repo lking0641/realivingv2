@@ -32,7 +32,7 @@ if (!isset($GLOBALS['includes'])) {
         'connection' => ROOT_PATH . 'connection/connection.php',
 
         //recaptcha
-        'recaptcha' => PAGES_PATH . 'config/recaptcha_config.php',
+        'recaptcha' => PAGES_PATH . 'config/turnstile_config.php',
 
         //ads
         'ads' => PAGES_PATH . 'ads/promo-banner.php',

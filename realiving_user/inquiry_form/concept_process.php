@@ -66,24 +66,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['concept_inquiry_submi
     if (!$terms_accepted)
         $inquiry_errors['terms'] = 'You must accept the terms and conditions';
 
-    // reCAPTCHA
-    $recaptchaResponse = $_POST['g-recaptcha-response'] ?? '';
-    if (empty($recaptchaResponse)) {
-        $inquiry_errors['recaptcha'] = 'Please complete the reCAPTCHA verification.';
+    // Turnstile
+    $turnstileResponse = $_POST['cf-turnstile-response'] ?? '';
+    if (empty($turnstileResponse)) {
+        $inquiry_errors['recaptcha'] = 'Please complete the verification check.';
     } else {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, RECAPTCHA_VERIFY_URL);
+        curl_setopt($ch, CURLOPT_URL, TURNSTILE_VERIFY_URL);
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
-            'secret' => RECAPTCHA_SECRET_KEY,
-            'response' => $recaptchaResponse,
+            'secret' => TURNSTILE_SECRET_KEY,
+            'response' => $turnstileResponse,
             'remoteip' => $_SERVER['REMOTE_ADDR']
         ]));
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $responseData = json_decode(curl_exec($ch));
         curl_close($ch);
         if (!$responseData->success) {
-            $inquiry_errors['recaptcha'] = 'reCAPTCHA verification failed. Please try again.';
+            $inquiry_errors['recaptcha'] = 'Verification failed. Please try again.';
         }
     }
 

@@ -18,13 +18,13 @@ document.addEventListener('DOMContentLoaded', () => {
       modalKeyHandler = null;
     }
     
-    // Reset reCAPTCHA if available
-    if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+    // Reset Turnstile if available
+    if (typeof turnstile !== 'undefined' && turnstile.reset) {
       try {
-        grecaptcha.reset();
-        console.log("✅ reCAPTCHA reset after modal close");
+        turnstile.reset();
+        console.log("✅ Turnstile reset after modal close");
       } catch (e) {
-        console.warn("⚠️ Could not reset reCAPTCHA:", e);
+        console.warn("⚠️ Could not reset Turnstile:", e);
       }
     }
   }
@@ -123,16 +123,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
       
-      // Check reCAPTCHA
-      if (typeof grecaptcha !== 'undefined') {
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (!recaptchaResponse || recaptchaResponse.length === 0) {
-          alert('Please complete the reCAPTCHA verification by checking the box.');
+      // Check Turnstile
+      if (typeof turnstile !== 'undefined') {
+        const turnstileResponse = turnstile.getResponse();
+        if (!turnstileResponse || turnstileResponse.length === 0) {
+          alert('Please complete the verification check.');
           e.preventDefault();
           return false;
         }
       } else {
-        alert('reCAPTCHA is not loaded. Please refresh the page and try again.');
+        alert('Verification widget is not loaded. Please refresh the page and try again.');
         e.preventDefault();
         return false;
       }
@@ -142,17 +142,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// reCAPTCHA callback functions for concept inquiry form
-window.conceptRecaptchaCallback = function() {
-  console.log("✅ Concept inquiry reCAPTCHA verified");
+// Turnstile callback functions for concept inquiry form
+window.conceptTurnstileCallback = function() {
+  console.log("✅ Concept inquiry Turnstile verified");
 };
 
-window.conceptRecaptchaExpiredCallback = function() {
-  console.warn("⚠️ Concept inquiry reCAPTCHA expired");
-  alert('reCAPTCHA verification expired. Please verify again.');
+window.conceptTurnstileExpiredCallback = function() {
+  console.warn("⚠️ Concept inquiry Turnstile expired");
+  alert('Verification expired. Please verify again.');
 };
 
-window.conceptRecaptchaErrorCallback = function() {
-  console.error("❌ Concept inquiry reCAPTCHA error");
-  alert('reCAPTCHA error. Please refresh and try again.');
+window.conceptTurnstileErrorCallback = function() {
+  console.error("❌ Concept inquiry Turnstile error");
+  alert('Verification error. Please refresh and try again.');
 };

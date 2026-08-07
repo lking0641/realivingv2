@@ -323,6 +323,9 @@ $routes = [
   'google-link' => 'loginpage/google_link.php',
   'unlink-google' => 'loginpage/unlink_google.php',
 
+  //TEST PAGE
+  'test' => 'test/test.php',
+
 ];
 
 // ══════════════════════════════════════════════════════

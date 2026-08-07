@@ -12,6 +12,28 @@ include $includes ['checkrole'];
     exit();
   }
 
+  // ── Single active session enforcement ──────────────────────────
+  // If this browser's session token no longer matches what's in the DB,
+  // it means this account logged in somewhere else — kick this session out.
+  $sessionCheckStmt = $conn->prepare("SELECT active_session_token FROM account WHERE id = ?");
+  $sessionCheckStmt->bind_param("i", $_SESSION['admin_id']);
+  $sessionCheckStmt->execute();
+  $sessionCheckRow = $sessionCheckStmt->get_result()->fetch_assoc();
+  $sessionCheckStmt->close();
+
+  $dbToken = $sessionCheckRow['active_session_token'] ?? null;
+
+  if (
+    empty($_SESSION['session_token']) ||
+    empty($dbToken) ||
+    !hash_equals($dbToken, $_SESSION['session_token'])
+  ) {
+    session_unset();
+    session_destroy();
+    header("Location: " . BASE_URL . "login?kicked=1");
+    exit();
+  }
+
   $user_role = $_SESSION['admin_role'];
 
   // Check is_head for designer and technical_designer

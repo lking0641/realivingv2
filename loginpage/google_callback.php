@@ -141,8 +141,13 @@ $_SESSION['admin_role']    = $row['role'];
 $_SESSION['login_time']    = time();
 $_SESSION['last_activity'] = time();
 
-$update_online = $conn->prepare("UPDATE account SET is_online = 1, last_activity = NOW() WHERE id = ?");
-$update_online->bind_param("i", $row['id']);
+// Generate a fresh session token — this invalidates any OTHER
+// device/browser currently logged into this same account
+$session_token = bin2hex(random_bytes(32));
+$_SESSION['session_token'] = $session_token;
+
+$update_online = $conn->prepare("UPDATE account SET is_online = 1, last_activity = NOW(), active_session_token = ? WHERE id = ?");
+$update_online->bind_param("si", $session_token, $row['id']);
 $update_online->execute();
 $update_online->close();
 

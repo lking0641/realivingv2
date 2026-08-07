@@ -9,6 +9,8 @@ require_once __DIR__ . '/redirect_helper.php';
 $timeout_message = "";
 if (isset($_GET['timeout']) && $_GET['timeout'] == 1) {
     $timeout_message = "Your session has expired due to inactivity. Please login again.";
+} elseif (isset($_GET['kicked']) && $_GET['kicked'] == 1) {
+    $timeout_message = "You were signed out because your account was signed in on another device.";
 }
 
 // Check for Google sign-in errors and map them to friendly messages
@@ -81,26 +83,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (password_verify($password_input, $row['password'])) {
                 // Set session variables
-$_SESSION['admin_id'] = $row['id'];
-$_SESSION['admin_name'] = $row['full_name'];
-$_SESSION['admin_email'] = $row['email'];
-$_SESSION['admin_role'] = $row['role'];
-$_SESSION['login_time'] = time();
-$_SESSION['last_activity'] = time(); // Initialize last activity
+session_regenerate_id(true); // prevent session fixation
 
-// Set user as online
-$update_online = $conn->prepare("UPDATE account SET is_online = 1, last_activity = NOW() WHERE id = ?");
-$update_online->bind_param("i", $row['id']);
-$update_online->execute();
-$update_online->close();
-$_SESSION['admin_name'] = $row['full_name'];
-$_SESSION['admin_email'] = $row['email'];
-$_SESSION['admin_role'] = $row['role'];
-$_SESSION['login_time'] = time();
+$_SESSION['admin_id']      = $row['id'];
+$_SESSION['admin_name']    = $row['full_name'];
+$_SESSION['admin_email']   = $row['email'];
+$_SESSION['admin_role']    = $row['role'];
+$_SESSION['login_time']    = time();
+$_SESSION['last_activity'] = time();
 
-// Set user as online
-$update_online = $conn->prepare("UPDATE account SET is_online = 1, last_activity = NOW() WHERE id = ?");
-$update_online->bind_param("i", $row['id']);
+// Generate a fresh session token — this invalidates any OTHER
+// device/browser currently logged into this same account
+$session_token = bin2hex(random_bytes(32));
+$_SESSION['session_token'] = $session_token;
+
+$update_online = $conn->prepare("UPDATE account SET is_online = 1, last_activity = NOW(), active_session_token = ? WHERE id = ?");
+$update_online->bind_param("si", $session_token, $row['id']);
 $update_online->execute();
 $update_online->close();
 

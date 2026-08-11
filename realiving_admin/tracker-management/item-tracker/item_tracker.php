@@ -136,43 +136,8 @@ foreach ($rawFixed as &$r) {
 }
 unset($r);
 
-// ── Fetch ALL room distributions for this client ──
-$distStmt = $conn->prepare("
-    SELECT
-        qrd.distribution_id,
-        qrd.quotation_entry_id      AS entry_id,
-        NULL                        AS fixed_id,
-        qrd.room_unit_number,
-        qrd.room_unit_name,
-        qrd.quantity,
-        qrd.$statusColumn           AS unit_status,
-        qrd.$updatedColumn          AS unit_updated_at,
-        'entry'                     AS source
-    FROM quotation_room_distribution qrd
-    INNER JOIN quotation_entries qe ON qrd.quotation_entry_id = qe.id
-    WHERE qe.client_id = ? AND qrd.quotation_entry_id IS NOT NULL
-
-    UNION ALL
-
-    SELECT
-        qrd.distribution_id,
-        NULL                        AS entry_id,
-        qrd.quotation_fixed_size_id AS fixed_id,
-        qrd.room_unit_number,
-        qrd.room_unit_name,
-        qrd.quantity,
-        qrd.$statusColumn           AS unit_status,
-        qrd.$updatedColumn          AS unit_updated_at,
-        'fixed'                     AS source
-    FROM quotation_room_distribution qrd
-    INNER JOIN quotation_fixed_sizes qfs ON qrd.quotation_fixed_size_id = qfs.id
-    WHERE qfs.client_id = ? AND qrd.quotation_fixed_size_id IS NOT NULL
-
-    ORDER BY room_unit_number
-");
-$distStmt->bind_param("ii", $client_id, $client_id);
-$distStmt->execute();
-$distRows = $distStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+// ── Room distributions removed (quotation_room_distribution table no longer exists) ──
+$distRows = [];
 
 // Index distributions by entry_id and fixed_id
 $distByEntry = [];

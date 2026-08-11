@@ -134,3 +134,42 @@ async function saveItemName(el) {
     })
   });
 }
+
+// ── Search & Area Filter ──
+function initComputationFilters() {
+  const searchInput = document.getElementById('computation-search');
+  const areaSelect  = document.getElementById('area-filter');
+  if (!searchInput && !areaSelect) return;
+
+  function applyFilters() {
+    const query = (searchInput?.value || '').trim().toLowerCase();
+    const selectedArea = areaSelect?.value || '';
+
+    document.querySelectorAll('.area-card').forEach(card => {
+      const areaMatches = !selectedArea || selectedArea === card.dataset.area;
+      let anyRowVisible = false;
+
+      card.querySelectorAll('tr[data-entry-id], tr[data-fixed-id]').forEach(row => {
+        const nameEl = row.querySelector('.item-name-edit, .fixed-item-name');
+        const name   = nameEl ? nameEl.textContent.trim().toLowerCase() : '';
+        const matches = !query || name.includes(query);
+
+        row.style.display = matches ? '' : 'none';
+
+        // hide/show the addon sub-row that follows each item row
+        const addonRow = row.nextElementSibling;
+        if (addonRow && addonRow.querySelector('td[colspan]')) {
+          addonRow.style.display = matches ? '' : 'none';
+        }
+        if (matches) anyRowVisible = true;
+      });
+
+      card.style.display = (areaMatches && (!query || anyRowVisible)) ? '' : 'none';
+    });
+  }
+
+  searchInput?.addEventListener('input', applyFilters);
+  areaSelect?.addEventListener('change', applyFilters);
+}
+
+document.addEventListener('DOMContentLoaded', initComputationFilters);

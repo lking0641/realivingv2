@@ -61,7 +61,7 @@
               </td>
 
               <!-- ITEM NAME -->
-              <td class="px-4 py-2 text-sm"><?= htmlspecialchars($row['item_name'] ?? '') ?></td>
+              <td class="fixed-item-name px-4 py-2 text-sm"><?= htmlspecialchars($row['item_name'] ?? '') ?></td>
 
               <!-- SIZE INFO -->
               <td class="px-2 py-2 text-sm">

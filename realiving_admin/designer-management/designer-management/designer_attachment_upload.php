@@ -6,8 +6,6 @@ date_default_timezone_set('Asia/Manila');
 $admin_id = $_SESSION['admin_id'];
 $client_id = isset($_GET['client_id']) ? intval($_GET['client_id']) : 0;
 $area = isset($_GET['area']) ? trim($_GET['area']) : '';
-$room_unit_number = isset($_GET['room_unit_number']) && $_GET['room_unit_number'] !== '' ? intval($_GET['room_unit_number']) : null;
-$room_unit_name = isset($_GET['room_unit_name']) ? trim($_GET['room_unit_name']) : '';
 
 $meStmt = $conn->prepare("SELECT full_name, role, is_head FROM account WHERE id = ?");
 $meStmt->bind_param("i", $admin_id);
@@ -42,10 +40,7 @@ $intakeStmt->execute();
 $intake = $intakeStmt->get_result()->fetch_assoc();
 
 // Build back URL
-$hasUnit = $room_unit_number !== null;
-$backUrl = $hasUnit
-    ? BASE_URL . 'designer-attachment-area?client_id=' . $client_id . '&area=' . urlencode($area)
-    : BASE_URL . 'designer-attachments?client_id=' . $client_id;
+$backUrl = BASE_URL . 'designer-attachments?client_id=' . $client_id;
 
 // Tab types
 $tabs = ['site_measurement' => ['label' => 'Site Measurement', 'icon' => 'fa-ruler-combined', 'color' => '#0369a1', 'bg' => '#e0f2fe']];
@@ -64,32 +59,22 @@ function getApprovers($conn)
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Get approval record for this area/unit
-function getApprovalStatus($conn, $client_id, $area, $room_unit_number)
+// Get approval record for this area
+function getApprovalStatus($conn, $client_id, $area)
 {
-    if ($room_unit_number !== null) {
-        $stmt = $conn->prepare("
-            SELECT la.*, a.full_name as approver_name, a.role as approver_role
-            FROM layout_approvals la
-            JOIN account a ON la.approver_id = a.id
-            WHERE la.client_id = ? AND la.area = ? AND la.room_unit_number = ?
-        ");
-        $stmt->bind_param("isi", $client_id, $area, $room_unit_number);
-    } else {
-        $stmt = $conn->prepare("
-            SELECT la.*, a.full_name as approver_name, a.role as approver_role
-            FROM layout_approvals la
-            JOIN account a ON la.approver_id = a.id
-            WHERE la.client_id = ? AND la.area = ? AND la.room_unit_number IS NULL
-        ");
-        $stmt->bind_param("is", $client_id, $area);
-    }
+    $stmt = $conn->prepare("
+        SELECT la.*, a.full_name as approver_name, a.role as approver_role
+        FROM layout_approvals la
+        JOIN account a ON la.approver_id = a.id
+        WHERE la.client_id = ? AND la.area = ? AND la.room_unit_number IS NULL
+    ");
+    $stmt->bind_param("is", $client_id, $area);
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
 $approvers = getApprovers($conn);
-$approvalRecords = getApprovalStatus($conn, $client_id, $area, $room_unit_number);
+$approvalRecords = getApprovalStatus($conn, $client_id, $area);
 
 // Build a map: approver_id => record
 $approvalMap = [];
@@ -132,23 +117,13 @@ if ($approvalRequested && !empty($approvalRecords)) {
 }
 
 // Check if there is an active revision (pending = awaiting designer resubmit, designer_resubmitted = awaiting approvers)
-if ($room_unit_number !== null) {
-    $revBlockStmt = $conn->prepare("
-        SELECT id, revision_number, reason, status, created_at FROM layout_revision_log
-        WHERE client_id = ? AND area = ? AND room_unit_number = ?
-        AND status IN ('pending', 'designer_resubmitted')
-        ORDER BY created_at DESC LIMIT 1
-    ");
-    $revBlockStmt->bind_param("isi", $client_id, $area, $room_unit_number);
-} else {
-    $revBlockStmt = $conn->prepare("
-        SELECT id, revision_number, reason, status, created_at FROM layout_revision_log
-        WHERE client_id = ? AND area = ? AND room_unit_number IS NULL
-        AND status IN ('pending', 'designer_resubmitted')
-        ORDER BY created_at DESC LIMIT 1
-    ");
-    $revBlockStmt->bind_param("is", $client_id, $area);
-}
+$revBlockStmt = $conn->prepare("
+    SELECT id, revision_number, reason, status, created_at FROM layout_revision_log
+    WHERE client_id = ? AND area = ? AND room_unit_number IS NULL
+    AND status IN ('pending', 'designer_resubmitted')
+    ORDER BY created_at DESC LIMIT 1
+");
+$revBlockStmt->bind_param("is", $client_id, $area);
 $revBlockStmt->execute();
 $activeRevision = $revBlockStmt->get_result()->fetch_assoc();
 $hasActiveRevision = !empty($activeRevision);
@@ -180,32 +155,20 @@ if (!isset($tabs[$activeTab]))
 $success = $_GET['success'] ?? '';
 $error = $_GET['error'] ?? '';
 
-function getFiles($conn, $client_id, $type, $area, $room_unit_number)
+function getFiles($conn, $client_id, $type, $area)
 {
-    if ($room_unit_number !== null) {
-        $stmt = $conn->prepare("
-            SELECT la.*, a.full_name as uploader_name FROM layout_attachments la
-            LEFT JOIN account a ON la.uploaded_by = a.id
-            WHERE la.client_id=? AND la.attachment_type=? AND la.area=? AND la.room_unit_number=?
-            ORDER BY la.created_at DESC
-        ");
-        $stmt->bind_param("issi", $client_id, $type, $area, $room_unit_number);
-    } else {
-        $stmt = $conn->prepare("
-            SELECT la.*, a.full_name as uploader_name FROM layout_attachments la
-            LEFT JOIN account a ON la.uploaded_by = a.id
-            WHERE la.client_id=? AND la.attachment_type=? AND la.area=? AND la.room_unit_number IS NULL
-            ORDER BY la.created_at DESC
-        ");
-        $stmt->bind_param("iss", $client_id, $type, $area);
-    }
+    $stmt = $conn->prepare("
+        SELECT la.*, a.full_name as uploader_name FROM layout_attachments la
+        LEFT JOIN account a ON la.uploaded_by = a.id
+        WHERE la.client_id=? AND la.attachment_type=? AND la.area=? AND la.room_unit_number IS NULL
+        ORDER BY la.created_at DESC
+    ");
+    $stmt->bind_param("iss", $client_id, $type, $area);
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-$locationLabel = $hasUnit
-    ? ($room_unit_name ?: 'Unit ' . $room_unit_number)
-    : $area;
+$locationLabel = $area;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -719,15 +682,13 @@ $locationLabel = $hasUnit
                     <h1><i class="fas fa-upload"></i> <?= htmlspecialchars($locationLabel) ?></h1>
                     <div class="sub">
                         <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($area) ?>
-                        <?php if ($hasUnit): ?> &nbsp;›&nbsp; <i class="fas fa-door-open"></i>
-                            <?= htmlspecialchars($locationLabel) ?><?php endif; ?>
                     </div>
                     <div class="sub"><?= htmlspecialchars($clientInfo['clientname']) ?> —
                         <?= htmlspecialchars($clientInfo['nameproject']) ?>
                     </div>
                 </div>
                 <button type="button"
-                    onclick="openItemsModal(<?= $client_id ?>, '<?= htmlspecialchars($area, ENT_QUOTES) ?>', <?= $hasUnit ? $room_unit_number : 'null' ?>, '<?= htmlspecialchars($locationLabel, ENT_QUOTES) ?>')"
+                    onclick="openItemsModal(<?= $client_id ?>, '<?= htmlspecialchars($area, ENT_QUOTES) ?>', null, '<?= htmlspecialchars($locationLabel, ENT_QUOTES) ?>')"
                     style="background:rgba(255,255,255,0.2); border:1.5px solid rgba(255,255,255,0.5); color:white; padding:9px 18px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; flex-shrink:0;">
                     <i class="fas fa-boxes"></i> View Items
                 </button>
@@ -744,7 +705,7 @@ $locationLabel = $hasUnit
         <!-- Tab Bar -->
         <div class="tab-bar">
             <?php foreach ($tabs as $typeKey => $tabInfo): ?>
-                <?php $files = getFiles($conn, $client_id, $typeKey, $area, $room_unit_number); ?>
+                <?php $files = getFiles($conn, $client_id, $typeKey, $area); ?>
                 <button type="button" class="tab-btn <?= $activeTab === $typeKey ? 'active' : '' ?>"
                     onclick="switchTab('<?= $typeKey ?>')"
                     style="<?= $activeTab === $typeKey ? 'border-color:' . $tabInfo['color'] . '; background:' . $tabInfo['bg'] . '; color:' . $tabInfo['color'] . ';' : '' ?>">
@@ -761,13 +722,12 @@ $locationLabel = $hasUnit
         <!-- Tab Panels -->
         <?php foreach ($tabs as $typeKey => $tabInfo): ?>
             <?php
-            $files = getFiles($conn, $client_id, $typeKey, $area, $room_unit_number);
+            $files = getFiles($conn, $client_id, $typeKey, $area);
             $fileCount = count($files);
             $maxFiles = 10;
             $canUpload = $fileCount < $maxFiles;
             $redirectBase = BASE_URL . 'designer-attachment-upload?client_id=' . $client_id
                 . '&area=' . urlencode($area)
-                . ($hasUnit ? '&room_unit_number=' . $room_unit_number . '&room_unit_name=' . urlencode($room_unit_name) : '')
                 . '&tab=' . $typeKey;
             $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-word', 'xls' => 'fa-file-excel', 'xlsx' => 'fa-file-excel', 'ppt' => 'fa-file-powerpoint', 'pptx' => 'fa-file-powerpoint', 'zip' => 'fa-file-archive', 'txt' => 'fa-file-alt'];
             ?>
@@ -927,7 +887,7 @@ $locationLabel = $hasUnit
     <?php
     $hasAnyFile = false;
     foreach ($tabs as $typeKey => $tabInfo) {
-        $f = getFiles($conn, $client_id, $typeKey, $area, $room_unit_number);
+        $f = getFiles($conn, $client_id, $typeKey, $area);
         if (!empty($f)) {
             $hasAnyFile = true;
             break;
@@ -1002,8 +962,6 @@ $locationLabel = $hasUnit
                                 <form method="POST" action="<?= BASE_URL ?>request-layout-approval" style="margin-top:4px;">
                                     <input type="hidden" name="client_id" value="<?= $client_id ?>">
                                     <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                                    <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
-                                    <input type="hidden" name="room_unit_name" value="<?= htmlspecialchars($room_unit_name) ?>">
                                     <input type="hidden" name="redirect_url"
                                         value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                                     <button type="submit"
@@ -1047,8 +1005,6 @@ $locationLabel = $hasUnit
                                     <form method="POST" action="<?= BASE_URL ?>request-layout-approval" style="margin-top:8px;">
                                         <input type="hidden" name="client_id" value="<?= $client_id ?>">
                                         <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                                        <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
-                                        <input type="hidden" name="room_unit_name" value="<?= htmlspecialchars($room_unit_name) ?>">
                                         <input type="hidden" name="redirect_url"
                                             value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                                         <input type="hidden" name="resubmit" value="1">
@@ -1073,8 +1029,6 @@ $locationLabel = $hasUnit
                         <form method="POST" action="<?= BASE_URL ?>request-layout-approval">
                             <input type="hidden" name="client_id" value="<?= $client_id ?>">
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                            <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
-                            <input type="hidden" name="room_unit_name" value="<?= htmlspecialchars($room_unit_name) ?>">
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <button type="submit"
                                 style="background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
@@ -1089,8 +1043,6 @@ $locationLabel = $hasUnit
                         <form method="POST" action="<?= BASE_URL ?>request-layout-approval">
                             <input type="hidden" name="client_id" value="<?= $client_id ?>">
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                            <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
-                            <input type="hidden" name="room_unit_name" value="<?= htmlspecialchars($room_unit_name) ?>">
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <input type="hidden" name="resubmit" value="1">
                             <button type="submit"
@@ -1352,7 +1304,7 @@ $locationLabel = $hasUnit
                     body: JSON.stringify({
                         client_id: <?= $client_id ?>,
                         area: <?= json_encode($area) ?>,
-                        room_unit_number: <?= json_encode($room_unit_number) ?>,
+                        room_unit_number: null,
                         approver_id: _approveApproverId,
                         status: _approveAction,
                         comment: comment
@@ -1533,8 +1485,8 @@ $locationLabel = $hasUnit
                     attachment_type: tabKey,
                     area: <?= json_encode($area) ?>,
                     note: note,
-                    room_unit_number: <?= json_encode($room_unit_number !== null ? (string) $room_unit_number : '') ?>,
-                    room_unit_name: <?= json_encode($room_unit_name) ?>
+                    room_unit_number: '',
+                    room_unit_name: ''
                 };
                 for (const [name, value] of Object.entries(fields)) {
                     const input = document.createElement('input');
@@ -1739,8 +1691,8 @@ $locationLabel = $hasUnit
                     fd.append('attachment_type', tabKey);
                     fd.append('area', <?= json_encode($area) ?>);
                     fd.append('note', note);
-                    fd.append('room_unit_number', <?= json_encode($room_unit_number !== null ? (string) $room_unit_number : '') ?>);
-                    fd.append('room_unit_name', <?= json_encode($room_unit_name) ?>);
+                    fd.append('room_unit_number', '');
+                    fd.append('room_unit_name', '');
 
                     try {
                         const t0 = performance.now();

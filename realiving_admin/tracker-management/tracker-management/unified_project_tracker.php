@@ -1529,35 +1529,9 @@ function getStageTypeBadge($stage, $approvalStages, $fileUploadStages, $autoStag
                     }
                 } elseif (in_array($stage, ['Fabrication', 'Delivery', 'Installation'])) {
                     $col = strtolower($stage) . '_status';
-                    $distCol = $col; // same column name exists in quotation_room_distribution
-            
-                    // Count unit-level rows first (from quotation_room_distribution)
-                    $distCheckStmt = $conn->prepare("
-                SELECT COUNT(*) AS total,
-                       SUM(CASE WHEN qrd.$distCol = 'Done' THEN 1 ELSE 0 END) AS done_cnt,
-                       SUM(CASE WHEN qrd.$distCol IN ('Ongoing','Incomplete','Punchlist') THEN 1 ELSE 0 END) AS active_cnt
-                FROM quotation_room_distribution qrd
-                LEFT JOIN quotation_entries qe ON qrd.quotation_entry_id = qe.id AND qe.client_id = ?
-                LEFT JOIN quotation_fixed_sizes qfs ON qrd.quotation_fixed_size_id = qfs.id AND qfs.client_id = ?
-                WHERE (qe.client_id = ? OR qfs.client_id = ?)
-            ");
-                    $distCheckStmt->bind_param("iiii", $client_id, $client_id, $client_id, $client_id);
-                    $distCheckStmt->execute();
-                    $distRow = $distCheckStmt->get_result()->fetch_assoc();
 
-                    if ($distRow && $distRow['total'] > 0) {
-                        // Use unit-level distribution counts
-                        if ($distRow['total'] == $distRow['done_cnt']) {
-                            $status = 'Done';
-                        } elseif ($distRow['active_cnt'] > 0 || $distRow['done_cnt'] > 0) {
-                            // Any active OR any done (but not all done) = Ongoing
-                            $status = 'Ongoing';
-                        } else {
-                            $status = 'Pending';
-                        }
-                    } else {
-                        // Fallback: use item-level status columns
-                        $iStmt = $conn->prepare("
+                    // Use item-level status columns (unit-level distribution tracking removed)
+                    $iStmt = $conn->prepare("
         SELECT CASE
             WHEN COUNT(*) = 0 THEN 'Pending'
             WHEN COUNT(*) = SUM(CASE WHEN $col = 'Done' THEN 1 ELSE 0 END) THEN 'Done'
@@ -1570,10 +1544,9 @@ function getStageTypeBadge($stage, $approvalStages, $fileUploadStages, $autoStag
             SELECT $col FROM quotation_fixed_sizes WHERE client_id = ?
         ) x
     ");
-                        $iStmt->bind_param("ii", $client_id, $client_id);
-                        $iStmt->execute();
-                        $status = $iStmt->get_result()->fetch_assoc()['s'] ?? 'Pending';
-                    }
+                    $iStmt->bind_param("ii", $client_id, $client_id);
+                    $iStmt->execute();
+                    $status = $iStmt->get_result()->fetch_assoc()['s'] ?? 'Pending';
                 }
 
                 // Count files for this stage

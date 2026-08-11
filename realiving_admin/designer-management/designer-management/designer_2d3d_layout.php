@@ -1393,51 +1393,17 @@ if ($isOperationalManager) {
                 if ($totalApprovers > 0) {
                     $allAreasDone = true;
                     foreach ($areasForApproval as $checkArea) {
-                        // Check units
-                        $unitStmt = $conn->prepare("
-                SELECT DISTINCT rd.room_unit_number
-                FROM quotation_room_distribution rd
-                INNER JOIN quotation_entries qe ON rd.quotation_entry_id = qe.id
-                WHERE qe.client_id = ? AND qe.area = ?
-                UNION
-                SELECT DISTINCT rd2.room_unit_number
-                FROM quotation_room_distribution rd2
-                INNER JOIN quotation_fixed_sizes qfs ON rd2.quotation_fixed_size_id = qfs.id
-                WHERE qfs.client_id = ? AND qfs.area = ?
-            ");
-                        $unitStmt->bind_param("isis", $client_id, $checkArea, $client_id, $checkArea);
-                        $unitStmt->execute();
-                        $unitRows = $unitStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
-                        if (!empty($unitRows)) {
-                            // Per-unit approval check
-                            foreach ($unitRows as $ur) {
-                                $un = $ur['room_unit_number'];
-                                $aprChk = $conn->prepare("
-                        SELECT COUNT(*) FROM layout_approvals
-                        WHERE client_id = ? AND area = ? AND room_unit_number = ? AND status = 'approved'
-                    ");
-                                $aprChk->bind_param("isi", $client_id, $checkArea, $un);
-                                $aprChk->execute();
-                                $approvedCount = (int) $aprChk->get_result()->fetch_row()[0];
-                                if ($approvedCount < $totalApprovers) {
-                                    $allAreasDone = false;
-                                    break 2;
-                                }
-                            }
-                        } else {
-                            // Area-level approval check
-                            $aprChk = $conn->prepare("
+                        // Area-level approval check
+                        $aprChk = $conn->prepare("
                     SELECT COUNT(*) FROM layout_approvals
                     WHERE client_id = ? AND area = ? AND room_unit_number IS NULL AND status = 'approved'
                 ");
-                            $aprChk->bind_param("is", $client_id, $checkArea);
-                            $aprChk->execute();
-                            $approvedCount = (int) $aprChk->get_result()->fetch_row()[0];
-                            if ($approvedCount < $totalApprovers) {
-                                $allAreasDone = false;
-                                break;
-                            }
+                        $aprChk->bind_param("is", $client_id, $checkArea);
+                        $aprChk->execute();
+                        $approvedCount = (int) $aprChk->get_result()->fetch_row()[0];
+                        if ($approvedCount < $totalApprovers) {
+                            $allAreasDone = false;
+                            break;
                         }
                     }
                     $allAreasApproved = $allAreasDone;
@@ -1576,23 +1542,6 @@ if ($isOperationalManager) {
                                     $aTagColor = '#92400e';
                                 }
 
-                                // Get units for this area
-                                $revUnitStmt = $conn->prepare("
-            SELECT DISTINCT rd.room_unit_number, rd.room_unit_name
-            FROM quotation_room_distribution rd
-            INNER JOIN quotation_entries qe ON rd.quotation_entry_id = qe.id
-            WHERE qe.client_id = ? AND qe.area = ?
-            UNION
-            SELECT DISTINCT rd2.room_unit_number, rd2.room_unit_name
-            FROM quotation_room_distribution rd2
-            INNER JOIN quotation_fixed_sizes qfs ON rd2.quotation_fixed_size_id = qfs.id
-            WHERE qfs.client_id = ? AND qfs.area = ?
-            ORDER BY room_unit_number
-        ");
-                                $revUnitStmt->bind_param("isis", $client_id, $areaOption, $client_id, $areaOption);
-                                $revUnitStmt->execute();
-                                $revUnits = $revUnitStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-                                $hasRevUnits = !empty($revUnits);
                                 $areaSlugRev = 'revarea_' . preg_replace('/[^a-zA-Z0-9]/', '_', $areaOption);
                                 ?>
 
@@ -1601,102 +1550,22 @@ if ($isOperationalManager) {
                                     <!-- Area row -->
                                     <div
                                         style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:#fafafa; flex-wrap:wrap;">
-                                        <?php if (!$hasRevUnits): ?>
-                                            <!-- No units: area-level checkbox -->
-                                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
-                                                <input type="checkbox" class="rev-area-check"
-                                                    data-area="<?= htmlspecialchars($areaOption, ENT_QUOTES) ?>" data-has-units="0"
-                                                    onchange="onAreaCheck(this)"
-                                                    style="width:16px; height:16px; cursor:pointer; accent-color:#f59e0b;">
-                                                <span style="font-size:14px; font-weight:700; color:#1f2937;">
-                                                    <i class="fas fa-layer-group" style="color:#8a5a44;"></i>
-                                                    <?= htmlspecialchars($areaOption) ?>
-                                                </span>
-                                                <span
-                                                    style="padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700; background:<?= $aTagBg ?>; color:<?= $aTagColor ?>;">
-                                                    <?= ucfirst($aTag) ?>
-                                                </span>
-                                            </label>
-                                        <?php else: ?>
-                                            <!-- Has units: area label + expand toggle -->
-                                            <span
-                                                style="font-size:14px; font-weight:700; color:#1f2937; flex:1; display:flex; align-items:center; gap:8px;">
+                                        <!-- Area-level checkbox -->
+                                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
+                                            <input type="checkbox" class="rev-area-check"
+                                                data-area="<?= htmlspecialchars($areaOption, ENT_QUOTES) ?>"
+                                                onchange="onAreaCheck(this)"
+                                                style="width:16px; height:16px; cursor:pointer; accent-color:#f59e0b;">
+                                            <span style="font-size:14px; font-weight:700; color:#1f2937;">
                                                 <i class="fas fa-layer-group" style="color:#8a5a44;"></i>
                                                 <?= htmlspecialchars($areaOption) ?>
-                                                <span
-                                                    style="padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700; background:<?= $aTagBg ?>; color:<?= $aTagColor ?>;">
-                                                    <?= ucfirst($aTag) ?>
-                                                </span>
-                                                <span style="font-size:11px; color:#9ca3af; font-weight:400;"><?= count($revUnits) ?>
-                                                    unit(s)</span>
                                             </span>
-                                            <button type="button" onclick="toggleUnits('<?= $areaSlugRev ?>')"
-                                                style="background:#e0e7ff; border:none; color:#3730a3; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; display:flex; align-items:center; gap:5px;">
-                                                <i class="fas fa-chevron-down" id="chevron-<?= $areaSlugRev ?>"></i> Units
-                                            </button>
-                                            <!-- Select all units in this area -->
-                                            <button type="button"
-                                                onclick="selectAllUnits('<?= htmlspecialchars($areaOption, ENT_QUOTES) ?>', '<?= $areaSlugRev ?>')"
-                                                id="selectAllBtn-<?= $areaSlugRev ?>"
-                                                style="background:#fef3c7; border:none; color:#92400e; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700;">
-                                                Select All
-                                            </button>
-                                        <?php endif; ?>
+                                            <span
+                                                style="padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700; background:<?= $aTagBg ?>; color:<?= $aTagColor ?>;">
+                                                <?= ucfirst($aTag) ?>
+                                            </span>
+                                        </label>
                                     </div>
-
-                                    <?php if ($hasRevUnits): ?>
-                                        <!-- Units rows (collapsible) -->
-                                        <div id="units-<?= $areaSlugRev ?>"
-                                            style="display:none; padding:10px 16px 14px 16px; background:white; border-top:1px solid #e9ecef;">
-                                            <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                                                <?php foreach ($revUnits as $ru):
-                                                    $ruLabel = !empty($ru['room_unit_name']) ? $ru['room_unit_name'] : 'Unit ' . $ru['room_unit_number'];
-
-                                                    // Get unit approval state
-                                                    $uApprStmt = $conn->prepare("
-                            SELECT status FROM layout_approvals
-                            WHERE client_id = ? AND area = ? AND room_unit_number = ?
-                        ");
-                                                    $uApprStmt->bind_param("isi", $client_id, $areaOption, $ru['room_unit_number']);
-                                                    $uApprStmt->execute();
-                                                    $uApprRows = $uApprStmt->get_result()->fetch_all(MYSQLI_ASSOC);
-                                                    $uApprStatuses = array_column($uApprRows, 'status');
-
-                                                    if (empty($uApprRows)) {
-                                                        $uTag = 'none';
-                                                        $uTagBg = '#f3f4f6';
-                                                        $uTagColor = '#9ca3af';
-                                                    } elseif (in_array('rejected', $uApprStatuses)) {
-                                                        $uTag = 'rejected';
-                                                        $uTagBg = '#fee2e2';
-                                                        $uTagColor = '#991b1b';
-                                                    } elseif (count(array_filter($uApprStatuses, fn($s) => $s === 'approved')) === count($uApprStatuses)) {
-                                                        $uTag = 'approved';
-                                                        $uTagBg = '#d1fae5';
-                                                        $uTagColor = '#065f46';
-                                                    } else {
-                                                        $uTag = 'pending';
-                                                        $uTagBg = '#fef3c7';
-                                                        $uTagColor = '#92400e';
-                                                    }
-                                                    ?>
-                                                    <label
-                                                        style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; padding:7px 14px; border:2px solid <?= $uTagBg ?>; border-radius:8px; background:<?= $uTagBg ?>; font-size:13px; font-weight:600; color:<?= $uTagColor ?>; transition:all 0.2s;"
-                                                        id="unitlabel-<?= $areaSlugRev ?>-<?= $ru['room_unit_number'] ?>">
-                                                        <input type="checkbox" class="rev-unit-check"
-                                                            data-area="<?= htmlspecialchars($areaOption, ENT_QUOTES) ?>"
-                                                            data-unit-num="<?= $ru['room_unit_number'] ?>"
-                                                            data-unit-name="<?= htmlspecialchars($ru['room_unit_name'] ?? '', ENT_QUOTES) ?>"
-                                                            data-area-slug="<?= $areaSlugRev ?>" onchange="onUnitCheck(this)"
-                                                            style="width:14px; height:14px; cursor:pointer; accent-color:#6366f1;">
-                                                        <i class="fas fa-door-open"></i>
-                                                        <?= htmlspecialchars($ruLabel) ?>
-                                                        <span style="font-size:10px; margin-left:2px;">(<?= ucfirst($uTag) ?>)</span>
-                                                    </label>
-                                                <?php endforeach; ?>
-                                            </div>
-                                        </div>
-                                    <?php endif; ?>
                                 </div>
                             <?php endforeach; ?>
                         </div>
@@ -2257,15 +2126,6 @@ if ($isOperationalManager) {
         // ── Multi-select revision ──
         let revSelections = []; // [{area, unitNum, unitName, reason}]
 
-        function toggleUnits(slug) {
-            const el = document.getElementById('units-' + slug);
-            const chv = document.getElementById('chevron-' + slug);
-            if (!el) return;
-            const open = el.style.display !== 'none';
-            el.style.display = open ? 'none' : 'block';
-            chv.style.transform = open ? '' : 'rotate(180deg)';
-        }
-
         function getSelKey(area, unitNum) {
             return area + '||' + (unitNum ?? 'null');
         }
@@ -2281,34 +2141,6 @@ if ($isOperationalManager) {
                 revSelections = revSelections.filter(s => getSelKey(s.area, s.unitNum) !== key);
             }
             updateSummary();
-        }
-
-        function onUnitCheck(cb) {
-            const area = cb.dataset.area;
-            const unitNum = parseInt(cb.dataset.unitNum);
-            const unitName = cb.dataset.unitName;
-            const key = getSelKey(area, unitNum);
-
-            if (cb.checked) {
-                if (!revSelections.find(s => getSelKey(s.area, s.unitNum) === key)) {
-                    revSelections.push({ area, unitNum, unitName, reason: '' });
-                }
-                const lbl = document.getElementById('unitlabel-' + cb.dataset.areaSlug + '-' + unitNum);
-                if (lbl) lbl.style.outline = '2px solid #f59e0b';
-            } else {
-                revSelections = revSelections.filter(s => getSelKey(s.area, s.unitNum) !== key);
-                const lbl = document.getElementById('unitlabel-' + cb.dataset.areaSlug + '-' + unitNum);
-                if (lbl) lbl.style.outline = '';
-            }
-            updateSummary();
-        }
-
-        function selectAllUnits(area, slug) {
-            const checks = document.querySelectorAll(`.rev-unit-check[data-area="${CSS.escape(area)}"]`);
-            const allChecked = Array.from(checks).every(c => c.checked);
-            checks.forEach(cb => { cb.checked = !allChecked; onUnitCheck(cb); });
-            const btn = document.getElementById('selectAllBtn-' + slug);
-            if (btn) btn.textContent = allChecked ? 'Select All' : 'Deselect All';
         }
 
         function removeSelection(key) {

@@ -6,8 +6,6 @@ date_default_timezone_set('Asia/Manila');
 $admin_id = $_SESSION['admin_id'];
 $client_id = isset($_GET['client_id']) ? intval($_GET['client_id']) : 0;
 $area = isset($_GET['area']) ? trim($_GET['area']) : '';
-$room_unit_number = isset($_GET['room_unit_number']) && $_GET['room_unit_number'] !== '' ? intval($_GET['room_unit_number']) : null;
-$room_unit_name = isset($_GET['room_unit_name']) ? trim($_GET['room_unit_name']) : '';
 
 $meStmt = $conn->prepare("SELECT full_name, role, is_head FROM account WHERE id = ?");
 $meStmt->bind_param("i", $admin_id);
@@ -34,11 +32,8 @@ if (!$isAssigned && !$canViewAll)
 
 $viewOnly = $canViewAll && !$isAssigned;
 
-$hasUnit = $room_unit_number !== null;
-$locationLabel = $hasUnit ? ($room_unit_name ?: 'Unit ' . $room_unit_number) : $area;
-$backUrl = $hasUnit
-    ? BASE_URL . 'td-attachment-area?client_id=' . $client_id . '&area=' . urlencode($area)
-    : BASE_URL . 'td-attachments?client_id=' . $client_id;
+$locationLabel = $area;
+$backUrl = BASE_URL . 'td-attachments?client_id=' . $client_id;
 
 // ── Approval helpers ───────────────────────────────────────────────────────
 function tdGetApprovers($conn)
@@ -48,21 +43,16 @@ function tdGetApprovers($conn)
     return $s->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-function tdGetApprovalStatus($conn, $client_id, $area, $room_unit_number)
+function tdGetApprovalStatus($conn, $client_id, $area)
 {
-    if ($room_unit_number !== null) {
-        $s = $conn->prepare("SELECT la.*, a.full_name as approver_name, a.role as approver_role FROM td_attachment_approvals la JOIN account a ON la.approver_id=a.id WHERE la.client_id=? AND la.area=? AND la.room_unit_number=?");
-        $s->bind_param("isi", $client_id, $area, $room_unit_number);
-    } else {
-        $s = $conn->prepare("SELECT la.*, a.full_name as approver_name, a.role as approver_role FROM td_attachment_approvals la JOIN account a ON la.approver_id=a.id WHERE la.client_id=? AND la.area=? AND la.room_unit_number IS NULL");
-        $s->bind_param("is", $client_id, $area);
-    }
+    $s = $conn->prepare("SELECT la.*, a.full_name as approver_name, a.role as approver_role FROM td_attachment_approvals la JOIN account a ON la.approver_id=a.id WHERE la.client_id=? AND la.area=? AND la.room_unit_number IS NULL");
+    $s->bind_param("is", $client_id, $area);
     $s->execute();
     return $s->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
 $approvers = tdGetApprovers($conn);
-$approvalRecords = tdGetApprovalStatus($conn, $client_id, $area, $room_unit_number);
+$approvalRecords = tdGetApprovalStatus($conn, $client_id, $area);
 $approvalMap = [];
 foreach ($approvalRecords as $rec)
     $approvalMap[$rec['approver_id']] = $rec;
@@ -73,13 +63,8 @@ $allApproved = $approvalRequested && count($approvers) > 0 &&
 $anyRejected = !empty(array_filter($approvalRecords, fn($r) => $r['status'] === 'rejected'));
 
 // Active revision
-if ($room_unit_number !== null) {
-    $revS = $conn->prepare("SELECT id, revision_number, reason, status, created_at FROM td_revision_log WHERE client_id=? AND area=? AND room_unit_number=? AND status IN ('pending','designer_resubmitted') ORDER BY created_at DESC LIMIT 1");
-    $revS->bind_param("isi", $client_id, $area, $room_unit_number);
-} else {
-    $revS = $conn->prepare("SELECT id, revision_number, reason, status, created_at FROM td_revision_log WHERE client_id=? AND area=? AND room_unit_number IS NULL AND status IN ('pending','designer_resubmitted') ORDER BY created_at DESC LIMIT 1");
-    $revS->bind_param("is", $client_id, $area);
-}
+$revS = $conn->prepare("SELECT id, revision_number, reason, status, created_at FROM td_revision_log WHERE client_id=? AND area=? AND room_unit_number IS NULL AND status IN ('pending','designer_resubmitted') ORDER BY created_at DESC LIMIT 1");
+$revS->bind_param("is", $client_id, $area);
 $revS->execute();
 $activeRevision = $revS->get_result()->fetch_assoc();
 $hasActiveRevision = !empty($activeRevision);
@@ -95,34 +80,24 @@ foreach ($approvers as $apr) {
 $canRequestApproval = $isAssigned && $me['role'] === 'technical_designer';
 
 // ── Fetch files ─────────────────────────────────────────────────────────
-function tdGetFiles($conn, $client_id, $area, $room_unit_number)
+function tdGetFiles($conn, $client_id, $area)
 {
-    if ($room_unit_number !== null) {
-        $s = $conn->prepare("SELECT ta.*, a.full_name as uploader_name FROM td_attachments ta LEFT JOIN account a ON ta.uploaded_by=a.id WHERE ta.client_id=? AND ta.area=? AND ta.room_unit_number=? ORDER BY ta.category_name, ta.created_at DESC");
-        $s->bind_param("isi", $client_id, $area, $room_unit_number);
-    } else {
-        $s = $conn->prepare("SELECT ta.*, a.full_name as uploader_name FROM td_attachments ta LEFT JOIN account a ON ta.uploaded_by=a.id WHERE ta.client_id=? AND ta.area=? AND ta.room_unit_number IS NULL ORDER BY ta.category_name, ta.created_at DESC");
-        $s->bind_param("is", $client_id, $area);
-    }
+    $s = $conn->prepare("SELECT ta.*, a.full_name as uploader_name FROM td_attachments ta LEFT JOIN account a ON ta.uploaded_by=a.id WHERE ta.client_id=? AND ta.area=? AND ta.room_unit_number IS NULL ORDER BY ta.category_name, ta.created_at DESC");
+    $s->bind_param("is", $client_id, $area);
     $s->execute();
     return $s->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-function desGetFiles($conn, $client_id, $area, $room_unit_number)
+function desGetFiles($conn, $client_id, $area)
 {
-    if ($room_unit_number !== null) {
-        $s = $conn->prepare("SELECT la.*, a.full_name as uploader_name FROM layout_attachments la LEFT JOIN account a ON la.uploaded_by=a.id WHERE la.client_id=? AND la.area=? AND la.room_unit_number=? ORDER BY la.attachment_type, la.created_at ASC");
-        $s->bind_param("isi", $client_id, $area, $room_unit_number);
-    } else {
-        $s = $conn->prepare("SELECT la.*, a.full_name as uploader_name FROM layout_attachments la LEFT JOIN account a ON la.uploaded_by=a.id WHERE la.client_id=? AND la.area=? ORDER BY la.attachment_type, la.created_at ASC");
-        $s->bind_param("is", $client_id, $area);
-    }
+    $s = $conn->prepare("SELECT la.*, a.full_name as uploader_name FROM layout_attachments la LEFT JOIN account a ON la.uploaded_by=a.id WHERE la.client_id=? AND la.area=? ORDER BY la.attachment_type, la.created_at ASC");
+    $s->bind_param("is", $client_id, $area);
     $s->execute();
     return $s->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-$tdFiles = tdGetFiles($conn, $client_id, $area, $room_unit_number);
-$designerFiles = desGetFiles($conn, $client_id, $area, $room_unit_number);
+$tdFiles = tdGetFiles($conn, $client_id, $area);
+$designerFiles = desGetFiles($conn, $client_id, $area);
 $fileCount = count($tdFiles);
 $maxFiles = 20;
 $canUpload = $fileCount < $maxFiles;
@@ -174,8 +149,7 @@ if ($allApproved) {
 
 $success = $_GET['success'] ?? '';
 $error = $_GET['error'] ?? '';
-$redirectBase = BASE_URL . 'td-attachment-upload?client_id=' . $client_id . '&area=' . urlencode($area)
-    . ($hasUnit ? '&room_unit_number=' . $room_unit_number . '&room_unit_name=' . urlencode($room_unit_name) : '');
+$redirectBase = BASE_URL . 'td-attachment-upload?client_id=' . $client_id . '&area=' . urlencode($area);
 $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-word', 'xls' => 'fa-file-excel', 'xlsx' => 'fa-file-excel', 'zip' => 'fa-file-archive', 'txt' => 'fa-file-alt', 'dwg' => 'fa-drafting-compass', 'dxf' => 'fa-drafting-compass'];
 ?>
 <!DOCTYPE html>
@@ -766,8 +740,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             <div>
                 <h1><?= htmlspecialchars($locationLabel) ?></h1>
                 <div class="sub"><i class="fas fa-map-marker-alt"></i>
-                    <?= htmlspecialchars($area) ?><?php if ($hasUnit): ?> &nbsp;›&nbsp;
-                        <?= htmlspecialchars($locationLabel) ?><?php endif; ?>
+                    <?= htmlspecialchars($area) ?>
                 </div>
                 <div class="sub"><?= htmlspecialchars($clientInfo['clientname']) ?> —
                     <?= htmlspecialchars($clientInfo['nameproject']) ?>
@@ -873,24 +846,13 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
     ═════════════════════════════════════════════ -->
         <?php
         // Check if approval has been requested by the designer for this area/unit
-        $desApprovalCheckStmt = null;
-        if ($room_unit_number !== null) {
-            $desApprovalCheckStmt = $conn->prepare("
-            SELECT td_remark, td_remark_submitted_at, td_remark_file, td_remark_file_name
-            FROM layout_approvals
-            WHERE client_id = ? AND area = ? AND room_unit_number = ?
-            LIMIT 1
-        ");
-            $desApprovalCheckStmt->bind_param("isi", $client_id, $area, $room_unit_number);
-        } else {
-            $desApprovalCheckStmt = $conn->prepare("
+        $desApprovalCheckStmt = $conn->prepare("
             SELECT td_remark, td_remark_submitted_at, td_remark_file, td_remark_file_name
             FROM layout_approvals
             WHERE client_id = ? AND area = ? AND room_unit_number IS NULL
             LIMIT 1
         ");
-            $desApprovalCheckStmt->bind_param("is", $client_id, $area);
-        }
+        $desApprovalCheckStmt->bind_param("is", $client_id, $area);
         $desApprovalCheckStmt->execute();
         $desApprovalRow = $desApprovalCheckStmt->get_result()->fetch_assoc();
 
@@ -980,7 +942,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                         <form method="POST" action="<?= BASE_URL ?>designer-submit-td-remark" enctype="multipart/form-data">
                             <input type="hidden" name="client_id" value="<?= $client_id ?>">
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                            <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
                             <input type="hidden" name="redirect_url"
                                 value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <label
@@ -1319,8 +1280,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                     <form method="POST" action="<?= BASE_URL ?>td-request-approval">
                         <input type="hidden" name="client_id" value="<?= $client_id ?>">
                         <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                        <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
-                        <input type="hidden" name="room_unit_name" value="<?= htmlspecialchars($room_unit_name) ?>">
                         <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                         <button type="submit"
                             style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
@@ -1332,8 +1291,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                         <form method="POST" action="<?= BASE_URL ?>td-request-approval">
                             <input type="hidden" name="client_id" value="<?= $client_id ?>">
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                            <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
-                            <input type="hidden" name="room_unit_name" value="<?= htmlspecialchars($room_unit_name) ?>">
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <button type="submit"
                                 style="background:linear-gradient(135deg,#0c4a6e,#0369a1); color:white; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
@@ -1346,8 +1303,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                         <form method="POST" action="<?= BASE_URL ?>td-request-approval">
                             <input type="hidden" name="client_id" value="<?= $client_id ?>">
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                            <input type="hidden" name="room_unit_number" value="<?= $room_unit_number ?? '' ?>">
-                            <input type="hidden" name="room_unit_name" value="<?= htmlspecialchars($room_unit_name) ?>">
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <input type="hidden" name="resubmit" value="1">
                             <button type="submit"
@@ -1612,8 +1567,8 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                     area: <?= json_encode($area) ?>,
                     category_name: categoryName,
                     note: note,
-                    room_unit_number: <?= json_encode($room_unit_number !== null ? (string) $room_unit_number : '') ?>,
-                    room_unit_name: <?= json_encode($room_unit_name) ?>
+                    room_unit_number: '',
+                    room_unit_name: ''
                 };
                 for (const [name, value] of Object.entries(fields)) {
                     const input = document.createElement('input');
@@ -1824,8 +1779,8 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                     fd.append('area', <?= json_encode($area) ?>);
                     fd.append('category_name', categoryName);
                     fd.append('note', note);
-                    fd.append('room_unit_number', <?= json_encode($room_unit_number !== null ? (string) $room_unit_number : '') ?>);
-                    fd.append('room_unit_name', <?= json_encode($room_unit_name) ?>);
+                    fd.append('room_unit_number', '');
+                    fd.append('room_unit_name', '');
 
                     try {
                         const t0 = performance.now();
@@ -1917,7 +1872,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             try {
                 const res = await fetch('<?= BASE_URL ?>td-respond-approval', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ client_id: <?= $client_id ?>, area: <?= json_encode($area) ?>, room_unit_number: <?= json_encode($room_unit_number) ?>, approver_id: _aprId, status: _aprAction, comment })
+                    body: JSON.stringify({ client_id: <?= $client_id ?>, area: <?= json_encode($area) ?>, room_unit_number: null, approver_id: _aprId, status: _aprAction, comment })
                 });
                 const data = await res.json();
                 if (data.success) location.reload();

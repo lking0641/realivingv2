@@ -349,7 +349,7 @@ $spinwheel_active = $spinwheel_status && $spinwheel_status['is_active'] == 1;
                     <?php endif; ?>
                   </td>
                   <td class="px-6 py-4">
-                    <a href="<?= BASE_URL ?>delete-spinwheel/<?php echo $row['id']; ?>"
+                    <a href="<?= BASE_URL ?>delete-spinwheel?id=<?php echo $row['id']; ?>"
                        onclick="return confirm('Are you sure you want to delete this registration?')"
                        class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 text-red-600 rounded-lg text-xs font-semibold hover:bg-red-200 transition-colors">
                       <i class="fas fa-trash"></i> Delete

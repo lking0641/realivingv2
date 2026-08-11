@@ -173,7 +173,6 @@ $routes = [
   'update-fixed-computation' => 'realiving_admin/quotation-management/quotation-management-update/update_fixed_computation.php',
   'update-manual-cost' => 'realiving_admin/quotation-management/quotation-management-update/update_manual_cost.php',
   'update-project-cost' => 'realiving_admin/quotation-management/quotation-management-update/update_project_cost.php',
-  'update-room-distribution' => 'realiving_admin/quotation-management/quotation-management-update/update_room_distribution.php',
   'update-tracker-mode' => 'realiving_admin/quotation-management/quotation-management-update/update_tracker_mode.php',
 
   //JS
@@ -265,7 +264,6 @@ $routes = [
 
   //DESIGNER-MANAGEMENT
   'designer-2d3d-layout' => 'realiving_admin/designer-management/designer-management/designer_2d3d_layout.php',
-  'designer-attachment-area' => 'realiving_admin/designer-management/designer-management/designer_attachment_area.php',
   'designer-attachment-upload' => 'realiving_admin/designer-management/designer-management/designer_attachment_upload.php',
   'designer-attachments' => 'realiving_admin/designer-management/designer-management/designer_attachments.php',
   'designer-layout-list' => 'realiving_admin/designer-management/designer-management/designer_layout_list.php',
@@ -280,7 +278,6 @@ $routes = [
   //TECHNICAL-DESIGNER-MANAGEMENT
 
   //TD-ATTACHMENT
-  'td-attachment-area' => 'realiving_admin/technical-designer-management/td-attachment/td_attachment_area.php',
   'td-attachment-chunk-upload' => 'realiving_admin/technical-designer-management/td-attachment/td_attachment_chunk_upload.php',
   'td-attachment-delete' => 'realiving_admin/technical-designer-management/td-attachment/td_attachment_delete.php',
   'td-attachment-direct-upload' => 'realiving_admin/technical-designer-management/td-attachment/td_attachment_direct_upload.php',

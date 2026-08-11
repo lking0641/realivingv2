@@ -188,31 +188,6 @@ $ins->bind_param(
     if ($ins->affected_rows) {
       $entry_id = $ins->insert_id;
 
-      // ============================================
-      // INSERT: Handle room/unit distribution for CUSTOMIZED
-      // ============================================
-      if (!empty($_POST['room_distribution']) && is_array($_POST['room_distribution'])) {
-        $distStmt = $conn->prepare("
-          INSERT INTO quotation_room_distribution
-          (quotation_entry_id, room_unit_number, room_unit_name, quantity, notes)
-          VALUES (?, ?, ?, ?, ?)
-        ");
-        
-        foreach ($_POST['room_distribution'] as $room) {
-          $roomNumber = intval($room['room_number'] ?? 0);
-          $roomName = trim($room['room_name'] ?? '');
-          $roomQty = intval($room['quantity'] ?? 0);
-          $roomNotes = trim($room['notes'] ?? '');
-          
-          if ($roomQty > 0) {
-            $distStmt->bind_param("iisis", $entry_id, $roomNumber, $roomName, $roomQty, $roomNotes);
-            $distStmt->execute();
-          }
-        }
-        $distStmt->close();
-      }
-      // ============================================
-
       $addonIns = $conn->prepare("
         INSERT INTO quotation_entry_addons
           (quotation_entry_id, addon_id, quantity, price, labor_cost, note)
@@ -304,31 +279,6 @@ $fixedIns->bind_param(
 
     if ($fixedIns->affected_rows) {
       $quotation_fixed_size_id = $fixedIns->insert_id;
-
-      // ============================================
-      // INSERT: Handle room/unit distribution for FIXED SIZE
-      // ============================================
-      if (!empty($_POST['room_distribution']) && is_array($_POST['room_distribution'])) {
-        $distStmt = $conn->prepare("
-          INSERT INTO quotation_room_distribution
-          (quotation_fixed_size_id, room_unit_number, room_unit_name, quantity, notes)
-          VALUES (?, ?, ?, ?, ?)
-        ");
-        
-        foreach ($_POST['room_distribution'] as $room) {
-          $roomNumber = intval($room['room_number'] ?? 0);
-          $roomName = trim($room['room_name'] ?? '');
-          $roomQty = intval($room['quantity'] ?? 0);
-          $roomNotes = trim($room['notes'] ?? '');
-          
-          if ($roomQty > 0) {
-            $distStmt->bind_param("iisis", $quotation_fixed_size_id, $roomNumber, $roomName, $roomQty, $roomNotes);
-            $distStmt->execute();
-          }
-        }
-        $distStmt->close();
-      }
-      // ============================================
 
       if (!empty($_POST['addon_selected'])) {
         foreach ($_POST['addon_selected'] as $addonId => $isSelected) {

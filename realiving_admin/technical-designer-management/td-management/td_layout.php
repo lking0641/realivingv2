@@ -767,21 +767,15 @@ if (!empty($tdAreas)) {
         <?php
         // Fetch areas with their unit distributions for the revision selector
         $revAreaDataStmt = $conn->prepare("
-        SELECT DISTINCT qe.area,
-               qrd.room_unit_number,
-               qrd.room_unit_name
-        FROM quotation_entries qe
-        LEFT JOIN quotation_room_distribution qrd ON qrd.quotation_entry_id = qe.id
-        WHERE qe.client_id = ?
-        UNION
-        SELECT DISTINCT qfs.area,
-               qrd.room_unit_number,
-               qrd.room_unit_name
-        FROM quotation_fixed_sizes qfs
-        LEFT JOIN quotation_room_distribution qrd ON qrd.quotation_fixed_size_id = qfs.id
-        WHERE qfs.client_id = ?
-        ORDER BY area, room_unit_number
-    ");
+    SELECT DISTINCT area, NULL as room_unit_number, NULL as room_unit_name
+    FROM quotation_entries
+    WHERE client_id = ?
+    UNION
+    SELECT DISTINCT area, NULL as room_unit_number, NULL as room_unit_name
+    FROM quotation_fixed_sizes
+    WHERE client_id = ?
+    ORDER BY area
+");
         $revAreaDataStmt->bind_param("ii", $client_id, $client_id);
         $revAreaDataStmt->execute();
         $revAreaRows = $revAreaDataStmt->get_result()->fetch_all(MYSQLI_ASSOC);

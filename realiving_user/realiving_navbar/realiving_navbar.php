@@ -66,6 +66,293 @@ function sb_is_active($slug, $current)
   }
 
   /* ═══════════════════════════════════════════════════════════════
+     PAGE LOADER — measuring-tape mascot. Layout/sizing/responsiveness
+     is handled by Tailwind classes on the markup below; this block
+     only holds what Tailwind can't do out of the box (keyframes).
+     ═══════════════════════════════════════════════════════════════ */
+  #pageLoader.loader-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  #pageLoader .pl-settle {
+    animation: plSettle 2.6s ease-in-out infinite;
+    transform-origin: 65px 130px;
+  }
+
+  @keyframes plSettle {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50%      { transform: translateY(-3px) rotate(-1deg); }
+  }
+
+  #pageLoader .pl-eye {
+    animation: plBlink 3.6s ease-in-out infinite;
+    transform-origin: center;
+  }
+
+  @keyframes plBlink {
+    0%, 90%, 100% { transform: scaleY(1); }
+    94%           { transform: scaleY(.1); }
+  }
+
+  #pageLoader #plClipRect {
+    animation: plExtend 2s cubic-bezier(.65,0,.35,1) infinite;
+  }
+
+  @keyframes plExtend {
+    0%   { width: 0; }
+    45%  { width: 150px; }
+    58%  { width: 150px; }
+    100% { width: 0; }
+  }
+
+  #pageLoader .pl-arm-pull {
+    animation: plReach 2s cubic-bezier(.65,0,.35,1) infinite;
+    transform-origin: 98px 96px;
+  }
+
+  @keyframes plReach {
+    0%   { transform: rotate(0deg); }
+    45%  { transform: rotate(-14deg); }
+    58%  { transform: rotate(-14deg); }
+    100% { transform: rotate(0deg); }
+  }
+
+  #pageLoader .pl-caption {
+    font-size: clamp(11px, 3vw, 13px);
+    font-weight: 600;
+    color: #6E4626;
+    letter-spacing: .02em;
+    text-align: center;
+  }
+
+  .pl-progress {
+    animation: plProgress 1.4s ease-in-out infinite;
+  }
+
+  @keyframes plProgress {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(300%); }
+  }
+
+  /* Card entrance: quick scale-up with a slight overshoot */
+  .pl-card-in {
+    animation: plCardIn .5s cubic-bezier(.34,1.56,.64,1) both;
+  }
+
+  @keyframes plCardIn {
+    0%   { opacity: 0; transform: scale(.85); }
+    100% { opacity: 1; transform: scale(1); }
+  }
+
+  .pl-cabinet-wrap {
+    transform: scale(0.75);
+  }
+
+  @media (min-width: 480px) {
+    .pl-cabinet-wrap { transform: scale(0.9); }
+  }
+
+  @media (min-width: 768px) {
+    .pl-cabinet-wrap { transform: scale(1); }
+  }
+
+  .cabinet-loader {
+    position: relative;
+    width: 80px;
+    height: 104px;
+    background: linear-gradient(145deg, #8B4513, #654321);
+    border-radius: 5px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    perspective: 1000px;
+  }
+
+  .cabinet-interior {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    background: linear-gradient(145deg, #6b4118, #4a2c0f);
+    border-radius: 3px;
+    z-index: 1;
+    padding: 4px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .rod-row {
+    position: relative;
+    flex: 2.6;
+  }
+
+  .rod {
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    right: 1px;
+    height: 2px;
+    background: linear-gradient(180deg, #e8c46a, #a97f1f);
+    border-radius: 1px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
+  }
+
+  .hook {
+    position: absolute;
+    top: 3px;
+    width: 1px;
+    height: 3px;
+    background: #c9a227;
+  }
+
+  .hook-a { left: 10px; }
+  .hook-b { left: 29px; }
+
+  .garment {
+    position: absolute;
+    top: 6px;
+    border-radius: 2px 2px 4px 4px;
+  }
+
+  .garment-a {
+    left: 5px;
+    width: 11px;
+    height: 37px;
+    background: linear-gradient(180deg, #c1544a, #8f342c);
+  }
+
+  .garment-b {
+    left: 24px;
+    width: 10px;
+    height: 30px;
+    background: linear-gradient(180deg, #4d7ea8, #2f5375);
+  }
+
+  .shelf-row {
+    position: relative;
+    flex: 1;
+  }
+
+  .board {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: linear-gradient(180deg, #c8873f, #8B4513);
+    border-radius: 1px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+
+  .item {
+    position: absolute;
+    bottom: 3px;
+    border-radius: 1px 1px 0 0;
+  }
+
+  .item-c {
+    left: 9px;
+    width: 11px;
+    height: 9px;
+    background: linear-gradient(180deg, #d6d6d6, #9a9a9a);
+  }
+
+  .cab-divider {
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(180deg, #2a1505, #1a0f03);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+
+  .cab-drawer {
+    height: 18px;
+    background: linear-gradient(145deg, #7d4f2c, #5a3410);
+    border: 1px solid #2a1505;
+    border-radius: 2px;
+    position: relative;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1), 0 1px 3px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+  }
+
+  .cab-drawer-handle {
+    position: absolute;
+    width: 11px;
+    height: 2px;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    border-radius: 1px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  }
+
+  .cab-door-left,
+  .cab-door-right {
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(145deg, #a0673b, #8B5a3c);
+    z-index: 10;
+  }
+
+  .cab-door-left {
+    left: 0;
+    border-right: 1px solid #654321;
+    border-radius: 5px 0 0 5px;
+    transform-origin: left;
+    animation: cabOpenLeft 2.5s ease-in-out infinite;
+    box-shadow: inset 1px 1px 4px rgba(255, 255, 255, 0.1);
+  }
+
+  .cab-door-right {
+    right: 0;
+    border-left: 1px solid #654321;
+    border-radius: 0 5px 5px 0;
+    transform-origin: right;
+    animation: cabOpenRight 2.5s ease-in-out infinite;
+    box-shadow: inset -1px 1px 4px rgba(255, 255, 255, 0.1);
+  }
+
+  .cab-handle {
+    position: absolute;
+    width: 2px;
+    height: 8px;
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    border-radius: 1px;
+    top: 50%;
+    transform: translateY(-50%);
+    box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .cab-door-left .cab-handle { right: 5px; }
+  .cab-door-right .cab-handle { left: 5px; }
+
+  @keyframes cabOpenLeft {
+    0%, 15%   { transform: rotateY(0deg); }
+    35%, 65%  { transform: rotateY(-110deg); }
+    85%, 100% { transform: rotateY(0deg); }
+  }
+
+  @keyframes cabOpenRight {
+    0%, 15%   { transform: rotateY(0deg); }
+    35%, 65%  { transform: rotateY(110deg); }
+    85%, 100% { transform: rotateY(0deg); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pl-progress             { animation: none; transform: none; width: 100%; }
+    .pl-card-in              { animation: none; opacity: 1; transform: none; }
+    .cab-door-left,
+    .cab-door-right          { animation: none; transform: rotateY(0deg); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
      DESKTOP SIDEBAR — untouched from the original
      ═══════════════════════════════════════════════════════════════ */
   #sidebar {
@@ -464,6 +751,13 @@ function sb_is_active($slug, $current)
       margin-left: 0 !important;
       width: 100% !important;
     }
+  }
+
+  /* Center the page loader within the content area (right of the
+     sidebar), not the full viewport — reuses the same offset var
+     the hero slider already syncs on sidebar collapse/expand. */
+  #pageLoader {
+    left: var(--sb-current-offset, 0px);
   }
 
   @media (min-width: 768px) {
@@ -1000,6 +1294,77 @@ function sb_is_active($slug, $current)
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22), 0 0 0 5px #ffffff, inset 0 1px 1px rgba(255, 255, 255, 0.5), inset 0 -3px 5px rgba(80, 50, 10, 0.35) !important;
   }
 </style>
+
+<!-- ═══════════════════════════════
+     PAGE LOADER — measuring-tape mascot
+     Sizing/spacing/responsiveness = Tailwind classes.
+     Only the SVG keyframe animations live in <style> above.
+═══════════════════════════════ -->
+<div id="pageLoader" role="status" aria-label="Loading"
+  class="fixed top-0 right-0 bottom-0 z-[999999] flex items-center justify-center bg-transparent transition-opacity duration-500 ease-out">
+  <div class="pl-card-in flex flex-col items-center font-montserrat">
+    <div class="pl-cabinet-wrap">
+      <div class="cabinet-loader">
+        <div class="cabinet-interior">
+          <div class="rod-row">
+            <div class="rod"></div>
+            <div class="hook hook-a"></div>
+            <div class="garment garment-a"></div>
+            <div class="hook hook-b"></div>
+            <div class="garment garment-b"></div>
+          </div>
+          <div class="shelf-row">
+            <div class="board"></div>
+            <div class="item item-c"></div>
+          </div>
+          <div class="cab-divider"></div>
+          <div class="cab-drawer">
+            <div class="cab-drawer-handle"></div>
+          </div>
+        </div>
+        <div class="cab-door-left">
+          <div class="cab-handle"></div>
+        </div>
+        <div class="cab-door-right">
+          <div class="cab-handle"></div>
+        </div>
+      </div>
+    </div>
+    <p class="mt-3 text-[11px] sm:text-xs md:text-sm font-semibold tracking-wide text-[#6E4626]">
+      Loading&hellip;
+    </p>
+  </div>
+</div>
+<script>
+  (function () {
+    var MIN_DISPLAY_MS = 900;   // loader stays visible at least this long
+    var startTime = Date.now();
+    var hasHidden = false;
+
+    function hidePageLoader() {
+      if (hasHidden) return;
+      hasHidden = true;
+      var el = document.getElementById('pageLoader');
+      if (!el) return;
+      el.classList.add('loader-hidden');
+      setTimeout(function () { el.remove(); }, 450);
+    }
+
+    function requestHide() {
+      var elapsed = Date.now() - startTime;
+      var remaining = MIN_DISPLAY_MS - elapsed;
+      if (remaining > 0) {
+        setTimeout(hidePageLoader, remaining);
+      } else {
+        hidePageLoader();
+      }
+    }
+
+    window.addEventListener('load', requestHide);
+    // Safety net in case 'load' is delayed by slow images/iframes
+    setTimeout(hidePageLoader, 4000);
+  })();
+</script>
 
 <!-- ═══════════════════════════════
      DESKTOP SIDEBAR

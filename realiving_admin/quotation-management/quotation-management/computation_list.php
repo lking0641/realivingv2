@@ -102,7 +102,7 @@ $q = $conn->prepare("
   LEFT JOIN dimension_measurement AS d ON e.dimension_msmt_id = d.dimension_msmt_id
   WHERE e.client_id = ?
     AND e.admin_id  = ?
-  ORDER BY e.created_at DESC
+  ORDER BY e.created_at ASC
 ");
 $q->bind_param("ii", $client_id, $admin_id);
 // 1a) Execute and pull all entries into an array
@@ -144,7 +144,7 @@ $qFixed = $conn->prepare("
   LEFT JOIN dimension_label AS dl ON ifs.dimension_label_fk = dl.dimension_label_id
   WHERE qfs.client_id = ?
     AND qfs.admin_id  = ?
-  ORDER BY qfs.created_at DESC
+  ORDER BY qfs.created_at ASC
 ");
 $qFixed->bind_param("ii", $client_id, $admin_id);
 $qFixed->execute();
@@ -156,12 +156,16 @@ while ($r = $resultFixed->fetch_assoc()) {
 
 // 1b) Build a list of distinct areas for grouping (BOTH customized and fixed)
 $areasStmt = $conn->prepare("
-  SELECT DISTINCT area FROM quotation_entries
-   WHERE client_id = ? AND admin_id = ?
-  UNION
-  SELECT DISTINCT area FROM quotation_fixed_sizes
-   WHERE client_id = ? AND admin_id = ?
-   ORDER BY area
+  SELECT area, MIN(created_at) AS first_seen
+  FROM (
+    SELECT area, created_at FROM quotation_entries
+     WHERE client_id = ? AND admin_id = ?
+    UNION ALL
+    SELECT area, created_at FROM quotation_fixed_sizes
+     WHERE client_id = ? AND admin_id = ?
+  ) AS combined
+  GROUP BY area
+  ORDER BY first_seen ASC
 ");
 $areasStmt->bind_param("iiii", $client_id, $admin_id, $client_id, $admin_id);
 $areasStmt->execute();
@@ -487,6 +491,22 @@ if ($business_type === 'Project') {
       </div>
     </div>
 
+    <!-- Search & Filter Toolbar -->
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+      <div style="position:relative; flex:1; min-width:220px; max-width:320px;">
+        <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:13px;"></i>
+        <input type="text" id="computation-search" placeholder="Search item name..."
+          style="width:100%; padding:10px 12px 10px 32px; border:2px solid #e9ecef; border-radius:8px; font-size:14px;">
+      </div>
+      <select id="area-filter"
+        style="padding:10px 16px; border:2px solid #e9ecef; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; background:white;">
+        <option value="">All Areas</option>
+        <?php foreach ($areas as $area): ?>
+          <option value="<?= htmlspecialchars($area) ?>"><?= htmlspecialchars($area) ?></option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+
     <?php if (empty($entriesArr) && empty($fixedEntriesArr)): ?>
       <div
         style="text-align:center; padding:60px 20px; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
@@ -504,7 +524,7 @@ if ($business_type === 'Project') {
         ?>
 
         <!-- ═══════════════════════════════════════ AREA CARD ═══════════════════════════════════════ -->
-        <div
+        <div class="area-card" data-area="<?= htmlspecialchars($area) ?>"
           style="background:white; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:24px; overflow:hidden; border:1px solid #e5e7eb;">
 
           <!-- Area Header -->

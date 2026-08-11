@@ -1,6 +1,6 @@
 <?php
 //sales_dashboard.php
-include $includes ['mainbody'];
+include $includes['mainbody'];
 
 
 // Allow only admin1 to admin5
@@ -12,27 +12,27 @@ $admin_role = $_SESSION['role'] ?? '';
 
 // Get pending inquiry counts
 // Appointments
-$apt_query = ($admin_role === 'superadmin') 
-    ? "SELECT COUNT(*) as count FROM appointments WHERE status='pending'" 
-    : "SELECT COUNT(*) as count FROM appointments WHERE status='pending' AND assigned_to = $admin_id";
+$apt_query = ($admin_role === 'superadmin')
+  ? "SELECT COUNT(*) as count FROM appointments WHERE status='pending'"
+  : "SELECT COUNT(*) as count FROM appointments WHERE status='pending' AND assigned_to = $admin_id";
 $pending_appointments = $conn->query($apt_query)->fetch_assoc()['count'] ?? 0;
 
 // Concept Inquiries
-$concept_query = ($admin_role === 'superadmin') 
-    ? "SELECT COUNT(*) as count FROM concept_inquiries WHERE status='pending'" 
-    : "SELECT COUNT(*) as count FROM concept_inquiries WHERE status='pending' AND assigned_to = $admin_id";
+$concept_query = ($admin_role === 'superadmin')
+  ? "SELECT COUNT(*) as count FROM concept_inquiries WHERE status='pending'"
+  : "SELECT COUNT(*) as count FROM concept_inquiries WHERE status='pending' AND assigned_to = $admin_id";
 $pending_concepts = $conn->query($concept_query)->fetch_assoc()['count'] ?? 0;
 
 // Contact Inquiries
-$contact_query = ($admin_role === 'superadmin') 
-    ? "SELECT COUNT(*) as count FROM contact WHERE status='pending'" 
-    : "SELECT COUNT(*) as count FROM contact WHERE status='pending' AND assigned_to = $admin_id";
+$contact_query = ($admin_role === 'superadmin')
+  ? "SELECT COUNT(*) as count FROM contact WHERE status='pending'"
+  : "SELECT COUNT(*) as count FROM contact WHERE status='pending' AND assigned_to = $admin_id";
 $pending_contacts = $conn->query($contact_query)->fetch_assoc()['count'] ?? 0;
 
 // Project Inquiries
-$project_query = ($admin_role === 'superadmin') 
-    ? "SELECT COUNT(*) as count FROM project_inquiries WHERE status='pending'" 
-    : "SELECT COUNT(*) as count FROM project_inquiries WHERE status='pending' AND assigned_to = $admin_id";
+$project_query = ($admin_role === 'superadmin')
+  ? "SELECT COUNT(*) as count FROM project_inquiries WHERE status='pending'"
+  : "SELECT COUNT(*) as count FROM project_inquiries WHERE status='pending' AND assigned_to = $admin_id";
 $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
 
 ?>
@@ -45,128 +45,232 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
   <title>Sales & Marketing Dashboard - RealLiving</title>
   <link rel="icon" type="image/png" sizes="32x32" href="<? BASE_URL ?>logo/favicon.ico">
   <!-- Font Awesome CDN -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
-    :root{
-      --adm-bg:#F5F5F5;
-      --adm-surface:#FFFFFF;
-      --adm-ink:#0B0B0B;
-      --adm-soft:#6B6B6B;
-      --adm-muted:#9A9A9A;
-      --adm-line:#E2E2E2;
+    :root {
+      --adm-bg: #F5F5F5;
+      --adm-surface: #FFFFFF;
+      --adm-ink: #0B0B0B;
+      --adm-soft: #6B6B6B;
+      --adm-muted: #9A9A9A;
+      --adm-line: #E2E2E2;
     }
 
-    body{
-      font-family:'Inter', sans-serif;
+    body {
+      font-family: 'Inter', sans-serif;
       background: var(--adm-bg);
       color: var(--adm-ink);
     }
 
     /* ── Header ─────────────────────────────── */
-    .adm-eyebrow{
-      font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;
+    .adm-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
       color: var(--adm-soft);
     }
-    .adm-title{
-      font-size:28px; font-weight:700; letter-spacing:-0.01em; color: var(--adm-ink);
+
+    .adm-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--adm-ink);
     }
-    .adm-subtitle{
-      font-size:13.5px; color: var(--adm-soft);
+
+    .adm-subtitle {
+      font-size: 13.5px;
+      color: var(--adm-soft);
     }
 
     /* ── Section label ──────────────────────── */
-    .adm-section-label{
-      font-size:12px; font-weight:600; color: var(--adm-ink);
-      display:flex; align-items:center; gap:10px;
+    .adm-section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .adm-section-label::after{
-      content:""; flex:1; height:1px; background: var(--adm-line);
+
+    .adm-section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--adm-line);
     }
 
     /* ── Cards (Departments) ────────────────── */
-    .adm-card{
-      display:block;
+    .adm-card {
+      display: block;
       background: var(--adm-surface);
-      border:1px solid var(--adm-line);
-      border-radius:10px;
-      padding:1.5rem;
+      border: 1px solid var(--adm-line);
+      border-radius: 10px;
+      padding: 1.5rem;
       transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
     }
+
     .adm-card:hover,
-    .adm-card:focus-visible{
+    .adm-card:focus-visible {
       border-color: var(--adm-ink);
-      box-shadow: 0 10px 26px -16px rgba(11,11,11,0.25);
+      box-shadow: 0 10px 26px -16px rgba(11, 11, 11, 0.25);
       transform: translateY(-2px);
-      outline:none;
+      outline: none;
     }
-    .adm-icon{
-      width:44px; height:44px; border-radius:9px;
+
+    .adm-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 9px;
       background: var(--adm-bg);
-      border:1px solid var(--adm-line);
+      border: 1px solid var(--adm-line);
       color: var(--adm-ink);
-      display:flex; align-items:center; justify-content:center;
-      font-size:17px;
-      margin-bottom:1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      margin-bottom: 1rem;
     }
-    .adm-card-title{
-      font-size:15px; font-weight:600; color: var(--adm-ink); margin-bottom:.35rem;
+
+    .adm-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      margin-bottom: .35rem;
     }
-    .adm-card-desc{
-      font-size:13px; line-height:1.5; color: var(--adm-soft); margin-bottom:1.1rem;
+
+    .adm-card-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--adm-soft);
+      margin-bottom: 1.1rem;
     }
-    .adm-card-link{
-      font-size:12.5px; font-weight:600; color: var(--adm-ink);
-      display:inline-flex; align-items:center; gap:6px;
+
+    .adm-card-link {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
     }
-    .adm-card-link i{ font-size:10px; transition: transform .2s ease; }
-    .adm-card:hover .adm-card-link i{ transform: translateX(3px); }
+
+    .adm-card-link i {
+      font-size: 10px;
+      transition: transform .2s ease;
+    }
+
+    .adm-card:hover .adm-card-link i {
+      transform: translateX(3px);
+    }
 
     /* ── Inquiry stat cards ──────────────────── */
-    .adm-stat{
-      position:relative;
-      display:block;
+    .adm-stat {
+      position: relative;
+      display: block;
       background: var(--adm-surface);
-      border:1px solid var(--adm-line);
-      border-radius:10px;
-      padding:1.35rem 1.4rem;
+      border: 1px solid var(--adm-line);
+      border-radius: 10px;
+      padding: 1.35rem 1.4rem;
       transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
     }
+
     .adm-stat:hover,
-    .adm-stat:focus-visible{
+    .adm-stat:focus-visible {
       border-color: var(--adm-ink);
-      box-shadow: 0 10px 26px -16px rgba(11,11,11,0.25);
+      box-shadow: 0 10px 26px -16px rgba(11, 11, 11, 0.25);
       transform: translateY(-2px);
-      outline:none;
+      outline: none;
     }
-    .adm-stat-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:.9rem; }
-    .adm-stat-icon{ font-size:15px; color: var(--adm-soft); }
-    .adm-stat-badge{
-      min-width:20px; height:20px; padding:0 6px; line-height:20px; text-align:center;
-      border-radius:999px; background: var(--adm-ink); color:#fff;
-      font-size:11px; font-weight:700;
+
+    .adm-stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: .9rem;
     }
-    .adm-stat-label{ font-size:12.5px; color: var(--adm-soft); margin-bottom:.15rem; }
-    .adm-stat-title{ font-size:14.5px; font-weight:600; color: var(--adm-ink); margin-bottom:1rem; }
-    .adm-stat-link{
-      font-size:12px; font-weight:600; color: var(--adm-ink);
-      display:inline-flex; align-items:center; gap:6px;
+
+    .adm-stat-icon {
+      font-size: 15px;
+      color: var(--adm-soft);
     }
-    .adm-stat-link i{ font-size:9px; transition: transform .2s ease; }
-    .adm-stat:hover .adm-stat-link i{ transform: translateX(3px); }
+
+    .adm-stat-badge {
+      min-width: 20px;
+      height: 20px;
+      padding: 0 6px;
+      line-height: 20px;
+      text-align: center;
+      border-radius: 999px;
+      background: var(--adm-ink);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .adm-stat-label {
+      font-size: 12.5px;
+      color: var(--adm-soft);
+      margin-bottom: .15rem;
+    }
+
+    .adm-stat-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      margin-bottom: 1rem;
+    }
+
+    .adm-stat-link {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .adm-stat-link i {
+      font-size: 9px;
+      transition: transform .2s ease;
+    }
+
+    .adm-stat:hover .adm-stat-link i {
+      transform: translateX(3px);
+    }
 
     /* ── Toast ──────────────────────────────── */
-    .adm-toast{
-      background:#fff;
-      border-left:3px solid var(--adm-ink);
-      box-shadow: 0 12px 32px -14px rgba(11,11,11,0.3);
+    .adm-toast {
+      background: #fff;
+      border-left: 3px solid var(--adm-ink);
+      box-shadow: 0 12px 32px -14px rgba(11, 11, 11, 0.3);
     }
 
-    @keyframes adm-fade{ from{ opacity:0; transform:translateY(8px);} to{ opacity:1; transform:translateY(0);} }
-    .adm-fade{ animation: adm-fade .4s ease both; }
-    @media (prefers-reduced-motion: reduce){ .adm-fade{ animation:none; } }
+    @keyframes adm-fade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .adm-fade {
+      animation: adm-fade .4s ease both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .adm-fade {
+        animation: none;
+      }
+    }
   </style>
 </head>
 
@@ -187,7 +291,7 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
       </div>
     </div>
     <script>
-      setTimeout(function() {
+      setTimeout(function () {
         var notif = document.getElementById("notifBox");
         if (notif) {
           notif.classList.add('opacity-0', 'transition-opacity', 'duration-300');
@@ -275,7 +379,8 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         <a href="appointment-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-calendar-check adm-stat-icon"></i>
-            <span class="adm-stat-badge" id="badge-appointments" style="display: <?php echo $pending_appointments > 0 ? 'block' : 'none'; ?>"><?php echo $pending_appointments; ?></span>
+            <span class="adm-stat-badge" id="badge-appointments"
+              style="display: <?php echo $pending_appointments > 0 ? 'block' : 'none'; ?>"><?php echo $pending_appointments; ?></span>
           </div>
           <div class="adm-stat-label">Appointments</div>
           <div class="adm-stat-title">Bookings &amp; scheduling</div>
@@ -286,7 +391,8 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         <a href="concept-inquiries-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-palette adm-stat-icon"></i>
-            <span class="adm-stat-badge" id="badge-concepts" style="display: <?php echo $pending_concepts > 0 ? 'block' : 'none'; ?>"><?php echo $pending_concepts; ?></span>
+            <span class="adm-stat-badge" id="badge-concepts"
+              style="display: <?php echo $pending_concepts > 0 ? 'block' : 'none'; ?>"><?php echo $pending_concepts; ?></span>
           </div>
           <div class="adm-stat-label">Concept Inquiries</div>
           <div class="adm-stat-title">Customization requests</div>
@@ -297,7 +403,8 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         <a href="contact-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-envelope-open-text adm-stat-icon"></i>
-            <span class="adm-stat-badge" id="badge-contacts" style="display: <?php echo $pending_contacts > 0 ? 'block' : 'none'; ?>"><?php echo $pending_contacts; ?></span>
+            <span class="adm-stat-badge" id="badge-contacts"
+              style="display: <?php echo $pending_contacts > 0 ? 'block' : 'none'; ?>"><?php echo $pending_contacts; ?></span>
           </div>
           <div class="adm-stat-label">Contact Inquiries</div>
           <div class="adm-stat-title">General submissions</div>
@@ -308,7 +415,8 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
         <a href="project-inquiries-dashboard" class="adm-stat">
           <div class="adm-stat-top">
             <i class="fas fa-building adm-stat-icon"></i>
-            <span class="adm-stat-badge" id="badge-projects" style="display: <?php echo $pending_projects > 0 ? 'block' : 'none'; ?>"><?php echo $pending_projects; ?></span>
+            <span class="adm-stat-badge" id="badge-projects"
+              style="display: <?php echo $pending_projects > 0 ? 'block' : 'none'; ?>"><?php echo $pending_projects; ?></span>
           </div>
           <div class="adm-stat-label">Project Inquiries</div>
           <div class="adm-stat-title">Showcase page leads</div>
@@ -320,122 +428,113 @@ $pending_projects = $conn->query($project_query)->fetch_assoc()['count'] ?? 0;
 
   </div>
 
-<script>
-// Real-time inquiry count update
-function updateInquiryCounts() {
-  console.log('Fetching inquiry counts...'); // Debug log
-  
-  fetch('get_inquiry_counts.php')
-    .then(response => {
-      console.log('Response status:', response.status); // Debug log
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      return response.json();
-    })
-    .then(data => {
-      console.log('Received data:', data); // Debug log
-      
-      // Check if data has error
-      if (data.error) {
-        console.error('API Error:', data.error);
-        return;
-      }
-      
-      // Update Appointments badge
-      const appointmentsBadge = document.getElementById('badge-appointments');
-      if (appointmentsBadge) {
-        if (data.appointments > 0) {
-          appointmentsBadge.textContent = data.appointments;
-          appointmentsBadge.style.display = 'block';
-          console.log('Updated appointments:', data.appointments);
-        } else {
-          appointmentsBadge.style.display = 'none';
-        }
-      }
+  <script>
+    // Real-time inquiry count update
+    function updateInquiryCounts() {
 
-      // Update Concepts badge
-      const conceptsBadge = document.getElementById('badge-concepts');
-      if (conceptsBadge) {
-        if (data.concepts > 0) {
-          conceptsBadge.textContent = data.concepts;
-          conceptsBadge.style.display = 'block';
-          console.log('Updated concepts:', data.concepts);
-        } else {
-          conceptsBadge.style.display = 'none';
-        }
-      }
-
-      // Update Contacts badge
-      const contactsBadge = document.getElementById('badge-contacts');
-      if (contactsBadge) {
-        if (data.contacts > 0) {
-          contactsBadge.textContent = data.contacts;
-          contactsBadge.style.display = 'block';
-          console.log('Updated contacts:', data.contacts);
-        } else {
-          contactsBadge.style.display = 'none';
-        }
-      }
-
-      // Update Projects badge
-      const projectsBadge = document.getElementById('badge-projects');
-      if (projectsBadge) {
-        if (data.projects > 0) {
-          projectsBadge.textContent = data.projects;
-          projectsBadge.style.display = 'block';
-          console.log('Updated projects:', data.projects);
-        } else {
-          projectsBadge.style.display = 'none';
-        }
-      }
-    // Also update navbar badges if they exist
-      const navBadge = document.querySelector('.nav-badge');
-      if (navBadge) {
-        const totalPending = data.appointments + data.concepts + data.contacts + data.projects;
-        if (totalPending > 0) {
-          navBadge.textContent = totalPending;
-          navBadge.style.display = 'inline-block';
-        } else {
-          navBadge.style.display = 'none';
-        }
-      }
-
-      // Update mobile badge if exists
-      const mobileDropdownButton = document.querySelector('[data-target="inquiryMobileDropdown"]');
-      if (mobileDropdownButton) {
-        const mobileBadge = mobileDropdownButton.querySelector('.rounded-full');
-        if (mobileBadge) {
-          const totalPending = data.appointments + data.concepts + data.contacts + data.projects;
-          if (totalPending > 0) {
-            mobileBadge.textContent = totalPending;
-            mobileBadge.style.display = 'inline-flex';
-          } else {
-            mobileBadge.style.display = 'none';
+      fetch('<?= BASE_URL ?>get-inquiry-counts')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
           }
-        }
-      }
-    })
-    .catch(error => {
-      console.error('Error fetching inquiry counts:', error);
-    });
-}
+          return response.json();
+        })
+        .then(data => {
 
-// Test immediately on page load
-console.log('Page loaded, testing update...');
-updateInquiryCounts();
+          // Check if data has error
+          if (data.error) {
+            console.error('API Error:', data.error);
+            return;
+          }
 
-// Update counts every 10 seconds (10000 milliseconds)
-setInterval(updateInquiryCounts, 10000);
+          // Update Appointments badge
+          const appointmentsBadge = document.getElementById('badge-appointments');
+          if (appointmentsBadge) {
+            if (data.appointments > 0) {
+              appointmentsBadge.textContent = data.appointments;
+              appointmentsBadge.style.display = 'block';
+            } else {
+              appointmentsBadge.style.display = 'none';
+            }
+          }
 
-// Also update when page becomes visible again (user switches back to tab)
-document.addEventListener('visibilitychange', function() {
-  if (!document.hidden) {
-    console.log('Tab visible again, updating...');
+          // Update Concepts badge
+          const conceptsBadge = document.getElementById('badge-concepts');
+          if (conceptsBadge) {
+            if (data.concepts > 0) {
+              conceptsBadge.textContent = data.concepts;
+              conceptsBadge.style.display = 'block';
+            } else {
+              conceptsBadge.style.display = 'none';
+            }
+          }
+
+          // Update Contacts badge
+          const contactsBadge = document.getElementById('badge-contacts');
+          if (contactsBadge) {
+            if (data.contacts > 0) {
+              contactsBadge.textContent = data.contacts;
+              contactsBadge.style.display = 'block';
+            } else {
+              contactsBadge.style.display = 'none';
+            }
+          }
+
+          // Update Projects badge
+          const projectsBadge = document.getElementById('badge-projects');
+          if (projectsBadge) {
+            if (data.projects > 0) {
+              projectsBadge.textContent = data.projects;
+              projectsBadge.style.display = 'block';
+            } else {
+              projectsBadge.style.display = 'none';
+            }
+          }
+          // Also update navbar badges if they exist
+          const navBadge = document.querySelector('.nav-badge');
+          if (navBadge) {
+            const totalPending = data.appointments + data.concepts + data.contacts + data.projects;
+            if (totalPending > 0) {
+              navBadge.textContent = totalPending;
+              navBadge.style.display = 'inline-block';
+            } else {
+              navBadge.style.display = 'none';
+            }
+          }
+
+          // Update mobile badge if exists
+          const mobileDropdownButton = document.querySelector('[data-target="inquiryMobileDropdown"]');
+          if (mobileDropdownButton) {
+            const mobileBadge = mobileDropdownButton.querySelector('.rounded-full');
+            if (mobileBadge) {
+              const totalPending = data.appointments + data.concepts + data.contacts + data.projects;
+              if (totalPending > 0) {
+                mobileBadge.textContent = totalPending;
+                mobileBadge.style.display = 'inline-flex';
+              } else {
+                mobileBadge.style.display = 'none';
+              }
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching inquiry counts:', error);
+        });
+    }
+
+    // Test immediately on page load
     updateInquiryCounts();
-  }
-});
-</script>
+
+    // Update counts every 10 seconds (10000 milliseconds)
+    setInterval(updateInquiryCounts, 10000);
+
+    // Also update when page becomes visible again (user switches back to tab)
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) {
+        updateInquiryCounts();
+      }
+    });
+  </script>
 </body>
 
 </html>

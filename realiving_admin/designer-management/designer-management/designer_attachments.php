@@ -96,35 +96,6 @@ function countAreaAttachments($conn, $client_id, $area)
     $stmt->close();
     return $row[0] ?? 0;
 }
-
-// Check if area has units
-function areaHasUnits($conn, $client_id, $area)
-{
-    $stmt = $conn->prepare("
-        SELECT COUNT(*) FROM quotation_room_distribution rd
-        INNER JOIN quotation_entries qe ON rd.quotation_entry_id = qe.id
-        WHERE qe.client_id = ? AND qe.area = ?
-        LIMIT 1
-    ");
-    $stmt->bind_param("is", $client_id, $area);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_row();
-    $stmt->close();
-    if (($row[0] ?? 0) > 0)
-        return true;
-
-    $stmt2 = $conn->prepare("
-        SELECT COUNT(*) FROM quotation_room_distribution rd
-        INNER JOIN quotation_fixed_sizes qfs ON rd.quotation_fixed_size_id = qfs.id
-        WHERE qfs.client_id = ? AND qfs.area = ?
-        LIMIT 1
-    ");
-    $stmt2->bind_param("is", $client_id, $area);
-    $stmt2->execute();
-    $row2 = $stmt2->get_result()->fetch_row();
-    $stmt2->close();
-    return ($row2[0] ?? 0) > 0;
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -343,26 +314,15 @@ function areaHasUnits($conn, $client_id, $area)
                 </h2>
                 <?php foreach ($areas as $area): ?>
                     <?php
-                    $hasUnits = areaHasUnits($conn, $client_id, $area);
                     $fileCount = countAreaAttachments($conn, $client_id, $area);
-                    $url = BASE_URL . 'designer-attachment-area?client_id=' . $client_id
+                    $url = BASE_URL . 'designer-attachment-upload?client_id=' . $client_id
                         . '&area=' . urlencode($area);
 
                     // Approval summary for color coding
                     // Fetch detailed approval records for this area (with approver info)
                     // For areas with units, aggregate approval status across ALL units
 // For areas without units, check NULL unit approvals as before
-                    if ($hasUnits) {
-                        $approvalSummaryStmt = $conn->prepare("
-        SELECT la.status, la.comment, la.responded_at,
-               a.id as approver_id, a.full_name as approver_name, a.role as approver_role
-        FROM layout_approvals la
-        JOIN account a ON la.approver_id = a.id
-        WHERE la.client_id = ? AND la.area = ?
-        AND la.room_unit_number IS NOT NULL
-    ");
-                    } else {
-                        $approvalSummaryStmt = $conn->prepare("
+                    $approvalSummaryStmt = $conn->prepare("
         SELECT la.status, la.comment, la.responded_at,
                a.id as approver_id, a.full_name as approver_name, a.role as approver_role
         FROM layout_approvals la
@@ -370,7 +330,6 @@ function areaHasUnits($conn, $client_id, $area)
         WHERE la.client_id = ? AND la.area = ?
         AND la.room_unit_number IS NULL
     ");
-                    }
                     $approvalSummaryStmt->bind_param("is", $client_id, $area);
                     $approvalSummaryStmt->execute();
                     $approvalRows = $approvalSummaryStmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -488,11 +447,6 @@ function areaHasUnits($conn, $client_id, $area)
                             <div>
                                 <div class="area-name"><?= htmlspecialchars($area) ?></div>
                                 <div class="area-meta">
-                                    <?php if ($hasUnits): ?>
-                                        <span class="badge badge-unit"><i class="fas fa-building"></i> Has Units</span>
-                                    <?php else: ?>
-                                        <span class="badge badge-nofile"><i class="fas fa-home"></i> No Units</span>
-                                    <?php endif; ?>
                                     &nbsp;
                                     <?php if ($fileCount > 0): ?>
                                         <span class="badge badge-files"><i class="fas fa-file"></i> <?= $fileCount ?> file(s)</span>
@@ -500,9 +454,7 @@ function areaHasUnits($conn, $client_id, $area)
                                     <?php if ($approvalBadge): ?>
                                         &nbsp;<?= $approvalBadge ?>
                                     <?php endif; ?>
-                                    <?php if (!$hasUnits): ?>
-                                        <?= $approverBadgesHtml ?>
-                                    <?php endif; ?>
+                                    <?= $approverBadgesHtml ?>
                                 </div>
                             </div>
                         </div>

@@ -71,27 +71,6 @@ function tdCountAreaFiles($conn, $client_id, $area)
     return $s->get_result()->fetch_row()[0] ?? 0;
 }
 
-function tdAreaHasUnits($conn, $client_id, $area)
-{
-    $s = $conn->prepare("
-        SELECT COUNT(*) FROM quotation_room_distribution rd
-        INNER JOIN quotation_entries qe ON rd.quotation_entry_id = qe.id
-        WHERE qe.client_id=? AND qe.area=? LIMIT 1
-    ");
-    $s->bind_param("is", $client_id, $area);
-    $s->execute();
-    if ($s->get_result()->fetch_row()[0] > 0)
-        return true;
-    $s2 = $conn->prepare("
-        SELECT COUNT(*) FROM quotation_room_distribution rd
-        INNER JOIN quotation_fixed_sizes qfs ON rd.quotation_fixed_size_id = qfs.id
-        WHERE qfs.client_id=? AND qfs.area=? LIMIT 1
-    ");
-    $s2->bind_param("is", $client_id, $area);
-    $s2->execute();
-    return $s2->get_result()->fetch_row()[0] > 0;
-}
-
 // Fetch pending revisions for this client
 $revStmt = $conn->prepare("
     SELECT area, room_unit_number, reason, revision_number, created_at
@@ -272,18 +251,13 @@ foreach ($revRows as $rv)
                     <i class="fas fa-map-marker-alt"></i> Select an Area
                 </h2>
                 <?php foreach ($areas as $area):
-                    $hasUnits = tdAreaHasUnits($conn, $client_id, $area);
                     $fileCount = tdCountAreaFiles($conn, $client_id, $area);
                     $revKey = $area . '||null';
                     $areaRev = $revMap[$revKey] ?? null;
-                    $url = BASE_URL . 'td-attachment-area?client_id=' . $client_id . '&area=' . urlencode($area);
+                    $url = BASE_URL . 'td-attachment-upload?client_id=' . $client_id . '&area=' . urlencode($area);
 
                     // Approval state for this area
-                    if ($hasUnits) {
-                        $apSt = $conn->prepare("SELECT taa.status, a.full_name, a.role FROM td_attachment_approvals taa JOIN account a ON taa.approver_id=a.id WHERE taa.client_id=? AND taa.area=? AND taa.room_unit_number IS NOT NULL GROUP BY taa.approver_id");
-                    } else {
-                        $apSt = $conn->prepare("SELECT taa.status, a.full_name, a.role FROM td_attachment_approvals taa JOIN account a ON taa.approver_id=a.id WHERE taa.client_id=? AND taa.area=? AND taa.room_unit_number IS NULL");
-                    }
+                    $apSt = $conn->prepare("SELECT taa.status, a.full_name, a.role FROM td_attachment_approvals taa JOIN account a ON taa.approver_id=a.id WHERE taa.client_id=? AND taa.area=? AND taa.room_unit_number IS NULL");
                     $apSt->bind_param("is", $client_id, $area);
                     $apSt->execute();
                     $apRows = $apSt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -307,37 +281,23 @@ foreach ($revRows as $rv)
                     }
 
                     // Check if remark is needed for this area
-                    $remarkAreaStmt = null;
-                    if ($room_unit_number_check = null) {
-                    } // reset
                     $remarkAreaNeeded = false;
                     if ($isAssigned) {
-                        if ($hasUnits) {
-                            $rmkStmt = $conn->prepare("
-            SELECT COUNT(*) FROM layout_approvals
-            WHERE client_id = ? AND area = ?
-            AND room_unit_number IS NOT NULL
-            AND (td_remark IS NULL OR td_remark = '')
-            AND requested_at IS NOT NULL
-        ");
-                            $rmkStmt->bind_param("is", $client_id, $area);
-                        } else {
-                            $rmkStmt = $conn->prepare("
+                        $rmkStmt = $conn->prepare("
             SELECT COUNT(*) FROM layout_approvals
             WHERE client_id = ? AND area = ?
             AND room_unit_number IS NULL
             AND (td_remark IS NULL OR td_remark = '')
             AND requested_at IS NOT NULL
         ");
-                            $rmkStmt->bind_param("is", $client_id, $area);
-                        }
+                        $rmkStmt->bind_param("is", $client_id, $area);
                         $rmkStmt->execute();
                         $remarkAreaNeeded = (int) $rmkStmt->get_result()->fetch_row()[0] > 0;
                     }
 
-                    // Build per-approver badges (shown for no-unit areas inline; unit areas handled inside area page)
+                    // Build per-approver badges
                     $apBadge = '';
-                    if (!$hasUnits && !empty($apRows)) {
+                    if (!empty($apRows)) {
                         foreach ($apRows as $apr) {
                             if ($apr['status'] === 'approved') {
                                 $bc = '#d1fae5';
@@ -354,15 +314,6 @@ foreach ($revRows as $rv)
                             }
                             $shortName = explode(' ', trim($apr['full_name']))[0]; // first name only
                             $apBadge .= '<span class="badge" style="background:' . $bc . ';color:' . $tc . ';"><i class="fas ' . $ic . '"></i> ' . htmlspecialchars($shortName) . '</span> ';
-                        }
-                    } elseif ($hasUnits && !empty($apRows)) {
-                        // For has-units areas just show the overall summary badge
-                        if (in_array('rejected', $apStatuses)) {
-                            $apBadge = '<span class="badge" style="background:#fee2e2;color:#991b1b;"><i class="fas fa-times-circle"></i> Rejected</span>';
-                        } elseif (count(array_filter($apStatuses, fn($s) => $s === 'approved')) === count($apStatuses)) {
-                            $apBadge = '<span class="badge" style="background:#d1fae5;color:#065f46;"><i class="fas fa-check-circle"></i> Approved</span>';
-                        } else {
-                            $apBadge = '<span class="badge" style="background:#fef3c7;color:#92400e;"><i class="fas fa-hourglass-half"></i> Pending</span>';
                         }
                     }
                     ?>
@@ -387,14 +338,6 @@ foreach ($revRows as $rv)
                             <div>
                                 <div class="area-name"><?= htmlspecialchars($area) ?></div>
                                 <div class="area-meta">
-                                    <?php if ($hasUnits): ?>
-                                        <span class="badge" style="background:#dbeafe;color:#1e40af;"><i
-                                                class="fas fa-building"></i> Has Units</span>
-                                    <?php else: ?>
-                                        <span class="badge" style="background:#f3f4f6;color:#9ca3af;"><i class="fas fa-home"></i> No
-                                            Units</span>
-                                    <?php endif; ?>
-                                    &nbsp;
                                     <?php if ($fileCount > 0): ?>
                                         <span class="badge" style="background:#d1fae5;color:#065f46;"><i class="fas fa-file"></i>
                                             <?= $fileCount ?> file(s)</span>

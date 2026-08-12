@@ -492,19 +492,45 @@ if ($business_type === 'Project') {
     </div>
 
     <!-- Search & Filter Toolbar -->
-    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
-      <div style="position:relative; flex:1; min-width:220px; max-width:320px;">
-        <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:13px;"></i>
-        <input type="text" id="computation-search" placeholder="Search item name..."
-          style="width:100%; padding:10px 12px 10px 32px; border:2px solid #e9ecef; border-radius:8px; font-size:14px;">
-      </div>
-      <select id="area-filter"
-        style="padding:10px 16px; border:2px solid #e9ecef; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; background:white;">
-        <option value="">All Areas</option>
-        <?php foreach ($areas as $area): ?>
-          <option value="<?= htmlspecialchars($area) ?>"><?= htmlspecialchars($area) ?></option>
-        <?php endforeach; ?>
-      </select>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:24px;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+
+        <!-- Search -->
+        <div style="position:relative; flex:1; min-width:240px; max-width:340px;">
+          <i class="fas fa-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:13px; pointer-events:none;"></i>
+          <input type="text" id="computation-search" placeholder="Search by area name..."
+            style="width:100%; padding:11px 36px; border:1px solid #e5e7eb; border-radius:24px; font-size:14px; background:#f9fafb; transition:all 0.2s ease; outline:none;"
+            onfocus="this.style.background='white'; this.style.borderColor='#8a5a44'; this.style.boxShadow='0 0 0 3px rgba(138,90,68,0.12)';"
+            onblur="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+          <button type="button" id="clear-search-btn" title="Clear search"
+            style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:#e5e7eb; color:#6b7280; border:none; width:20px; height:20px; border-radius:50%; font-size:11px; line-height:1; cursor:pointer; align-items:center; justify-content:center;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Area Filter -->
+        <div style="position:relative;">
+          <select id="area-filter"
+            style="appearance:none; -webkit-appearance:none; padding:11px 34px 11px 16px; border:1px solid #e5e7eb; border-radius:24px; font-size:13px; font-weight:600; color:#374151; cursor:pointer; background:#f9fafb; transition:all 0.2s ease; outline:none;"
+            onfocus="this.style.borderColor='#8a5a44'; this.style.boxShadow='0 0 0 3px rgba(138,90,68,0.12)';"
+            onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+            <option value="">All Areas</option>
+            <?php foreach ($areas as $area): ?>
+              <option value="<?= htmlspecialchars($area) ?>"><?= htmlspecialchars($area) ?></option>
+            <?php endforeach; ?>
+          </select>
+          <i class="fas fa-chevron-down" style="position:absolute; right:14px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:10px; pointer-events:none;"></i>
+        </div>
+
+        <!-- Sort Order Toggle -->
+        <button type="button" id="sort-toggle-btn" data-order="asc"
+          style="padding:11px 18px; border:1px solid #e5e7eb; border-radius:24px; font-size:13px; font-weight:600; color:#374151; cursor:pointer; background:#f9fafb; transition:all 0.2s ease; display:inline-flex; align-items:center; gap:8px;"
+          onmouseover="this.style.borderColor='#8a5a44';" onmouseout="this.style.borderColor='#e5e7eb';">
+          <i class="fas fa-arrow-down-short-wide"></i>
+          <span id="sort-toggle-label">Oldest First</span>
+        </button>
+
+        </div>
     </div>
 
     <?php if (empty($entriesArr) && empty($fixedEntriesArr)): ?>

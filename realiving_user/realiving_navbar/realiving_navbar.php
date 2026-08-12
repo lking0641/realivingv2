@@ -168,6 +168,40 @@ function sb_is_active($slug, $current)
     perspective: 1000px;
   }
 
+  .pl-orbit-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    animation: plOrbit 4.6s linear infinite;
+    z-index: 2;
+  }
+
+  .pl-orbit-item {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: rotate(var(--a)) translate(78px) rotate(calc(-1 * var(--a)));
+  }
+
+  .pl-orbit-item svg {
+    display: block;
+    color: var(--sb-gold);
+    transform: translate(-50%, -50%);
+    animation: plOrbitCounter 4.6s linear infinite;
+  }
+
+  @keyframes plOrbit {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+
+  @keyframes plOrbitCounter {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(-360deg); }
+  }
+
   .cabinet-interior {
     position: absolute;
     top: 5px;
@@ -350,6 +384,9 @@ function sb_is_active($slug, $current)
     .pl-card-in              { animation: none; opacity: 1; transform: none; }
     .cab-door-left,
     .cab-door-right          { animation: none; transform: rotateY(0deg); }
+    .pl-orbit-ring            { animation: none; }
+    .pl-orbit-item i,
+    .pl-orbit-item svg        { animation: none; }
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -1303,7 +1340,53 @@ function sb_is_active($slug, $current)
 <div id="pageLoader" role="status" aria-label="Loading"
   class="fixed top-0 right-0 bottom-0 z-[999999] flex items-center justify-center bg-transparent transition-opacity duration-500 ease-out">
   <div class="pl-card-in flex flex-col items-center font-montserrat">
-    <div class="pl-cabinet-wrap">
+    <div class="pl-cabinet-wrap" style="position: relative;">
+      <div class="pl-orbit-ring">
+        <div class="pl-orbit-item" style="--a: 0deg;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="13.5" y="2.5" width="5" height="7" rx="1" transform="rotate(45 16 6)"/>
+            <line x1="13" y1="8.5" x2="4" y2="17.5"/>
+          </svg>
+        </div>
+        <div class="pl-orbit-item" style="--a: 60deg;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="14" y="2" width="4" height="7" rx="1" transform="rotate(45 16 5.5)"/>
+            <line x1="13" y1="7" x2="4" y2="16"/>
+            <line x1="3" y1="17" x2="5" y2="19"/>
+          </svg>
+        </div>
+        <div class="pl-orbit-item" style="--a: 120deg;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="9" width="18" height="6" rx="1"/>
+            <line x1="7" y1="9" x2="7" y2="12"/>
+            <line x1="11" y1="9" x2="11" y2="13"/>
+            <line x1="15" y1="9" x2="15" y2="12"/>
+            <line x1="19" y1="9" x2="19" y2="13"/>
+          </svg>
+        </div>
+        <div class="pl-orbit-item" style="--a: 180deg;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="9"/>
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <div class="pl-orbit-item" style="--a: 240deg;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6">
+            <rect x="2" y="4" width="8" height="16" rx="1"/>
+            <rect x="14" y="4" width="8" height="16" rx="1"/>
+            <line x1="12" y1="2" x2="12" y2="22"/>
+            <circle cx="12" cy="7" r="1" fill="currentColor"/>
+            <circle cx="12" cy="12" r="1" fill="currentColor"/>
+            <circle cx="12" cy="17" r="1" fill="currentColor"/>
+          </svg>
+        </div>
+        <div class="pl-orbit-item" style="--a: 300deg;">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15.5 3.5a4 4 0 0 0-5.4 4.9L4 14.5l2.5 2.5 6.1-6.1a4 4 0 0 0 4.9-5.4l-2.6 2.6-2-2z"/>
+          </svg>
+        </div>
+      </div>
       <div class="cabinet-loader">
         <div class="cabinet-interior">
           <div class="rod-row">
@@ -1330,9 +1413,6 @@ function sb_is_active($slug, $current)
         </div>
       </div>
     </div>
-    <p class="mt-3 text-[11px] sm:text-xs md:text-sm font-semibold tracking-wide text-[#6E4626]">
-      Loading&hellip;
-    </p>
   </div>
 </div>
 <script>

@@ -23,6 +23,7 @@ $google_error_messages = [
     'audience_mismatch'     => "Something went wrong verifying your Google account. Please try again.",
     'email_not_verified'    => "Your Google account's email isn't verified. Please verify it with Google first.",
     'session_expired'       => "Your session expired while linking. Please log in and try again.",
+    'account_suspended'     => "Your account has been suspended. Please contact your administrator.",
 ];
 
 $google_error_message = "";
@@ -48,13 +49,25 @@ if (isset($_SESSION['admin_id']) && isset($_SESSION['admin_role'])) {
 // Auto-login with remember_token from cookie
 if (!isset($_SESSION['admin_id']) && isset($_COOKIE['remember_token'])) {
     $token = $_COOKIE['remember_token'];
-    $stmt = $conn->prepare("SELECT id, email, role, remember_token FROM account WHERE remember_token IS NOT NULL");
+    $stmt = $conn->prepare("SELECT id, email, role, remember_token, account_status FROM account WHERE remember_token IS NOT NULL");
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result) {
         while ($row = $result->fetch_assoc()) {
             if (password_verify($token, $row['remember_token'])) {
+
+                if ($row['account_status'] === 'suspended') {
+                    // Suspended accounts can't auto-login — wipe the stale cookie/token
+                    setcookie("remember_token", '', time() - 3600, "/");
+                    $clear_stmt = $conn->prepare("UPDATE account SET remember_token = NULL WHERE id = ?");
+                    $clear_stmt->bind_param("i", $row['id']);
+                    $clear_stmt->execute();
+                    $clear_stmt->close();
+                    $error_message = "Your account has been suspended. Please contact your administrator.";
+                    break;
+                }
+
                 $_SESSION['admin_id'] = $row['id'];
                 $_SESSION['admin_email'] = $row['email'];
                 $_SESSION['admin_role'] = $row['role'];
@@ -73,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $remember_me = isset($_POST['remember']);
 
     if (!empty($email) && !empty($password_input)) {
-        $stmt = $conn->prepare("SELECT id, full_name, email, password, role FROM account WHERE email = ? LIMIT 1");
+        $stmt = $conn->prepare("SELECT id, full_name, email, password, role, account_status FROM account WHERE email = ? LIMIT 1");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -82,6 +95,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $row = $result->fetch_assoc();
 
             if (password_verify($password_input, $row['password'])) {
+
+                if ($row['account_status'] === 'suspended') {
+                    $error_message = "Your account has been suspended. Please contact your administrator.";
+                } else {
                 // Set session variables
 session_regenerate_id(true); // prevent session fixation
 
@@ -118,6 +135,7 @@ $update_online->close();
                 // Redirect based on role
                 header("Location: " . getRedirectUrl($row['role'], $conn, $row['id']));
 exit();
+                }
             } else {
                 $error_message = "Incorrect password. Please try again.";
             }

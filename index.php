@@ -295,6 +295,21 @@ $routes = [
   'td-request-revision' => 'realiving_admin/technical-designer-management/td-process/td_request_revision.php',
   'td-respond-approval' => 'realiving_admin/technical-designer-management/td-process/td_respond_approval.php',
 
+  //SUPER-ADMIN
+  'admin-mainpage' => 'realiving_admin/super-admin/dashboard/admin_mainpage.php',
+
+  //ADMIN-MANAGEMENT
+  'admin-management' => 'realiving_admin/super-admin/admin-management/admin-management.php',
+  'toggle-admin-status' => 'realiving_admin/super-admin/admin-management/toggle_admin_status.php',
+  'admin-edit' => 'realiving_admin/super-admin/admin-management/admin-edit.php',
+  'admin-permissions' => 'realiving_admin/super-admin/role-permission/admin-permissions.php',
+  'get-admin-status' => 'realiving_admin/super-admin/admin-management/get_admin_status.php',
+  'heartbeat' => 'config/heartbeat.php',
+  'delete-admin' => 'realiving_admin/super-admin/admin-management/delete_admin.php',
+
+  //HR-MANAGEMENT
+  'human-resource-dashboard' => 'realiving_admin/hr-management/dashboard.php',
+
   //ROLE-CONTROLLER
   'role-permissions-controller' => 'realiving_admin/role-controller/role_permissions_controller.php',
   'get-role-permissions' => 'realiving_admin/role-controller/get_role_permissions.php',
@@ -323,6 +338,8 @@ $routes = [
   //TEST PAGE
   'test' => 'test/test.php',
 
+  //REGISTRATION
+  'registration' => 'realiving_admin/super-admin/registration/registration.php',
 ];
 
 // ══════════════════════════════════════════════════════

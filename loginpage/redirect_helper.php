@@ -32,7 +32,8 @@ function getRedirectUrl($role, $conn = null, $user_id = null) {
         'sales' => BASE_URL . 'sales-dashboard',
         'accounting' => BASE_URL . 'all-clients-tracker-list',
         'project_coordinator' => BASE_URL . 'all-clients-tracker-list',
-        'admin1' => BASE_URL . 'admin-mainpage'
+        'super_admin' => BASE_URL . 'admin-mainpage',
+        'human_resource' => BASE_URL . 'human-resource-dashboard'
     ];
 
     return isset($redirects[$role]) ? $redirects[$role] : BASE_URL . 'admin-mainpage';

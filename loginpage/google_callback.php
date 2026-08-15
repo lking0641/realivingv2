@@ -118,7 +118,7 @@ if ($action === 'link') {
 //  Only matches by google_sub — NO email fallback.
 //  A Google account must already be explicitly linked.
 // ════════════════════════════════════════════════════════
-$stmt = $conn->prepare("SELECT id, full_name, email, role FROM account WHERE google_sub = ? LIMIT 1");
+$stmt = $conn->prepare("SELECT id, full_name, email, role, account_status FROM account WHERE google_sub = ? LIMIT 1");
 $stmt->bind_param('s', $google_sub);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -130,6 +130,12 @@ if ($result->num_rows !== 1) {
 }
 
 $row = $result->fetch_assoc();
+
+if ($row['account_status'] === 'suspended') {
+    // Suspended accounts can't log in via Google either
+    header('Location: ' . BASE_URL . 'login?error=account_suspended');
+    exit();
+}
 
 // Regenerate session ID to prevent session fixation
 session_regenerate_id(true);

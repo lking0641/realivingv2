@@ -5,6 +5,7 @@
 session_start();
 include $includes ['connection'];
 include $includes ['checkrole'];
+include $includes ['online_status'];
 
   // Redirect if not logged in
   if (!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_role'])) {
@@ -2214,6 +2215,25 @@ include $includes ['checkrole'];
     }
   });
 </script>
+
+    <!-- Presence heartbeat — keeps last_activity fresh while this tab is open -->
+    <script>
+      (function () {
+        var heartbeatUrl = <?php echo json_encode(BASE_URL . 'heartbeat'); ?>;
+
+        function sendHeartbeat() {
+          if (document.hidden) return; // don't ping from a backgrounded tab
+          fetch(heartbeatUrl, { method: 'POST', credentials: 'same-origin' }).catch(function () {});
+        }
+
+        sendHeartbeat(); // immediately on page load
+        setInterval(sendHeartbeat, 30000); // every 30 seconds
+
+        document.addEventListener('visibilitychange', function () {
+          if (!document.hidden) sendHeartbeat();
+        });
+      })();
+    </script>
 
   </body>
 

@@ -73,6 +73,9 @@ if (!isset($GLOBALS['includes'])) {
 
         //tracker management
         'esign-modal' => ADMIN_PATH . 'tracker-management/tracker-management/esign_modal.php',
+
+        //online status
+        'online_status' => ROOT_PATH . 'config/online_status.php'
     ];
 }
 

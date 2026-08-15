@@ -6,7 +6,7 @@ session_start();
 
 // Check if user is logged in
 if (!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_role'])) {
-    header("Location: ../../login/index.php");
+    header("Location: " . BASE_URL . "login");
     exit();
 }
 
@@ -53,7 +53,9 @@ function formatRole($role) {
         'designer' => 'Designer',
         'technical_designer' => 'Technical Designer',
         'accounting' => 'Accounting',
-        'project_coordinator' => 'Project Coordinator'
+        'project_coordinator' => 'Project Coordinator',
+        'super_admin' => 'Super Admin',
+        'human_resource' => 'Human Resource'
     ];
     
     return isset($roles[$role]) ? $roles[$role] : ucwords(str_replace('_', ' ', $role));

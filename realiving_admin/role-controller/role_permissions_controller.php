@@ -1,7 +1,7 @@
 <?php
 // role_permissions_controller.php
 include $includes['mainbody'];
-require_role(['sales', 'general_manager', 'operational_manager']); // Only superadmin can manage role permissions
+require_role(['sales', 'general_manager', 'operational_manager', 'super_admin']); // Only superadmin can manage role permissions
 
 $current_admin_id = $_SESSION['admin_id'];
 

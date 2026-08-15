@@ -55,8 +55,11 @@ function require_role($allowed_roles) {
             case 'project_coordinator':
                 header("Location: " . BASE_URL . "realiving_admin/admin_mainpage/mainpage.php");
                 break;
-            case 'superadmin':
+            case 'super_admin':
                 header("Location: " . BASE_URL . "realiving_admin/admin_mainpage/mainpage.php");
+                break;
+            case 'human_resource':
+                header("Location" . BASE_URL . "realiving_admin/admin_mainpage/mainpage.php");
                 break;
             default:
                 header("Location: " . BASE_URL . "login");

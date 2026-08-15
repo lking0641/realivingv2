@@ -1339,7 +1339,7 @@ function sb_is_active($slug, $current)
 ═══════════════════════════════ -->
 <div id="pageLoader" role="status" aria-label="Loading"
   class="fixed top-0 right-0 bottom-0 z-[999999] flex items-center justify-center bg-transparent transition-opacity duration-500 ease-out">
-  <div class="pl-card-in flex flex-col items-center font-montserrat">
+  <div class="pl-card-in flex flex-col items-center font-montserrat drop-shadow-[0_8px_30px_rgba(47,18,0,0.35)]">
     <div class="pl-cabinet-wrap" style="position: relative;">
       <div class="pl-orbit-ring">
         <div class="pl-orbit-item" style="--a: 0deg;">

@@ -1,7 +1,7 @@
 <?php
 // stage_permissions_controller.php
 include $includes ['mainbody'];
-require_role(['sales', 'general_manager', 'operational_manager']); // Only superadmin can manage permissions
+require_role(['sales', 'general_manager', 'operational_manager', 'super_admin']); // Only superadmin can manage permissions
 
 // Fetch all admins with their clients
 $adminsStmt = $conn->prepare("

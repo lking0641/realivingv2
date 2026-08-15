@@ -1078,7 +1078,7 @@ include $includes ['online_status'];
             <!-- Profile Dropdown -->
             <div class="relative hidden md:block">
               <button id="profileButton"
-                class="avatar-glow w-10 h-10 flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50 rounded-full hover:shadow-md transition-all duration-300 border-2 border-white">
+                class="avatar-glow w-10 h-10 flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-50 rounded-full hover:shadow-md transition-all duration-300 border-2 border-white overflow-hidden js-avatar-slot">
                 <i class="ri-user-smile-line text-xl text-primary"></i>
               </button>
               <div id="profileDropdown"
@@ -1229,6 +1229,30 @@ include $includes ['online_status'];
                 </div>
               </div>
 
+              <!-- Profile Picture -->
+              <div class="mb-6">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Profile Picture</label>
+                <div class="flex items-center gap-4 mb-3">
+                  <img id="avatar-preview" src="" class="w-16 h-16 rounded-full object-cover border-2 border-gray-200 hidden">
+                  <div id="avatar-preview-fallback" class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
+                    <i class="ri-user-line text-2xl text-gray-400"></i>
+                  </div>
+                  <label for="avatar-upload" class="cursor-pointer text-xs font-bold px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
+                    Upload Photo
+                  </label>
+                  <input type="file" id="avatar-upload" name="profile_picture" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="previewAvatar(this)">
+                </div>
+
+                <div id="avatar-source-choice" class="hidden space-y-2">
+                  <label class="flex items-center gap-2 text-sm text-gray-600">
+                    <input type="radio" name="avatar_source" value="google"> Use my Google photo
+                  </label>
+                  <label class="flex items-center gap-2 text-sm text-gray-600">
+                    <input type="radio" name="avatar_source" value="custom"> Use my uploaded photo
+                  </label>
+                </div>
+              </div>
+
               <!-- E-Signature Upload -->
               <div class="mb-6">
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
@@ -1333,7 +1357,7 @@ include $includes ['online_status'];
           <div class="flex items-center space-x-3">
             <?php $adminInitial = isset($_SESSION['admin_email']) ? strtoupper(substr($_SESSION['admin_email'], 0, 1)) : 'A'; ?>
             <div
-              class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xl font-bold border-2 border-white/50">
+              class="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-xl font-bold border-2 border-white/50 overflow-hidden js-avatar-slot">
               <?= $adminInitial ?>
             </div>
             <div class="flex-1">
@@ -1796,6 +1820,20 @@ include $includes ['online_status'];
         reader.readAsDataURL(file);
       }
 
+      function previewAvatar(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById('avatar-preview').src = e.target.result;
+          document.getElementById('avatar-preview').classList.remove('hidden');
+          document.getElementById('avatar-preview-fallback').classList.add('hidden');
+          document.querySelector('input[name="avatar_source"][value="custom"]').checked = true;
+          document.getElementById('avatar-source-choice').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+
       function loadAccountData() {
         fetch('<?php echo BASE_URL ?>get-account')
           .then(r => r.json())
@@ -1808,8 +1846,24 @@ include $includes ['online_status'];
                 document.getElementById('sig-preview-img').src = data.e_signature;
                 document.getElementById('sig-preview-wrap').classList.remove('hidden');
               }
+
+              if (data.avatar_url) {
+                document.getElementById('avatar-preview').src = data.avatar_url;
+                document.getElementById('avatar-preview').classList.remove('hidden');
+                document.getElementById('avatar-preview-fallback').classList.add('hidden');
+              }
+              if (data.google_linked) {
+                document.getElementById('avatar-source-choice').classList.remove('hidden');
+                const radio = document.querySelector(`input[name="avatar_source"][value="${data.avatar_source}"]`);
+                if (radio) radio.checked = true;
+              } else {
+                document.getElementById('avatar-source-choice').classList.add('hidden');
+              }
+
               document.getElementById('modal-role-badge').textContent =
                 (data.role || 'admin').replace(/_/g, ' ').toUpperCase();
+
+
 
               renderGoogleLinkStatus(data.google_linked, data.google_email);
             } else {
@@ -2234,6 +2288,35 @@ include $includes ['online_status'];
         });
       })();
     </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('google_linked') === '1') {
+      openAccountSettings();
+      setTimeout(() => showSettingsAlert('Google account linked successfully!', 'success'), 400);
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    if (params.get('google_error') === 'already_linked') {
+      alert('That Google account is already linked to a different staff account.');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  });
+</script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    fetch('<?php echo BASE_URL ?>get-account')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.success || !data.avatar_url) return;
+        document.querySelectorAll('.js-avatar-slot').forEach(slot => {
+          slot.innerHTML = `<img src="${data.avatar_url}" class="w-full h-full object-cover rounded-full">`;
+        });
+      })
+      .catch(() => {});
+  });
+</script>    
 
   </body>
 

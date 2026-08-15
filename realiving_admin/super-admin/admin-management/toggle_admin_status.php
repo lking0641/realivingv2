@@ -5,9 +5,14 @@ header('Content-Type: application/json');
 include $includes['connection'];
 include $includes['checkrole'];
 
-require_role(['super_admin']);
+if (!isset($_SESSION['admin_id']) || !in_array($_SESSION['admin_role'] ?? '', ['super_admin', 'human_resource'])) {
+  http_response_code(403);
+  echo json_encode(['success' => false, 'error' => 'Unauthorized.']);
+  exit;
+}
 
-$current_admin_id = $_SESSION['admin_id'] ?? 0;
+$current_admin_id = $_SESSION['admin_id'];
+$current_role = $_SESSION['admin_role'];
 
 $id = $_POST['id'] ?? null;
 $status = $_POST['status'] ?? null;
@@ -31,6 +36,13 @@ $target = $check->get_result()->fetch_assoc();
 
 if (!$target) {
   echo json_encode(['success' => false, 'error' => 'Admin not found.']);
+  exit;
+}
+
+// HR is never allowed to touch a super_admin account, regardless of what the request contains
+if ($current_role === 'human_resource' && $target['role'] === 'super_admin') {
+  http_response_code(403);
+  echo json_encode(['success' => false, 'error' => 'You are not permitted to modify this account.']);
   exit;
 }
 

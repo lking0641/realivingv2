@@ -309,6 +309,8 @@ $routes = [
 
   //HR-MANAGEMENT
   'human-resource-dashboard' => 'realiving_admin/hr-management/dashboard.php',
+  'hr-admin-management' => 'realiving_admin/hr-management/hr_admin_management.php',
+  'hr-admin-edit' => 'realiving_admin/hr-management/hr_admin_edit.php',
 
   //ROLE-CONTROLLER
   'role-permissions-controller' => 'realiving_admin/role-controller/role_permissions_controller.php',

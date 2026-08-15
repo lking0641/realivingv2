@@ -72,8 +72,9 @@ if (empty($claims['email_verified']) || $claims['email_verified'] !== 'true') {
     exit();
 }
 
-$google_sub   = $claims['sub'];
-$google_email = strtolower(trim($claims['email']));
+$google_sub     = $claims['sub'];
+$google_email   = strtolower(trim($claims['email']));
+$google_picture = $claims['picture'] ?? null;
 
 // ════════════════════════════════════════════════════════
 //  BRANCH: LINKING an already-logged-in account
@@ -98,8 +99,8 @@ if ($action === 'link') {
     $check->close();
 
     // Attach this Google identity to the current account
-    $link_stmt = $conn->prepare("UPDATE account SET google_sub = ?, google_email = ? WHERE id = ?");
-    $link_stmt->bind_param('ssi', $google_sub, $google_email, $link_admin_id);
+    $link_stmt = $conn->prepare("UPDATE account SET google_sub = ?, google_email = ?, google_picture = ? WHERE id = ?");
+$link_stmt->bind_param('sssi', $google_sub, $google_email, $google_picture, $link_admin_id);
     $link_stmt->execute();
     $link_stmt->close();
 
@@ -152,8 +153,8 @@ $_SESSION['last_activity'] = time();
 $session_token = bin2hex(random_bytes(32));
 $_SESSION['session_token'] = $session_token;
 
-$update_online = $conn->prepare("UPDATE account SET is_online = 1, last_activity = NOW(), active_session_token = ? WHERE id = ?");
-$update_online->bind_param("si", $session_token, $row['id']);
+$update_online = $conn->prepare("UPDATE account SET is_online = 1, last_activity = NOW(), active_session_token = ?, google_picture = ? WHERE id = ?");
+$update_online->bind_param("ssi", $session_token, $google_picture, $row['id']);
 $update_online->execute();
 $update_online->close();
 

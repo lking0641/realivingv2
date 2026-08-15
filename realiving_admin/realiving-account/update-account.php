@@ -59,6 +59,59 @@ if (!empty($_FILES['e_signature']['tmp_name'])) {
     $signaturePath = $sigRelativePath; // this is what gets saved to the DB below
 }
 
+// Handle profile picture upload (separate from e-signature)
+$profilePicturePath = null;
+if (!empty($_FILES['profile_picture']['tmp_name'])) {
+    $file = $_FILES['profile_picture'];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+
+    $allowedMimes = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!in_array($mime, $allowedMimes)) {
+        echo json_encode(['success' => false, 'message' => 'Profile picture must be PNG, JPG, or WEBP.']);
+        exit;
+    }
+
+    if ($file['size'] > 2 * 1024 * 1024) {
+        echo json_encode(['success' => false, 'message' => 'Profile picture must be under 2MB.']);
+        exit;
+    }
+
+    $avatarUploadDir = ROOT_PATH . 'uploads/avatars/';
+    if (!is_dir($avatarUploadDir)) mkdir($avatarUploadDir, 0755, true);
+
+    $ext = $mime === 'image/png' ? 'png' : ($mime === 'image/webp' ? 'webp' : 'jpg');
+    $picRelativePath = 'uploads/avatars/avatar_' . $id . '_' . time() . '.' . $ext;
+    $picAbsolutePath = ROOT_PATH . $picRelativePath;
+
+    // Delete old profile picture before saving new one
+    $oldPicStmt = $conn->prepare("SELECT profile_picture FROM account WHERE id = ?");
+    $oldPicStmt->bind_param('i', $id);
+    $oldPicStmt->execute();
+    $oldPicRow = $oldPicStmt->get_result()->fetch_assoc();
+    if (!empty($oldPicRow['profile_picture'])) {
+        $oldPicAbsolutePath = ROOT_PATH . $oldPicRow['profile_picture'];
+        if (file_exists($oldPicAbsolutePath)) {
+            unlink($oldPicAbsolutePath);
+        }
+    }
+    $oldPicStmt->close();
+
+    if (!move_uploaded_file($file['tmp_name'], $picAbsolutePath)) {
+        echo json_encode(['success' => false, 'message' => 'Failed to upload profile picture.']);
+        exit;
+    }
+
+    $profilePicturePath = $picRelativePath; // this is what gets saved to the DB below
+}
+
+// Which avatar the user wants to display: 'google' or 'custom'
+$avatarSource = null;
+if (isset($_POST['avatar_source']) && in_array($_POST['avatar_source'], ['google', 'custom'])) {
+    $avatarSource = $_POST['avatar_source'];
+}
+
 if (!$fullName || !$email) {
     echo json_encode(['success' => false, 'message' => 'Name and email are required.']);
     exit;
@@ -77,6 +130,11 @@ if ($stmt->get_result()->num_rows > 0) {
     echo json_encode(['success' => false, 'message' => 'Email is already in use.']);
     exit;
 }
+
+// ── Build the UPDATE query dynamically based on what was submitted ──
+$fields = ['full_name = ?', 'email = ?'];
+$params = [$fullName, $email];
+$types  = 'ss';
 
 if ($newPass) {
     $currentPass = $_POST['current_password'] ?? '';
@@ -104,27 +162,43 @@ if ($newPass) {
     }
 
     $hashed = password_hash($newPass, PASSWORD_DEFAULT);
-    if ($signaturePath) {
-        $stmt = $conn->prepare("UPDATE account SET full_name = ?, email = ?, password = ?, e_signature = ? WHERE id = ?");
-        $stmt->bind_param('ssssi', $fullName, $email, $hashed, $signaturePath, $id);
-    } else {
-        $stmt = $conn->prepare("UPDATE account SET full_name = ?, email = ?, password = ? WHERE id = ?");
-        $stmt->bind_param('sssi', $fullName, $email, $hashed, $id);
-    }
-} else {
-    if ($signaturePath) {
-        $stmt = $conn->prepare("UPDATE account SET full_name = ?, email = ?, e_signature = ? WHERE id = ?");
-        $stmt->bind_param('sssi', $fullName, $email, $signaturePath, $id);
-    } else {
-        $stmt = $conn->prepare("UPDATE account SET full_name = ?, email = ? WHERE id = ?");
-        $stmt->bind_param('ssi', $fullName, $email, $id);
-    }
+    $fields[] = 'password = ?';
+    $params[] = $hashed;
+    $types   .= 's';
 }
+
+if ($signaturePath) {
+    $fields[] = 'e_signature = ?';
+    $params[] = $signaturePath;
+    $types   .= 's';
+}
+
+if ($profilePicturePath) {
+    $fields[] = 'profile_picture = ?';
+    $params[] = $profilePicturePath;
+    $types   .= 's';
+}
+
+if ($avatarSource) {
+    $fields[] = 'avatar_source = ?';
+    $params[] = $avatarSource;
+    $types   .= 's';
+}
+
+$params[] = $id;
+$types   .= 'i';
+
+$sql  = "UPDATE account SET " . implode(', ', $fields) . " WHERE id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$params);
 
 if ($stmt->execute()) {
     $responseData = ['success' => true, 'message' => 'Account updated successfully!'];
     if ($signaturePath) {
         $responseData['e_signature'] = BASE_URL . $signaturePath;
+    }
+    if ($profilePicturePath) {
+        $responseData['profile_picture'] = BASE_URL . $profilePicturePath;
     }
     echo json_encode($responseData);
 } else {

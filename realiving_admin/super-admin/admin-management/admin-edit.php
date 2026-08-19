@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // ── Fetch current admin data (for GET, or to re-show form on error) ──
-$stmt = $conn->prepare("SELECT id, full_name, admin_name, email, role, is_head, account_status FROM account WHERE id = ?");
+$stmt = $conn->prepare("SELECT id, full_name, admin_name, email, role, is_head, account_status, profile_picture, google_picture, avatar_source FROM account WHERE id = ?");
 $stmt->bind_param('i', $edit_id);
 $stmt->execute();
 $admin = $stmt->get_result()->fetch_assoc();
@@ -395,7 +395,7 @@ if (!in_array('superadmin', $roles)) {
 
     <!-- Admin Identity Strip -->
     <div class="mb-6 adm-fade flex items-center gap-3">
-      <div class="adm-avatar-lg"><?= strtoupper(substr($admin['full_name'] ?: '?', 0, 1)) ?></div>
+      <?= renderAvatarHtml($admin, 'adm-avatar-lg') ?>
       <div>
         <div style="font-size:15px; font-weight:700;"><?= htmlspecialchars($admin['full_name'] ?: '(No name set)') ?></div>
         <div style="font-size:12.5px; color: var(--adm-soft);">

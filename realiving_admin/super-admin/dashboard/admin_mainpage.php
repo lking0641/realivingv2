@@ -21,7 +21,7 @@ while ($row = $role_result->fetch_assoc()) {
 
 // Recently added admins (last 5)
 $recent_admins = [];
-$recent_result = $conn->query("SELECT id, full_name, role, is_online, last_activity, created_at FROM account ORDER BY created_at DESC LIMIT 5");
+$recent_result = $conn->query("SELECT id, full_name, role, is_online, last_activity, created_at, profile_picture, google_picture, avatar_source FROM account ORDER BY created_at DESC LIMIT 5");
 while ($row = $recent_result->fetch_assoc()) {
   $recent_admins[] = $row;
 }
@@ -446,7 +446,7 @@ while ($row = $recent_result->fetch_assoc()) {
           <?php else: ?>
             <?php foreach ($recent_admins as $a): ?>
               <div class="adm-list-row">
-                <div class="adm-avatar"><?= strtoupper(substr($a['full_name'], 0, 1)) ?></div>
+                <?= renderAvatarHtml($a) ?>
                 <div class="flex-1">
                   <div class="adm-list-name"><?= htmlspecialchars($a['full_name']) ?></div>
                   <div class="adm-list-role"><?= htmlspecialchars($a['role']) ?></div>

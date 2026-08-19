@@ -133,6 +133,27 @@ include $includes ['online_status'];
   ?>
 
   <?php
+  // Resolves whichever avatar (Google or uploaded) is active for a user row,
+  // falling back to an initial-letter circle if neither exists.
+  // $row must include: full_name, profile_picture, google_picture, avatar_source
+  function renderAvatarHtml($row, $class = 'adm-avatar')
+  {
+    $avatarUrl = null;
+
+    if (($row['avatar_source'] ?? 'custom') === 'google' && !empty($row['google_picture'])) {
+      $avatarUrl = $row['google_picture'];
+    } elseif (!empty($row['profile_picture'])) {
+      $avatarUrl = BASE_URL . $row['profile_picture'];
+    }
+
+    if ($avatarUrl) {
+      return '<img src="' . htmlspecialchars($avatarUrl) . '" class="' . $class . '" style="object-fit:cover;">';
+    }
+
+    $initial = strtoupper(substr($row['full_name'] ?: '?', 0, 1));
+    return '<div class="' . $class . '">' . htmlspecialchars($initial) . '</div>';
+  }
+
   function hasAccess($role, $section)
   {
     $permissions = [
@@ -1087,7 +1108,7 @@ include $includes ['online_status'];
                   <div class="flex items-center space-x-3">
                     <?php $adminInitial = isset($_SESSION['admin_email']) ? strtoupper(substr($_SESSION['admin_email'], 0, 1)) : 'A'; ?>
                     <div
-                      class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg font-bold">
+                      class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-lg font-bold overflow-hidden js-avatar-slot">
                       <?= $adminInitial ?>
                     </div>
                     <div>
@@ -1138,7 +1159,7 @@ include $includes ['online_status'];
               </button>
             </div>
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-full flex items-center justify-center bg-white/20">
+              <div class="w-12 h-12 rounded-full flex items-center justify-center bg-white/20 overflow-hidden js-avatar-slot">
                 <i class="ri-user-line text-white text-xl"></i>
               </div>
               <div>
@@ -1834,6 +1855,11 @@ include $includes ['online_status'];
         reader.readAsDataURL(file);
       }
 
+      // Cache the raw Google/uploaded URLs so switching the radio can preview
+      // instantly without another server round-trip.
+      let cachedGooglePicture = null;
+      let cachedProfilePicture = null;
+
       function loadAccountData() {
         fetch('<?php echo BASE_URL ?>get-account')
           .then(r => r.json())
@@ -1846,6 +1872,9 @@ include $includes ['online_status'];
                 document.getElementById('sig-preview-img').src = data.e_signature;
                 document.getElementById('sig-preview-wrap').classList.remove('hidden');
               }
+
+              cachedGooglePicture = data.google_picture || null;
+              cachedProfilePicture = data.profile_picture || null;
 
               if (data.avatar_url) {
                 document.getElementById('avatar-preview').src = data.avatar_url;
@@ -1863,8 +1892,6 @@ include $includes ['online_status'];
               document.getElementById('modal-role-badge').textContent =
                 (data.role || 'admin').replace(/_/g, ' ').toUpperCase();
 
-
-
               renderGoogleLinkStatus(data.google_linked, data.google_email);
             } else {
               showSettingsAlert('Could not load account data.', 'error');
@@ -1872,6 +1899,26 @@ include $includes ['online_status'];
           })
           .catch(() => showSettingsAlert('Failed to connect to server.', 'error'));
       }
+
+      // Live-preview instantly when the user switches the radio — before Save is clicked.
+      // This only updates the modal preview; the actual header/mobile avatars update on Save,
+      // same as how choosing a new photo file only previews locally until you save.
+      document.querySelectorAll('input[name="avatar_source"]').forEach(radio => {
+        radio.addEventListener('change', function () {
+          const url = this.value === 'google' ? cachedGooglePicture : cachedProfilePicture;
+          const preview = document.getElementById('avatar-preview');
+          const fallback = document.getElementById('avatar-preview-fallback');
+
+          if (url) {
+            preview.src = url;
+            preview.classList.remove('hidden');
+            fallback.classList.add('hidden');
+          } else {
+            preview.classList.add('hidden');
+            fallback.classList.remove('hidden');
+          }
+        });
+      });
 
       function renderGoogleLinkStatus(isLinked, email) {
         const label = document.getElementById('google-link-label');
@@ -1906,6 +1953,7 @@ include $includes ['online_status'];
               if (data.success) {
                 showSettingsAlert('Google account unlinked.', 'success');
                 renderGoogleLinkStatus(false, '');
+                refreshAvatarEverywhere();
               } else {
                 showSettingsAlert(data.message || 'Failed to unlink.', 'error');
               }
@@ -1913,9 +1961,43 @@ include $includes ['online_status'];
             .catch(() => showSettingsAlert('Server error. Please try again.', 'error'))
             .finally(() => { btn.disabled = false; });
         } else {
-          // Redirect to Google to link — leaves the page, so no fetch needed
           window.location.href = '<?php echo BASE_URL ?>google-link';
         }
+      }
+
+      function refreshAvatarEverywhere() {
+        fetch('<?php echo BASE_URL ?>get-account')
+          .then(r => r.json())
+          .then(data => {
+            if (!data.success) return;
+
+            const preview = document.getElementById('avatar-preview');
+            const fallback = document.getElementById('avatar-preview-fallback');
+
+            if (data.avatar_url) {
+              preview.src = data.avatar_url + '?t=' + Date.now();
+              preview.classList.remove('hidden');
+              fallback.classList.add('hidden');
+            } else {
+              preview.classList.add('hidden');
+              fallback.classList.remove('hidden');
+            }
+
+            document.querySelectorAll('.js-avatar-slot').forEach(slot => {
+              if (!data.avatar_url) return;
+              const bustedUrl = data.avatar_url + '?t=' + Date.now();
+              const originalContent = slot.innerHTML;
+              const img = document.createElement('img');
+              img.src = bustedUrl;
+              img.className = 'w-full h-full object-cover rounded-full';
+              img.onerror = function () {
+                slot.innerHTML = originalContent;
+              };
+              slot.innerHTML = '';
+              slot.appendChild(img);
+            });
+          })
+          .catch(() => {});
       }
 
       function saveAccountSettings(e) {
@@ -1961,6 +2043,30 @@ include $includes ['online_status'];
                 previewWrap.classList.remove('hidden');
                 sigFilename.textContent = 'Click to upload PNG signature';
                 document.getElementById('sig-upload').value = '';
+              }
+
+              // Update avatar everywhere — modal preview + header/mobile slots — without a page refresh.
+              // Uses the server-resolved avatar_url so this works whether a new file was
+              // uploaded OR the person just switched between Google/uploaded photo.
+              if (data.avatar_url) {
+                const bustedUrl = data.avatar_url + '?t=' + Date.now();
+
+                document.getElementById('avatar-preview').src = bustedUrl;
+                document.getElementById('avatar-preview').classList.remove('hidden');
+                document.getElementById('avatar-preview-fallback').classList.add('hidden');
+                document.getElementById('avatar-upload').value = '';
+
+                document.querySelectorAll('.js-avatar-slot').forEach(slot => {
+                  const originalContent = slot.innerHTML;
+                  const img = document.createElement('img');
+                  img.src = bustedUrl;
+                  img.className = 'w-full h-full object-cover rounded-full';
+                  img.onerror = function () {
+                    slot.innerHTML = originalContent;
+                  };
+                  slot.innerHTML = '';
+                  slot.appendChild(img);
+                });
               }
             } else {
               showSettingsAlert(data.message || 'Update failed.', 'error');
@@ -2311,7 +2417,15 @@ include $includes ['online_status'];
       .then(data => {
         if (!data.success || !data.avatar_url) return;
         document.querySelectorAll('.js-avatar-slot').forEach(slot => {
-          slot.innerHTML = `<img src="${data.avatar_url}" class="w-full h-full object-cover rounded-full">`;
+          const originalContent = slot.innerHTML; // keep the letter/icon as fallback
+          const img = document.createElement('img');
+          img.src = data.avatar_url;
+          img.className = 'w-full h-full object-cover rounded-full';
+          img.onerror = function () {
+            slot.innerHTML = originalContent; // broken image → restore letter/icon instead of blank
+          };
+          slot.innerHTML = '';
+          slot.appendChild(img);
         });
       })
       .catch(() => {});

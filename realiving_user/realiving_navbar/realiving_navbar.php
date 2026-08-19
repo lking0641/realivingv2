@@ -1420,14 +1420,21 @@ function sb_is_active($slug, $current)
     var MIN_DISPLAY_MS = 900;   // loader stays visible at least this long
     var startTime = Date.now();
     var hasHidden = false;
+    var isNavigatingAway = false; // true kapag nag-tap na ng link papalabas dito
 
     function hidePageLoader() {
-      if (hasHidden) return;
+      if (hasHidden || isNavigatingAway) return; // huwag i-hide kung palabas na tayo ng page
       hasHidden = true;
       var el = document.getElementById('pageLoader');
       if (!el) return;
       el.classList.add('loader-hidden');
-      setTimeout(function () { el.remove(); }, 450);
+    }
+
+    function showPageLoader() {
+      var el = document.getElementById('pageLoader');
+      if (!el) return;
+      hasHidden = false;
+      el.classList.remove('loader-hidden');
     }
 
     function requestHide() {
@@ -1443,6 +1450,28 @@ function sb_is_active($slug, $current)
     window.addEventListener('load', requestHide);
     // Safety net in case 'load' is delayed by slow images/iframes
     setTimeout(hidePageLoader, 4000);
+
+    // ── Ipakita agad ang loader sa mismong tap ng link na aalis sa
+    // page na ito — tinatakpan nito ang gap sa pagitan ng tap at ng
+    // aktwal na pagsisimula ng browser mag-load ng susunod na page.
+    // Once nakarating na sa destination page, ang sarili nitong
+    // copy ng script na ito (server-rendered doon) ang bahalang
+    // mag-hide ulit — kaya hindi na ito "sasabit" sa bagong page.
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('a[href]');
+      if (!link) return;
+
+      var href = link.getAttribute('href');
+      var isHashLink = href.charAt(0) === '#';
+      var isSpecialLink = /^(javascript:|mailto:|tel:)/i.test(href);
+      var opensNewTab = link.target === '_blank';
+      var isModifiedClick = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
+
+      if (isHashLink || isSpecialLink || opensNewTab || isModifiedClick) return;
+
+      isNavigatingAway = true;
+      showPageLoader();
+    });
   })();
 </script>
 

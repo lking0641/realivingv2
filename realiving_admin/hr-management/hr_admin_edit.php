@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   }
 }
 
-$stmt = $conn->prepare("SELECT id, full_name, admin_name, email, role, is_head, account_status FROM account WHERE id = ?");
+$stmt = $conn->prepare("SELECT id, full_name, admin_name, email, role, is_head, account_status, profile_picture, google_picture, avatar_source FROM account WHERE id = ?");
 $stmt->bind_param('i', $edit_id);
 $stmt->execute();
 $admin = $stmt->get_result()->fetch_assoc();
@@ -385,7 +385,7 @@ while ($r = $role_res->fetch_assoc()) {
     </div>
 
     <div class="mb-6 adm-fade flex items-center gap-3">
-      <div class="adm-avatar-lg"><?= strtoupper(substr($admin['full_name'] ?: '?', 0, 1)) ?></div>
+      <?= renderAvatarHtml($admin, 'adm-avatar-lg') ?>
       <div>
         <div style="font-size:15px; font-weight:700;"><?= htmlspecialchars($admin['full_name'] ?: '(No name set)') ?></div>
         <div style="font-size:12.5px; color: var(--adm-soft);">
@@ -469,7 +469,201 @@ while ($r = $role_res->fetch_assoc()) {
 
     </form>
 
+    <!-- ═══════════════════════════════════════════════ -->
+    <!--   EMPLOYEE DOCUMENTS                              -->
+    <!-- ═══════════════════════════════════════════════ -->
+    <div class="adm-card adm-fade mt-6">
+      <div class="adm-section-label">Employee Documents</div>
+
+      <!-- Upload form -->
+      <div class="mb-6 p-4" style="border: 1px dashed var(--adm-line); border-radius: 8px;">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="adm-field-label" for="doc-label">Label</label>
+            <input type="text" id="doc-label" class="adm-input" placeholder="e.g. Resume, Valid ID, NBI Clearance">
+          </div>
+          <div>
+            <label class="adm-field-label" for="doc-file">File (PDF, PNG, JPG, WEBP — max 50MB)</label>
+            <input type="file" id="doc-file" class="adm-input" accept=".pdf,image/png,image/jpeg,image/webp">
+          </div>
+        </div>
+        <button type="button" id="upload-doc-btn" class="adm-btn adm-btn-dark">
+          <i class="fas fa-upload"></i> Upload Document
+        </button>
+        <p id="doc-upload-status" class="adm-field-hint" style="display:none;"></p>
+      </div>
+
+      <!-- Summary counts -->
+      <div id="doc-summary" class="flex gap-3 mb-4" style="display:none;">
+        <div style="font-size:12px; color: var(--adm-soft);">
+          <span id="doc-count-total" style="font-weight:700; color: var(--adm-ink);">0</span> total documents
+        </div>
+      </div>
+
+      <!-- Grouped document list -->
+      <div id="doc-list">
+        <p class="adm-card-desc" style="margin:0;">Loading documents...</p>
+      </div>
+    </div>
+
+    <style>
+      .doc-group-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: var(--adm-soft);
+        margin: 1.25rem 0 .6rem 0;
+      }
+      .doc-group-title:first-child { margin-top: 0; }
+      .doc-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .7rem .85rem;
+        border: 1px solid var(--adm-line);
+        border-radius: 8px;
+        margin-bottom: .5rem;
+        transition: border-color .15s ease;
+      }
+      .doc-row:hover { border-color: var(--adm-ink); }
+      .doc-icon-wrap {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: var(--adm-bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .doc-icon-wrap.pdf i { color: #DC2626; }
+      .doc-icon-wrap.image i { color: #2563EB; }
+      .doc-meta {
+        font-size: 11px;
+        color: var(--adm-muted);
+      }
+    </style>
+
   </div>
+
+  <script>
+    const EMPLOYEE_ID = <?= (int) $edit_id ?>;
+
+    function loadDocuments() {
+      fetch('<?= BASE_URL ?>get-employee-documents?account_id=' + EMPLOYEE_ID)
+        .then(r => r.json())
+        .then(data => {
+          const list = document.getElementById('doc-list');
+          const summary = document.getElementById('doc-summary');
+
+          if (!data.success || !data.documents.length) {
+            list.innerHTML = '<p class="adm-card-desc" style="margin:0;">No documents uploaded yet.</p>';
+            summary.style.display = 'none';
+            return;
+          }
+
+          summary.style.display = 'flex';
+          document.getElementById('doc-count-total').textContent = data.documents.length;
+
+          const pdfs = data.documents.filter(d => d.file_type === 'pdf');
+          const images = data.documents.filter(d => d.file_type === 'image');
+
+          let html = '';
+          if (pdfs.length) {
+            html += `<div class="doc-group-title">PDF Documents (${pdfs.length})</div>`;
+            html += pdfs.map(renderDocRow).join('');
+          }
+          if (images.length) {
+            html += `<div class="doc-group-title">Images (${images.length})</div>`;
+            html += images.map(renderDocRow).join('');
+          }
+          list.innerHTML = html;
+        })
+        .catch(() => {
+          document.getElementById('doc-list').innerHTML = '<p class="adm-card-desc" style="margin:0;">Failed to load documents.</p>';
+        });
+    }
+
+    function renderDocRow(doc) {
+      const icon = doc.file_type === 'pdf' ? 'fa-file-pdf' : 'fa-file-image';
+      const sizeText = doc.file_size ? ` · ${doc.file_size}` : '';
+      return `
+        <div class="doc-row" id="doc-row-${doc.id}">
+          <div class="flex items-center gap-3" style="min-width:0;">
+            <div class="doc-icon-wrap ${doc.file_type}"><i class="fas ${icon}"></i></div>
+            <div style="min-width:0;">
+              <div style="font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${doc.label}</div>
+              <div class="doc-meta">By ${doc.uploader_name} · ${doc.uploaded_at}${sizeText}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2" style="flex-shrink:0;">
+            <a href="${doc.file_url}" target="_blank" class="adm-icon-btn" title="View"><i class="fas fa-eye"></i></a>
+            <button type="button" class="adm-icon-btn danger" title="Delete" onclick="deleteDocument(${doc.id})"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>`;
+    }
+
+    document.getElementById('upload-doc-btn').addEventListener('click', function () {
+      const label = document.getElementById('doc-label').value.trim();
+      const fileInput = document.getElementById('doc-file');
+      const status = document.getElementById('doc-upload-status');
+
+      if (!label) { alert('Please enter a label for this document.'); return; }
+      if (!fileInput.files[0]) { alert('Please choose a file to upload.'); return; }
+
+      const formData = new FormData();
+      formData.append('account_id', EMPLOYEE_ID);
+      formData.append('label', label);
+      formData.append('document', fileInput.files[0]);
+
+      this.disabled = true;
+      this.textContent = 'Uploading...';
+
+      fetch('<?= BASE_URL ?>hr-upload-document', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById('doc-label').value = '';
+            fileInput.value = '';
+            loadDocuments();
+          } else {
+            status.textContent = data.message || 'Upload failed.';
+            status.style.display = 'block';
+            status.style.color = 'var(--adm-suspend)';
+          }
+        })
+        .catch(() => {
+          status.textContent = 'Network error. Please try again.';
+          status.style.display = 'block';
+          status.style.color = 'var(--adm-suspend)';
+        })
+        .finally(() => {
+          this.disabled = false;
+          this.innerHTML = '<i class="fas fa-upload"></i> Upload Document';
+        });
+    });
+
+    function deleteDocument(id) {
+      if (!confirm('Delete this document? This cannot be undone.')) return;
+      fetch('<?= BASE_URL ?>hr-delete-document', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'id=' + encodeURIComponent(id)
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) {
+            document.getElementById(`doc-row-${id}`).remove();
+          } else {
+            alert(data.message || 'Failed to delete.');
+          }
+        })
+        .catch(() => alert('Network error. Please try again.'));
+    }
+
+    loadDocuments();
+  </script>
 
 </body>
 

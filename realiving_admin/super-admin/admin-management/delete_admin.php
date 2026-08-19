@@ -25,8 +25,8 @@ if ((int)$id === (int)$current_admin_id) {
   exit;
 }
 
-// Confirm target exists
-$check = $conn->prepare("SELECT id, role FROM account WHERE id = ?");
+// Confirm target exists (also grab file paths so we can clean them up)
+$check = $conn->prepare("SELECT id, role, profile_picture, e_signature FROM account WHERE id = ?");
 $check->bind_param('i', $id);
 $check->execute();
 $target = $check->get_result()->fetch_assoc();
@@ -35,6 +35,35 @@ if (!$target) {
   echo json_encode(['success' => false, 'error' => 'Admin not found.']);
   exit;
 }
+
+// Delete any uploaded files belonging to this account before removing the row
+if (!empty($target['profile_picture'])) {
+    $picPath = ROOT_PATH . $target['profile_picture'];
+    if (file_exists($picPath)) {
+        unlink($picPath);
+    }
+}
+if (!empty($target['e_signature'])) {
+    $sigPath = ROOT_PATH . $target['e_signature'];
+    if (file_exists($sigPath)) {
+        unlink($sigPath);
+    }
+}
+
+// Delete all HR document files belonging to this account.
+// The DB rows will auto-delete via ON DELETE CASCADE once the account row is removed below,
+// but CASCADE only cleans the database — it never touches files on disk, so we do that here first.
+$docStmt = $conn->prepare("SELECT file_path FROM hr_employee_documents WHERE account_id = ?");
+$docStmt->bind_param('i', $id);
+$docStmt->execute();
+$docResult = $docStmt->get_result();
+while ($doc = $docResult->fetch_assoc()) {
+    $docPath = ROOT_PATH . $doc['file_path'];
+    if (file_exists($docPath)) {
+        unlink($docPath);
+    }
+}
+$docStmt->close();
 
 // Unassign their inquiries across all four tables so nothing references a deleted id
 $tables = ['appointments', 'concept_inquiries', 'contact', 'project_inquiries'];

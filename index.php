@@ -285,7 +285,7 @@ $routes = [
   'td-attachment-upload' => 'realiving_admin/technical-designer-management/td-attachment/td_attachment_upload.php',
   'td-attachments' => 'realiving_admin/technical-designer-management/td-attachment/td_attachments.php',
 
-  //TD-MANAGEMENT
+  //TD-MANAGEMENT 
   'designer-submit-td-remark' => 'realiving_admin/technical-designer-management/td-management/designer_submit_td_remark.php',
   'td-layout-list' => 'realiving_admin/technical-designer-management/td-management/td_layout_list.php',
   'td-layout' => 'realiving_admin/technical-designer-management/td-management/td_layout.php',
@@ -306,11 +306,16 @@ $routes = [
   'get-admin-status' => 'realiving_admin/super-admin/admin-management/get_admin_status.php',
   'heartbeat' => 'config/heartbeat.php',
   'delete-admin' => 'realiving_admin/super-admin/admin-management/delete_admin.php',
+  'admin-view' => 'realiving_admin/super-admin/admin-management/admin-view.php',
 
   //HR-MANAGEMENT
   'human-resource-dashboard' => 'realiving_admin/hr-management/dashboard.php',
   'hr-admin-management' => 'realiving_admin/hr-management/hr_admin_management.php',
   'hr-admin-edit' => 'realiving_admin/hr-management/hr_admin_edit.php',
+  'hr-upload-document' => 'realiving_admin/hr-management/hr_upload_document.php',
+  'hr-delete-document' => 'realiving_admin/hr-management/hr_delete_document.php',
+  'get-employee-documents' => 'realiving_admin/hr-management/get_employee_documents.php',
+  'hr-admin-view' => 'realiving_admin/hr-management/hr_admin_view.php',
 
   //ROLE-CONTROLLER
   'role-permissions-controller' => 'realiving_admin/role-controller/role_permissions_controller.php',

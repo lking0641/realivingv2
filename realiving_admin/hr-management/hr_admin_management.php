@@ -36,7 +36,7 @@ if ($search !== '') {
   $types .= 'sss';
 }
 
-$sql = "SELECT id, full_name, admin_name, email, role, account_status, is_online, is_head, last_activity, created_at FROM account WHERE " . implode(' AND ', $where) . " ORDER BY full_name ASC";
+$sql = "SELECT id, full_name, admin_name, email, role, account_status, is_online, is_head, last_activity, created_at, profile_picture, google_picture, avatar_source FROM account WHERE " . implode(' AND ', $where) . " ORDER BY full_name ASC";
 
 $stmt = $conn->prepare($sql);
 if (!empty($params)) {
@@ -476,7 +476,7 @@ while ($r = $role_res->fetch_assoc()) {
               <tr id="row-<?= $a['id'] ?>">
                 <td>
                   <div class="adm-name-cell">
-                    <div class="adm-avatar"><?= strtoupper(substr($a['full_name'] ?: '?', 0, 1)) ?></div>
+                    <?= renderAvatarHtml($a) ?>
                     <div>
                       <div class="adm-name-primary">
                         <span id="online-dot-<?= $a['id'] ?>" class="adm-online-dot <?= isAdminOnline($a['is_online'], $a['last_activity']) ? 'is-online' : '' ?>"></span><?= htmlspecialchars($a['full_name']) ?>
@@ -499,6 +499,9 @@ while ($r = $role_res->fetch_assoc()) {
                 </td>
                 <td>
                   <div class="adm-row-actions">
+                    <a href="<?= BASE_URL ?>hr-admin-view?id=<?= $a['id'] ?>" class="adm-icon-btn" title="View">
+                      <i class="fas fa-eye"></i>
+                    </a>
                     <a href="<?= BASE_URL ?>hr-admin-edit?id=<?= $a['id'] ?>" class="adm-icon-btn" title="Edit">
                       <i class="fas fa-pen"></i>
                     </a>

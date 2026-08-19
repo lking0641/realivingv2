@@ -13,7 +13,14 @@ if (!isset($_SESSION['admin_id'])) {
 
 $id = (int) $_SESSION['admin_id'];
 
-$stmt = $conn->prepare("UPDATE account SET google_sub = NULL, google_email = NULL WHERE id = ?");
+$stmt = $conn->prepare("
+    UPDATE account 
+    SET google_sub = NULL, 
+        google_email = NULL, 
+        google_picture = NULL,
+        avatar_source = IF(avatar_source = 'google', 'custom', avatar_source)
+    WHERE id = ?
+");
 $stmt->bind_param('i', $id);
 
 if ($stmt->execute()) {

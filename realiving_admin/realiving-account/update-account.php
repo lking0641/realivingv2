@@ -200,6 +200,24 @@ if ($stmt->execute()) {
     if ($profilePicturePath) {
         $responseData['profile_picture'] = BASE_URL . $profilePicturePath;
     }
+
+    // Re-fetch the freshest avatar state so the response always reflects
+    // whichever source (google/custom) is now active — even if this save
+    // only switched avatar_source and didn't upload a new file.
+    $avatarStmt = $conn->prepare("SELECT profile_picture, google_picture, avatar_source FROM account WHERE id = ?");
+    $avatarStmt->bind_param('i', $id);
+    $avatarStmt->execute();
+    $avatarRow = $avatarStmt->get_result()->fetch_assoc();
+    $avatarStmt->close();
+
+    $resolvedAvatarUrl = null;
+    if (($avatarRow['avatar_source'] ?? 'custom') === 'google' && !empty($avatarRow['google_picture'])) {
+        $resolvedAvatarUrl = $avatarRow['google_picture'];
+    } elseif (!empty($avatarRow['profile_picture'])) {
+        $resolvedAvatarUrl = BASE_URL . $avatarRow['profile_picture'];
+    }
+    $responseData['avatar_url'] = $resolvedAvatarUrl;
+
     echo json_encode($responseData);
 } else {
     echo json_encode(['success' => false, 'message' => 'Database error. Please try again.']);

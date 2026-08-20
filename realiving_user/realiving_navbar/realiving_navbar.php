@@ -1338,7 +1338,7 @@ function sb_is_active($slug, $current)
      Only the SVG keyframe animations live in <style> above.
 ═══════════════════════════════ -->
 <div id="pageLoader" role="status" aria-label="Loading"
-  class="fixed top-0 right-0 bottom-0 z-[999999] flex items-center justify-center bg-transparent transition-opacity duration-500 ease-out">
+  class="loader-hidden fixed top-0 right-0 bottom-0 z-[999999] flex items-center justify-center bg-transparent transition-opacity duration-500 ease-out">
   <div class="pl-card-in flex flex-col items-center font-montserrat drop-shadow-[0_8px_30px_rgba(47,18,0,0.35)]">
     <div class="pl-cabinet-wrap" style="position: relative;">
       <div class="pl-orbit-ring">
@@ -1417,46 +1417,21 @@ function sb_is_active($slug, $current)
 </div>
 <script>
   (function () {
-    var MIN_DISPLAY_MS = 900;   // loader stays visible at least this long
-    var startTime = Date.now();
-    var hasHidden = false;
-    var isNavigatingAway = false; // true kapag nag-tap na ng link papalabas dito
+    var loaderEl = document.getElementById('pageLoader');
 
-    function hidePageLoader() {
-      if (hasHidden || isNavigatingAway) return; // huwag i-hide kung palabas na tayo ng page
-      hasHidden = true;
-      var el = document.getElementById('pageLoader');
-      if (!el) return;
-      el.classList.add('loader-hidden');
-    }
-
-    function showPageLoader() {
-      var el = document.getElementById('pageLoader');
-      if (!el) return;
-      hasHidden = false;
-      el.classList.remove('loader-hidden');
-    }
-
-    function requestHide() {
-      var elapsed = Date.now() - startTime;
-      var remaining = MIN_DISPLAY_MS - elapsed;
-      if (remaining > 0) {
-        setTimeout(hidePageLoader, remaining);
-      } else {
-        hidePageLoader();
-      }
-    }
-
-    window.addEventListener('load', requestHide);
-    // Safety net in case 'load' is delayed by slow images/iframes
-    setTimeout(hidePageLoader, 4000);
-
-    // ── Ipakita agad ang loader sa mismong tap ng link na aalis sa
-    // page na ito — tinatakpan nito ang gap sa pagitan ng tap at ng
-    // aktwal na pagsisimula ng browser mag-load ng susunod na page.
-    // Once nakarating na sa destination page, ang sarili nitong
-    // copy ng script na ito (server-rendered doon) ang bahalang
-    // mag-hide ulit — kaya hindi na ito "sasabit" sa bagong page.
+    // Loader ay naka-tago by default (class="loader-hidden" sa markup).
+    // Lalabas lang ito sa MISMONG SANDALI ng tap sa isang link — para
+    // takpan yung maikling gap habang naghihintay ang browser mag-navigate
+    // papalabas ng page. Pagdating sa BAGONG page, ang sariling copy ng
+    // script na ito (server-rendered doon) ay naka-default hidden ulit —
+    // kaya walang loading na lalabas sa bagong page.
+    //
+    // Hindi lahat ng <a href="..."> ay TALAGANG umaalis sa page — may mga
+    // link na ginagamit lang na "trigger" para magbukas ng modal (hal.
+    // yung "Inquire Now" buttons na may class="openFormBtn", na binubuksan
+    // lang na form modal sa PAREHONG page, hindi totoong pag-navigate).
+    // Kaya dapat i-exclude natin sila dito, kundi "masasabit" na naka-
+    // bukas ang loader kasi walang page navigation na mag-hihide nito.
     document.addEventListener('click', function (e) {
       var link = e.target.closest('a[href]');
       if (!link) return;
@@ -1467,10 +1442,15 @@ function sb_is_active($slug, $current)
       var opensNewTab = link.target === '_blank';
       var isModifiedClick = e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0;
 
-      if (isHashLink || isSpecialLink || opensNewTab || isModifiedClick) return;
+      // Mga links/buttons na nagbubukas lang ng modal sa PAREHONG page
+      // (hindi totoong pag-navigate) — idagdag lang dito ang class ng
+      // anumang bagong "modal trigger" na link sa hinaharap.
+      var isModalTrigger = link.classList.contains('openFormBtn') ||
+                            link.hasAttribute('data-no-loader');
 
-      isNavigatingAway = true;
-      showPageLoader();
+      if (isHashLink || isSpecialLink || opensNewTab || isModifiedClick || isModalTrigger) return;
+
+      if (loaderEl) loaderEl.classList.remove('loader-hidden');
     });
   })();
 </script>

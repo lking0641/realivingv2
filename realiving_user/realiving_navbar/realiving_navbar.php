@@ -1418,6 +1418,7 @@ function sb_is_active($slug, $current)
 <script>
   (function () {
     var loaderEl = document.getElementById('pageLoader');
+    var MIN_VISIBLE_MS = 500; // tiyakin na kahit gaano kabilis ang connection, ganito katagal munang makikita ang loader bago talaga mag-navigate
 
     // Loader ay naka-tago by default (class="loader-hidden" sa markup).
     // Lalabas lang ito sa MISMONG SANDALI ng tap sa isang link — para
@@ -1450,7 +1451,19 @@ function sb_is_active($slug, $current)
 
       if (isHashLink || isSpecialLink || opensNewTab || isModifiedClick || isModalTrigger) return;
 
-      if (loaderEl) loaderEl.classList.remove('loader-hidden');
+      if (!loaderEl) return;
+
+      // I-block muna ang totoong pag-navigate, ipakita ang loader, tapos
+      // saka lang talaga pupunta sa link pagkalipas ng MIN_VISIBLE_MS —
+      // para kahit napakabilis ng connection (agad ma-loload ang susunod
+      // na page), tiyak na mararamdaman/makikita pa rin ng user ang loader
+      // bago siya matransport sa bagong page.
+      e.preventDefault();
+      loaderEl.classList.remove('loader-hidden');
+
+      setTimeout(function () {
+        window.location.href = href;
+      }, MIN_VISIBLE_MS);
     });
   })();
 </script>

@@ -298,6 +298,12 @@ $routes = [
   //SUPER-ADMIN
   'admin-mainpage' => 'realiving_admin/super-admin/dashboard/admin_mainpage.php',
 
+  'status-control' => 'realiving_admin/super-admin/status-control/status_control_list.php',
+  'status-control-detail' => 'realiving_admin/super-admin/status-control/status_control_detail.php',
+  'status-control-update' => 'realiving_admin/super-admin/status-control/status_control_update.php',
+  'status-control-file-update' => 'realiving_admin/super-admin/status-control/status_control_file_update.php',
+  'status-control-payment-update' => 'realiving_admin/super-admin/status-control/status_control_payment_update.php',
+
   //ADMIN-MANAGEMENT
   'admin-management' => 'realiving_admin/super-admin/admin-management/admin-management.php',
   'toggle-admin-status' => 'realiving_admin/super-admin/admin-management/toggle_admin_status.php',

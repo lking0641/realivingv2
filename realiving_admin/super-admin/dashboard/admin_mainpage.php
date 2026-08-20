@@ -414,6 +414,13 @@ while ($row = $recent_result->fetch_assoc()) {
           <span class="adm-card-link">View Logs <i class="fas fa-arrow-right"></i></span>
         </a>
 
+        <a href="<?= BASE_URL ?>status-control" class="adm-card">
+          <div class="adm-icon"><i class="fas fa-diagram-project"></i></div>
+          <h3 class="adm-card-title">Client Trackers</h3>
+          <p class="adm-card-desc">View and control every client's project tracker stages and statuses.</p>
+          <span class="adm-card-link">Manage Trackers <i class="fas fa-arrow-right"></i></span>
+        </a>
+
       </div>
     </div>
 

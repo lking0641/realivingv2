@@ -35,7 +35,7 @@ if ($row = $result->fetch_assoc()) {
         $row['avatar_url'] = $row['profile_picture'];
     }
 
-    echo json_encode(['success' => true, ...$row]);
+    echo json_encode(array_merge(['success' => true], $row));
 } else {
     echo json_encode(['success' => false, 'message' => 'Account not found']);
 }

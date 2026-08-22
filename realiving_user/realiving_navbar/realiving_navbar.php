@@ -1,5 +1,5 @@
 <?php
-//realiving_sidebar.php — Collapsible sidebar navigation (desktop) +
+//realiving_navbar.php — Collapsible sidebar navigation (desktop) +
 //floating bottom nav island + top logo bar (mobile).
 //
 // ── WHAT'S IN THIS VERSION ───────────────────────────────────────────────
@@ -82,8 +82,15 @@ function sb_is_active($slug, $current)
   }
 
   @keyframes plSettle {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    50%      { transform: translateY(-3px) rotate(-1deg); }
+
+    0%,
+    100% {
+      transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+      transform: translateY(-3px) rotate(-1deg);
+    }
   }
 
   #pageLoader .pl-eye {
@@ -92,31 +99,61 @@ function sb_is_active($slug, $current)
   }
 
   @keyframes plBlink {
-    0%, 90%, 100% { transform: scaleY(1); }
-    94%           { transform: scaleY(.1); }
+
+    0%,
+    90%,
+    100% {
+      transform: scaleY(1);
+    }
+
+    94% {
+      transform: scaleY(.1);
+    }
   }
 
   #pageLoader #plClipRect {
-    animation: plExtend 2s cubic-bezier(.65,0,.35,1) infinite;
+    animation: plExtend 2s cubic-bezier(.65, 0, .35, 1) infinite;
   }
 
   @keyframes plExtend {
-    0%   { width: 0; }
-    45%  { width: 150px; }
-    58%  { width: 150px; }
-    100% { width: 0; }
+    0% {
+      width: 0;
+    }
+
+    45% {
+      width: 150px;
+    }
+
+    58% {
+      width: 150px;
+    }
+
+    100% {
+      width: 0;
+    }
   }
 
   #pageLoader .pl-arm-pull {
-    animation: plReach 2s cubic-bezier(.65,0,.35,1) infinite;
+    animation: plReach 2s cubic-bezier(.65, 0, .35, 1) infinite;
     transform-origin: 98px 96px;
   }
 
   @keyframes plReach {
-    0%   { transform: rotate(0deg); }
-    45%  { transform: rotate(-14deg); }
-    58%  { transform: rotate(-14deg); }
-    100% { transform: rotate(0deg); }
+    0% {
+      transform: rotate(0deg);
+    }
+
+    45% {
+      transform: rotate(-14deg);
+    }
+
+    58% {
+      transform: rotate(-14deg);
+    }
+
+    100% {
+      transform: rotate(0deg);
+    }
   }
 
   #pageLoader .pl-caption {
@@ -132,18 +169,30 @@ function sb_is_active($slug, $current)
   }
 
   @keyframes plProgress {
-    0%   { transform: translateX(-100%); }
-    100% { transform: translateX(300%); }
+    0% {
+      transform: translateX(-100%);
+    }
+
+    100% {
+      transform: translateX(300%);
+    }
   }
 
   /* Card entrance: quick scale-up with a slight overshoot */
   .pl-card-in {
-    animation: plCardIn .5s cubic-bezier(.34,1.56,.64,1) both;
+    animation: plCardIn .5s cubic-bezier(.34, 1.56, .64, 1) both;
   }
 
   @keyframes plCardIn {
-    0%   { opacity: 0; transform: scale(.85); }
-    100% { opacity: 1; transform: scale(1); }
+    0% {
+      opacity: 0;
+      transform: scale(.85);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 
   .pl-cabinet-wrap {
@@ -151,11 +200,15 @@ function sb_is_active($slug, $current)
   }
 
   @media (min-width: 480px) {
-    .pl-cabinet-wrap { transform: scale(0.9); }
+    .pl-cabinet-wrap {
+      transform: scale(0.9);
+    }
   }
 
   @media (min-width: 768px) {
-    .pl-cabinet-wrap { transform: scale(1); }
+    .pl-cabinet-wrap {
+      transform: scale(1);
+    }
   }
 
   .cabinet-loader {
@@ -193,13 +246,23 @@ function sb_is_active($slug, $current)
   }
 
   @keyframes plOrbit {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   @keyframes plOrbitCounter {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to   { transform: translate(-50%, -50%) rotate(-360deg); }
+    from {
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
+
+    to {
+      transform: translate(-50%, -50%) rotate(-360deg);
+    }
   }
 
   .cabinet-interior {
@@ -242,8 +305,13 @@ function sb_is_active($slug, $current)
     background: #c9a227;
   }
 
-  .hook-a { left: 10px; }
-  .hook-b { left: 29px; }
+  .hook-a {
+    left: 10px;
+  }
+
+  .hook-b {
+    left: 29px;
+  }
 
   .garment {
     position: absolute;
@@ -364,29 +432,77 @@ function sb_is_active($slug, $current)
     box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
   }
 
-  .cab-door-left .cab-handle { right: 5px; }
-  .cab-door-right .cab-handle { left: 5px; }
+  .cab-door-left .cab-handle {
+    right: 5px;
+  }
+
+  .cab-door-right .cab-handle {
+    left: 5px;
+  }
 
   @keyframes cabOpenLeft {
-    0%, 15%   { transform: rotateY(0deg); }
-    35%, 65%  { transform: rotateY(-110deg); }
-    85%, 100% { transform: rotateY(0deg); }
+
+    0%,
+    15% {
+      transform: rotateY(0deg);
+    }
+
+    35%,
+    65% {
+      transform: rotateY(-110deg);
+    }
+
+    85%,
+    100% {
+      transform: rotateY(0deg);
+    }
   }
 
   @keyframes cabOpenRight {
-    0%, 15%   { transform: rotateY(0deg); }
-    35%, 65%  { transform: rotateY(110deg); }
-    85%, 100% { transform: rotateY(0deg); }
+
+    0%,
+    15% {
+      transform: rotateY(0deg);
+    }
+
+    35%,
+    65% {
+      transform: rotateY(110deg);
+    }
+
+    85%,
+    100% {
+      transform: rotateY(0deg);
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .pl-progress             { animation: none; transform: none; width: 100%; }
-    .pl-card-in              { animation: none; opacity: 1; transform: none; }
+    .pl-progress {
+      animation: none;
+      transform: none;
+      width: 100%;
+    }
+
+    .pl-card-in {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+
     .cab-door-left,
-    .cab-door-right          { animation: none; transform: rotateY(0deg); }
-    .pl-orbit-ring            { animation: none; }
+    .cab-door-right {
+      animation: none;
+      transform: rotateY(0deg);
+    }
+
+    .pl-orbit-ring {
+      animation: none;
+    }
+
     .pl-orbit-item i,
-    .pl-orbit-item svg        { animation: none; }
+    .pl-orbit-item svg {
+      animation: none;
+    }
   }
 
   /* ═══════════════════════════════════════════════════════════════
@@ -1343,47 +1459,51 @@ function sb_is_active($slug, $current)
     <div class="pl-cabinet-wrap" style="position: relative;">
       <div class="pl-orbit-ring">
         <div class="pl-orbit-item" style="--a: 0deg;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="13.5" y="2.5" width="5" height="7" rx="1" transform="rotate(45 16 6)"/>
-            <line x1="13" y1="8.5" x2="4" y2="17.5"/>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="13.5" y="2.5" width="5" height="7" rx="1" transform="rotate(45 16 6)" />
+            <line x1="13" y1="8.5" x2="4" y2="17.5" />
           </svg>
         </div>
         <div class="pl-orbit-item" style="--a: 60deg;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="14" y="2" width="4" height="7" rx="1" transform="rotate(45 16 5.5)"/>
-            <line x1="13" y1="7" x2="4" y2="16"/>
-            <line x1="3" y1="17" x2="5" y2="19"/>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="14" y="2" width="4" height="7" rx="1" transform="rotate(45 16 5.5)" />
+            <line x1="13" y1="7" x2="4" y2="16" />
+            <line x1="3" y1="17" x2="5" y2="19" />
           </svg>
         </div>
         <div class="pl-orbit-item" style="--a: 120deg;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="9" width="18" height="6" rx="1"/>
-            <line x1="7" y1="9" x2="7" y2="12"/>
-            <line x1="11" y1="9" x2="11" y2="13"/>
-            <line x1="15" y1="9" x2="15" y2="12"/>
-            <line x1="19" y1="9" x2="19" y2="13"/>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="9" width="18" height="6" rx="1" />
+            <line x1="7" y1="9" x2="7" y2="12" />
+            <line x1="11" y1="9" x2="11" y2="13" />
+            <line x1="15" y1="9" x2="15" y2="12" />
+            <line x1="19" y1="9" x2="19" y2="13" />
           </svg>
         </div>
         <div class="pl-orbit-item" style="--a: 180deg;">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8">
-            <circle cx="12" cy="12" r="9"/>
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
+            <circle cx="12" cy="12" r="9" />
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
         </div>
         <div class="pl-orbit-item" style="--a: 240deg;">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6">
-            <rect x="2" y="4" width="8" height="16" rx="1"/>
-            <rect x="14" y="4" width="8" height="16" rx="1"/>
-            <line x1="12" y1="2" x2="12" y2="22"/>
-            <circle cx="12" cy="7" r="1" fill="currentColor"/>
-            <circle cx="12" cy="12" r="1" fill="currentColor"/>
-            <circle cx="12" cy="17" r="1" fill="currentColor"/>
+            <rect x="2" y="4" width="8" height="16" rx="1" />
+            <rect x="14" y="4" width="8" height="16" rx="1" />
+            <line x1="12" y1="2" x2="12" y2="22" />
+            <circle cx="12" cy="7" r="1" fill="currentColor" />
+            <circle cx="12" cy="12" r="1" fill="currentColor" />
+            <circle cx="12" cy="17" r="1" fill="currentColor" />
           </svg>
         </div>
         <div class="pl-orbit-item" style="--a: 300deg;">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15.5 3.5a4 4 0 0 0-5.4 4.9L4 14.5l2.5 2.5 6.1-6.1a4 4 0 0 0 4.9-5.4l-2.6 2.6-2-2z"/>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15.5 3.5a4 4 0 0 0-5.4 4.9L4 14.5l2.5 2.5 6.1-6.1a4 4 0 0 0 4.9-5.4l-2.6 2.6-2-2z" />
           </svg>
         </div>
       </div>
@@ -1447,7 +1567,7 @@ function sb_is_active($slug, $current)
       // (hindi totoong pag-navigate) — idagdag lang dito ang class ng
       // anumang bagong "modal trigger" na link sa hinaharap.
       var isModalTrigger = link.classList.contains('openFormBtn') ||
-                            link.hasAttribute('data-no-loader');
+        link.hasAttribute('data-no-loader');
 
       if (isHashLink || isSpecialLink || opensNewTab || isModifiedClick || isModalTrigger) return;
 
@@ -1465,6 +1585,22 @@ function sb_is_active($slug, $current)
         window.location.href = href;
       }, MIN_VISIBLE_MS);
     });
+
+    // Pag pinindot ang Back/Forward, minsan hindi na talaga nag-re-reload
+    // ang page — binabalik lang ng browser yung EXACT DOM snapshot bago
+    // ka umalis (tinatawag itong "bfcache"). Kasama na dun yung loader na
+    // naka-visible pa rin, dahil na-"freeze" ang state noong tumama yung
+    // click papunta sa ibang page.
+    //
+    // 'pageshow' laging sumasabog kapag lumabas ang page (fresh load MAN
+    // o bfcache restore). event.persisted === true lang kapag bfcache
+    // restore talaga ang nangyari — doon lang natin dapat itago ulit
+    // ang loader.
+    window.addEventListener('pageshow', function (e) {
+      if (e.persisted && loaderEl) {
+        loaderEl.classList.add('loader-hidden');
+      }
+    });
   })();
 </script>
 
@@ -1474,6 +1610,7 @@ function sb_is_active($slug, $current)
      via document.write BEFORE the aside is parsed — kaya naka-tamang
      width na agad ito sa unang paint, walang expand→collapse flash.
 ═══════════════════════════════ -->
+
 <head>
   <link rel="stylesheet" href="<?= BASE_ASSET ?>assets/css/output.css?v=<?= CSS_VERSION ?>">
 </head>
@@ -1529,7 +1666,8 @@ function sb_is_active($slug, $current)
     <i class="ri-lightbulb-flash-line"></i><span class="sb-text">Concepts</span>
   </a>
   <a href="<?= BASE_URL ?>about"
-    class="sb-link about-link <?= sb_is_active('about', $sb_current_slug) ? 'active' : '' ?>" data-label="About" aria-label="About">
+    class="sb-link about-link <?= sb_is_active('about', $sb_current_slug) ? 'active' : '' ?>" data-label="About"
+    aria-label="About">
     <i class="ri-information-line"></i><span class="sb-text">About</span>
   </a>
   <a href="<?= BASE_URL ?>services"
@@ -1538,12 +1676,14 @@ function sb_is_active($slug, $current)
     <i class="ri-tools-line"></i><span class="sb-text">Services</span>
   </a>
   <a href="<?= BASE_URL ?>news"
-    class="sb-link whatsnew-link <?= sb_is_active('news', $sb_current_slug) ? 'active' : '' ?>" data-label="What's New" aria-label="What's New">
+    class="sb-link whatsnew-link <?= sb_is_active('news', $sb_current_slug) ? 'active' : '' ?>" data-label="What's New"
+    aria-label="What's New">
     <i class="ri-newspaper-line"></i><span class="sb-text">What's New</span>
   </a>
   <div class="sb-divider"></div>
   <a href="<?= BASE_URL ?>contact"
-    class="sb-link contact-link <?= sb_is_active('contact', $sb_current_slug) ? 'active' : '' ?>" data-label="Contact" aria-label="Contact">
+    class="sb-link contact-link <?= sb_is_active('contact', $sb_current_slug) ? 'active' : '' ?>" data-label="Contact"
+    aria-label="Contact">
     <i class="ri-mail-line"></i><span class="sb-text">Contact</span>
   </a>
 </nav>

@@ -1,4 +1,4 @@
-<?php
+    <?php
 //news-template.php
 session_name("Realivinguser");
 session_start();

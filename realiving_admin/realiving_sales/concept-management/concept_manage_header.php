@@ -115,90 +115,398 @@ $header = $conn->query("SELECT * FROM concept_header LIMIT 1")->fetch_assoc();
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Concept Header</title>
-    <link rel="stylesheet" href="../css/admin-style.css">
-    <style>
-        .container { max-width: 900px; margin: 0 auto; padding: 20px; }
-        .header-section { margin-bottom: 30px; }
-        h1 { color: #3b1f0f; margin-bottom: 10px; }
-        .success-message { background: #d4edda; color: #155724; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #c3e6cb; }
-        .form-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 25px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: #333; }
-        .form-group input[type="text"], .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
-        .form-group textarea { min-height: 100px; resize: vertical; font-family: inherit; }
-        .form-group input[type="file"] { padding: 10px; }
-        .current-image-section { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 4px; }
-        .current-image-section h4 { margin-bottom: 10px; color: #666; }
-        .current-image { max-width: 100%; height: 200px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .btn { padding: 12px 30px; background: #3b1f0f; color: white; border: none; cursor: pointer; border-radius: 4px; font-size: 16px; font-weight: 500; }
-        .btn:hover { background: #8a5a44; }
-        .help-text { font-size: 13px; color: #666; margin-top: 5px; }
-        .preview-section { margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; }
-        .preview-section h3 { margin-bottom: 15px; color: #3b1f0f; }
-        .preview-box { background: white; padding: 20px; border-radius: 4px; border: 1px solid #ddd; }
-        .preview-title { font-size: 24px; font-weight: bold; color: #3b1f0f; margin-bottom: 10px; }
-        .preview-subtitle { font-size: 14px; color: #666; line-height: 1.6; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Concept Header - RealLiving</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="<? BASE_URL ?>logo/favicon.ico">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --adm-bg: #F5F5F5;
+      --adm-surface: #FFFFFF;
+      --adm-surface2: #FAFAFA;
+      --adm-ink: #0B0B0B;
+      --adm-soft: #6B6B6B;
+      --adm-muted: #9A9A9A;
+      --adm-line: #E2E2E2;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--adm-bg);
+      color: var(--adm-ink);
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .adm-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--adm-soft);
+    }
+
+    .adm-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--adm-ink);
+    }
+
+    .adm-subtitle {
+      font-size: 13.5px;
+      color: var(--adm-soft);
+    }
+
+    .adm-back {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--adm-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      padding: 8px 14px;
+      border: 1px solid var(--adm-line);
+      border-radius: 8px;
+      background: var(--adm-surface);
+      transition: border-color .2s ease, color .2s ease;
+    }
+
+    .adm-back:hover {
+      border-color: var(--adm-ink);
+      color: var(--adm-ink);
+    }
+
+    .adm-header-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    /* ── Section label ──────────────────────── */
+    .adm-section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .adm-section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--adm-line);
+    }
+
+    /* ── Alerts ─────────────────────────────── */
+    .adm-alert {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      font-size: 13.5px;
+      font-weight: 500;
+      background: var(--adm-surface);
+      border: 1px solid var(--adm-line);
+      border-left: 3px solid var(--adm-ink);
+      color: var(--adm-ink);
+    }
+
+    .adm-alert.is-error {
+      border-left-color: #9b1c1c;
+    }
+
+    .adm-alert.is-error i {
+      color: #9b1c1c;
+    }
+
+    /* ── Panel / form card ──────────────────── */
+    .adm-panel {
+      background: var(--adm-surface);
+      border: 1px solid var(--adm-line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .adm-panel-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--adm-line);
+    }
+
+    .adm-panel-head h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--adm-ink);
+    }
+
+    .adm-panel-body {
+      padding: 24px 22px;
+    }
+
+    /* ── Form ───────────────────────────────── */
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--adm-soft);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1px solid var(--adm-line);
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-family: 'Inter', sans-serif;
+      color: var(--adm-ink);
+      background: var(--adm-surface2);
+      transition: border-color .18s ease, background .18s ease;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: var(--adm-ink);
+      background: #fff;
+    }
+
+    textarea.form-control {
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+
+    input[type="file"].form-control {
+      padding: 9px 12px;
+      background: var(--adm-surface2);
+      cursor: pointer;
+    }
+
+    .help-text {
+      font-size: 12px;
+      color: var(--adm-muted);
+      margin-top: 6px;
+    }
+
+    .current-image-section {
+      margin-top: 16px;
+      padding: 16px;
+      background: var(--adm-surface2);
+      border: 1px solid var(--adm-line);
+      border-radius: 8px;
+    }
+
+    .current-image-section h4 {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--adm-soft);
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      margin-bottom: 12px;
+    }
+
+    .current-image {
+      max-width: 100%;
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid var(--adm-line);
+      display: block;
+    }
+
+    .adm-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 24px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all .18s ease;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .adm-btn-primary {
+      background: var(--adm-ink);
+      color: #fff;
+    }
+
+    .adm-btn-primary:hover {
+      background: #262626;
+    }
+
+    /* ── Preview ────────────────────────────── */
+    .preview-section {
+      margin-top: 24px;
+    }
+
+    .preview-box {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--adm-line);
+      min-height: 180px;
+      background-size: cover;
+      background-position: center;
+      background-color: var(--adm-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .preview-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(11, 11, 11, .55);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 30px 24px;
+      text-align: center;
+    }
+
+    .preview-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .preview-subtitle {
+      font-size: 13.5px;
+      color: rgba(255, 255, 255, .85);
+      line-height: 1.6;
+      max-width: 560px;
+    }
+
+    @keyframes adm-fade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .adm-fade {
+      animation: adm-fade .4s ease both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .adm-fade {
+        animation: none;
+      }
+    }
+  </style>
 </head>
-<body>
-    <div class="container">
-        <div class="header-section">
-            <h1>Manage Concept Designs Header</h1>
-            <p>Update the header image, title, and subtitle for the Concept Designs page</p>
-        </div>
 
-        <?php if (isset($success_message)): ?>
-        <div class="success-message">
-            ✓ <?php echo $success_message; ?>
-        </div>
-        <?php endif; ?>
+<body class="min-h-screen flex flex-col">
 
-        <?php if (isset($error_message)): ?>
-        <div class="success-message" style="background:#f8d7da;color:#721c24;border-color:#f5c6cb;">
-            ⚠ <?php echo htmlspecialchars($error_message); ?>
-        </div>
-        <?php endif; ?>
+  <div class="pt-10 pb-16 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto w-full">
 
-        <div class="form-card">
-            <form method="POST" enctype="multipart/form-data">
-                <div class="form-group">
-                    <label>Page Title</label>
-                    <input type="text" name="title" value="<?php echo htmlspecialchars($header['title']); ?>" required>
-                    <p class="help-text">The main heading displayed on the page</p>
-                </div>
-
-                <div class="form-group">
-                    <label>Page Subtitle</label>
-                    <textarea name="subtitle" required><?php echo htmlspecialchars($header['subtitle']); ?></textarea>
-                    <p class="help-text">The descriptive text below the title</p>
-                </div>
-
-                <div class="form-group">
-                    <label>Header Background Image</label>
-                    <input type="file" name="header_image" accept="image/*">
-                    <p class="help-text">Upload a new header background image (JPG/PNG will be converted to WebP). Recommended size: 1920x400px</p>
-                    
-                    <div class="current-image-section">
-                        <h4>Current Header Image:</h4>
-                        <img src="<?php echo CLIENT_ASSET; ?>/<?php echo htmlspecialchars($header['header_image']); ?>" class="current-image" alt="Current Header">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn">Save Changes</button>
-            </form>
-        </div>
-
-        <div class="preview-section">
-            <h3>Current Preview:</h3>
-            <div class="preview-box">
-                <div class="preview-title"><?php echo htmlspecialchars($header['title']); ?></div>
-                <div class="preview-subtitle"><?php echo htmlspecialchars($header['subtitle']); ?></div>
-            </div>
-        </div>
+    <!-- Header -->
+    <div class="mb-8 adm-fade adm-header-row">
+      <div>
+        <div class="adm-eyebrow mb-2">Sales &amp; Marketing</div>
+        <h1 class="adm-title">Manage Concept Header</h1>
+        <p class="adm-subtitle mt-1">Update the header image, title, and subtitle for the Concept Designs page.</p>
+      </div>
+      <a href="concept-dashboard" class="adm-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
     </div>
+
+    <?php if (isset($success_message)): ?>
+      <div class="adm-alert adm-fade">
+        <i class="fa-solid fa-circle-check" style="color:var(--adm-ink);"></i>
+        <span><?php echo $success_message; ?></span>
+      </div>
+    <?php endif; ?>
+
+    <?php if (isset($error_message)): ?>
+      <div class="adm-alert is-error adm-fade">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        <span><?php echo htmlspecialchars($error_message); ?></span>
+      </div>
+    <?php endif; ?>
+
+    <!-- Form -->
+    <div class="adm-panel adm-fade">
+      <div class="adm-panel-head">
+        <h2>Header Details</h2>
+      </div>
+      <div class="adm-panel-body">
+        <form method="POST" enctype="multipart/form-data">
+          <div class="form-group">
+            <label>Page Title</label>
+            <input type="text" name="title" class="form-control" value="<?php echo htmlspecialchars($header['title']); ?>" required>
+            <p class="help-text">The main heading displayed on the page</p>
+          </div>
+
+          <div class="form-group">
+            <label>Page Subtitle</label>
+            <textarea name="subtitle" class="form-control" required><?php echo htmlspecialchars($header['subtitle']); ?></textarea>
+            <p class="help-text">The descriptive text below the title</p>
+          </div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Header Background Image</label>
+            <input type="file" name="header_image" accept="image/*" class="form-control">
+            <p class="help-text">Upload a new header background image (JPG/PNG will be converted to WebP). Recommended size: 1920x400px</p>
+
+            <div class="current-image-section">
+              <h4>Current Header Image</h4>
+              <img src="<?php echo CLIENT_ASSET; ?>/<?php echo htmlspecialchars($header['header_image']); ?>" class="current-image" alt="Current Header">
+            </div>
+          </div>
+
+          <button type="submit" class="adm-btn adm-btn-primary" style="margin-top:24px;"><i class="fas fa-check"></i> Save Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div class="preview-section adm-fade">
+      <div class="adm-section-label mb-4">Live Preview</div>
+      <div class="preview-box" style="background-image:url('<?php echo CLIENT_ASSET; ?>/<?php echo htmlspecialchars($header['header_image']); ?>')">
+        <div class="preview-overlay">
+          <div class="preview-title"><?php echo htmlspecialchars($header['title']); ?></div>
+          <div class="preview-subtitle"><?php echo htmlspecialchars($header['subtitle']); ?></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 </body>
+
 </html>

@@ -197,8 +197,10 @@ $hero_result = $conn->query($hero_query);
                   style="clip-path: polygon(0 0, 100% 0, 100% 82%, 0% 100%);">
                   <?php if ($isVideo): ?>
                     <video
-                      class="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700"
-                      autoplay muted loop playsinline>
+                      class="w-full h-full object-cover scale-105 group-hover:scale-110 transition-transform duration-700 pointer-events-none"
+                      autoplay muted loop playsinline
+                      disablepictureinpicture
+                      controlsList="nodownload noplaybackrate nofullscreen">
                       <source src="<?= CLIENT_ASSET ?>/<?= ltrim(htmlspecialchars($mediaPath), './') ?>"
                         type="video/<?= $fileExtension ?>">
                     </video>

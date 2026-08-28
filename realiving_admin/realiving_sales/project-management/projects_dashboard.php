@@ -1,6 +1,6 @@
 <?php
 //projects_dashboard.php
-include $includes ['mainbody'];
+include $includes['mainbody'];
 
 // Allow only admin1 to admin5
 require_role(['admin1', 'admin2', 'admin3', 'admin4', 'admin5', 'admin6', 'superadmin', 'sales']);
@@ -18,147 +18,375 @@ $residential_count = $conn->query("SELECT COUNT(*) as count FROM project WHERE c
 
 $conn->close();
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Projects Dashboard - Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: "#4f46e5",
-                        secondary: "#4338ca",
-                        accent: "#3730a3"
-                    },
-                }
-            },
-        };
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Projects Dashboard - RealLiving</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="<? BASE_URL ?>logo/favicon.ico">
+  <!-- Font Awesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --adm-bg: #F5F5F5;
+      --adm-surface: #FFFFFF;
+      --adm-ink: #0B0B0B;
+      --adm-soft: #6B6B6B;
+      --adm-muted: #9A9A9A;
+      --adm-line: #E2E2E2;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--adm-bg);
+      color: var(--adm-ink);
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .adm-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--adm-soft);
+    }
+
+    .adm-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--adm-ink);
+    }
+
+    .adm-subtitle {
+      font-size: 13.5px;
+      color: var(--adm-soft);
+    }
+
+    /* ── Back link ──────────────────────────── */
+    .adm-back {
+      width: 38px;
+      height: 38px;
+      border-radius: 9px;
+      background: var(--adm-surface);
+      border: 1px solid var(--adm-line);
+      color: var(--adm-ink);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color .2s ease, transform .2s ease;
+    }
+
+    .adm-back:hover {
+      border-color: var(--adm-ink);
+      transform: translateX(-2px);
+    }
+
+    /* ── Section label ──────────────────────── */
+    .adm-section-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .adm-section-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--adm-line);
+    }
+
+    /* ── Cards (Categories) ─────────────────── */
+    .adm-card {
+      display: block;
+      background: var(--adm-surface);
+      border: 1px solid var(--adm-line);
+      border-radius: 10px;
+      padding: 1.5rem;
+      transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .adm-card:hover,
+    .adm-card:focus-visible {
+      border-color: var(--adm-ink);
+      box-shadow: 0 10px 26px -16px rgba(11, 11, 11, 0.25);
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .adm-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 9px;
+      background: var(--adm-bg);
+      border: 1px solid var(--adm-line);
+      color: var(--adm-ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      margin-bottom: 1rem;
+    }
+
+    .adm-card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      margin-bottom: .35rem;
+    }
+
+    .adm-card-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--adm-soft);
+      margin-bottom: 1.1rem;
+    }
+
+    .adm-card-link {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .adm-card-link i {
+      font-size: 10px;
+      transition: transform .2s ease;
+    }
+
+    .adm-card:hover .adm-card-link i {
+      transform: translateX(3px);
+    }
+
+    /* ── Count block inside category cards ──── */
+    .adm-card-count-wrap {
+      padding-top: 1rem;
+      border-top: 1px solid var(--adm-line);
+    }
+
+    .adm-card-count {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--adm-ink);
+      line-height: 1.1;
+    }
+
+    .adm-card-count-label {
+      font-size: 11.5px;
+      color: var(--adm-muted);
+      margin-top: .15rem;
+    }
+
+    /* ── Quick action stat-style cards ──────── */
+    .adm-stat {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--adm-surface);
+      border: 1px dashed var(--adm-line);
+      border-radius: 10px;
+      padding: 1.1rem 1.2rem;
+      transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background .2s ease;
+    }
+
+    .adm-stat:hover,
+    .adm-stat:focus-visible {
+      border-color: var(--adm-ink);
+      border-style: solid;
+      box-shadow: 0 10px 26px -16px rgba(11, 11, 11, 0.25);
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .adm-stat-icon-box {
+      width: 40px;
+      height: 40px;
+      flex-shrink: 0;
+      border-radius: 9px;
+      background: var(--adm-bg);
+      border: 1px solid var(--adm-line);
+      color: var(--adm-ink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .adm-stat-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--adm-ink);
+      margin-bottom: .1rem;
+    }
+
+    .adm-stat-desc {
+      font-size: 12.5px;
+      color: var(--adm-soft);
+    }
+
+    /* ── Toast ──────────────────────────────── */
+    .adm-toast {
+      background: #fff;
+      border-left: 3px solid var(--adm-ink);
+      box-shadow: 0 12px 32px -14px rgba(11, 11, 11, 0.3);
+    }
+
+    @keyframes adm-fade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .adm-fade {
+      animation: adm-fade .4s ease both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .adm-fade {
+        animation: none;
+      }
+    }
+  </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Header -->
-    <div class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <a href="sales-dashboard" class="text-gray-600 hover:text-primary transition-colors">
-                        <i class="ri-arrow-left-line text-xl"></i>
-                    </a>
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-800">Projects Dashboard</h1>
-                        <p class="text-sm text-gray-500">Manage all your projects and categories</p>
-                    </div>
-                </div>
-                <img src="../../realiving_user/images/logo/realiving_logo_hd.png" alt="Logo" class="h-12 object-contain" />
-            </div>
+
+<body class="min-h-screen flex flex-col">
+
+  <!-- Notification -->
+  <?php if (isset($_SESSION['noti'])): ?>
+    <div id="notifBox" class="adm-toast fixed top-20 right-4 rounded-lg p-4 w-80 adm-fade z-50">
+      <div class="flex items-start">
+        <i class="fa-solid fa-circle-info mt-0.5 mr-3 text-base" style="color:var(--adm-ink);"></i>
+        <div>
+          <p class="text-[10px] font-semibold uppercase tracking-[1px]" style="color:var(--adm-soft);">Notification</p>
+          <p class="text-[13px] mt-1" style="color:var(--adm-ink);"><?= $_SESSION['noti']; ?></p>
         </div>
+        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto pl-3" style="color:var(--adm-soft);">
+          <i class="fas fa-times text-xs"></i>
+        </button>
+      </div>
+    </div>
+    <script>
+      setTimeout(function () {
+        var notif = document.getElementById("notifBox");
+        if (notif) {
+          notif.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+          setTimeout(() => notif.remove(), 300);
+        }
+      }, 3000);
+    </script>
+    <?php unset($_SESSION['noti']); ?>
+  <?php endif; ?>
+
+  <!-- Main Content -->
+  <div class="pt-10 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+
+    <!-- Dashboard Header -->
+    <div class="mb-10 adm-fade flex items-center gap-4">
+      <a href="<?= BASE_URL ?>sales-dashboard" class="adm-back">
+        <i class="fas fa-arrow-left text-sm"></i>
+      </a>
+      <div>
+        <div class="adm-eyebrow mb-2">Projects Management</div>
+        <h1 class="adm-title">Projects Dashboard</h1>
+        <p class="adm-subtitle mt-1">Manage all your projects and categories.</p>
+      </div>
     </div>
 
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Category Overview Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <!-- All Projects Card -->
-            <a href="projects-view?category=all" class="block group">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 hover:border-primary">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-indigo-50 rounded-xl group-hover:bg-indigo-100 transition-colors">
-                            <i class="ri-folder-line text-3xl text-primary"></i>
-                        </div>
-                        <i class="ri-arrow-right-line text-xl text-gray-400 group-hover:text-primary transition-colors"></i>
-                    </div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">All Projects</h2>
-                    <p class="text-sm text-gray-500 mb-4">View all projects</p>
-                    <div class="pt-4 border-t border-gray-100">
-                        <p class="text-3xl font-bold text-gray-800"><?php echo $all_count; ?></p>
-                        <p class="text-xs text-gray-500">Total Projects</p>
-                    </div>
-                </div>
-            </a>
+    <!-- Category Overview Cards -->
+    <div class="mb-10 adm-fade">
+      <div class="adm-section-label mb-4">Categories</div>
 
-            <!-- Site Projects Card -->
-            <a href="projects-view?category=site" class="block group">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 hover:border-amber-500">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-amber-50 rounded-xl group-hover:bg-amber-100 transition-colors">
-                            <i class="ri-building-2-line text-3xl text-amber-600"></i>
-                        </div>
-                        <i class="ri-arrow-right-line text-xl text-gray-400 group-hover:text-amber-600 transition-colors"></i>
-                    </div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Site Projects</h2>
-                    <p class="text-sm text-gray-500 mb-4">Construction sites</p>
-                    <div class="pt-4 border-t border-gray-100">
-                        <p class="text-3xl font-bold text-amber-600"><?php echo $site_count; ?></p>
-                        <p class="text-xs text-gray-500">Total Projects</p>
-                    </div>
-                </div>
-            </a>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-            <!-- Residential Interiors Card -->
-            <a href="projects-view?category=residential" class="block group">
-                <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all duration-300 hover:border-green-500">
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="p-3 bg-green-50 rounded-xl group-hover:bg-green-100 transition-colors">
-                            <i class="ri-home-4-line text-3xl text-green-600"></i>
-                        </div>
-                        <i class="ri-arrow-right-line text-xl text-gray-400 group-hover:text-green-600 transition-colors"></i>
-                    </div>
-                    <h2 class="text-xl font-semibold text-gray-800 mb-2">Residential</h2>
-                    <p class="text-sm text-gray-500 mb-4">Home interiors</p>
-                    <div class="pt-4 border-t border-gray-100">
-                        <p class="text-3xl font-bold text-green-600"><?php echo $residential_count; ?></p>
-                        <p class="text-xs text-gray-500">Total Projects</p>
-                    </div>
-                </div>
-            </a>
-        </div>
+        <!-- All Projects Card -->
+        <a href="<?= BASE_URL ?>projects-view?category=all" class="adm-card">
+          <div class="adm-icon"><i class="fas fa-folder"></i></div>
+          <h3 class="adm-card-title">All Projects</h3>
+          <p class="adm-card-desc">View every project across categories.</p>
+          <div class="adm-card-count-wrap">
+            <div class="adm-card-count"><?php echo $all_count; ?></div>
+            <div class="adm-card-count-label">Total Projects</div>
+          </div>
+        </a>
 
-        <!-- Quick Actions -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <a href="projects-view?action=add" class="flex items-center space-x-3 p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-indigo-50 transition-all group">
-                    <div class="p-2 bg-indigo-50 rounded-lg group-hover:bg-indigo-100">
-                        <i class="ri-add-line text-2xl text-primary"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-800">Add New Project</p>
-                        <p class="text-sm text-gray-500">Create a new project</p>
-                    </div>
-                </a>
+        <!-- Site Projects Card -->
+        <a href="<?= BASE_URL ?>projects-view?category=site" class="adm-card">
+          <div class="adm-icon"><i class="fas fa-building"></i></div>
+          <h3 class="adm-card-title">Site Projects</h3>
+          <p class="adm-card-desc">Construction site projects.</p>
+          <div class="adm-card-count-wrap">
+            <div class="adm-card-count"><?php echo $site_count; ?></div>
+            <div class="adm-card-count-label">Total Projects</div>
+          </div>
+        </a>
 
-                <a href="projects-cabinet-cost-settings" class="flex items-center space-x-3 p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-indigo-50 transition-all group">
-                    <div class="p-2 bg-amber-50 rounded-lg group-hover:bg-amber-100">
-                        <i class="ri-image-line text-2xl text-amber-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-800">Cabinet Cost Image</p>
-                        <p class="text-sm text-gray-500">Update section image</p>
-                    </div>
-                </a>
+        <!-- Residential Interiors Card -->
+        <a href="<?= BASE_URL ?>projects-view?category=residential" class="adm-card">
+          <div class="adm-icon"><i class="fas fa-home"></i></div>
+          <h3 class="adm-card-title">Residential</h3>
+          <p class="adm-card-desc">Home interior projects.</p>
+          <div class="adm-card-count-wrap">
+            <div class="adm-card-count"><?php echo $residential_count; ?></div>
+            <div class="adm-card-count-label">Total Projects</div>
+          </div>
+        </a>
 
-                <a href="projects-view" class="flex items-center space-x-3 p-4 border-2 border-dashed border-gray-300 rounded-xl hover:border-primary hover:bg-indigo-50 transition-all group">
-                    <div class="p-2 bg-purple-50 rounded-lg group-hover:bg-purple-100">
-                        <i class="ri-list-check text-2xl text-purple-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-medium text-gray-800">View All Projects</p>
-                        <p class="text-sm text-gray-500">Manage existing projects</p>
-                    </div>
-                </a>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <!-- Quick Actions -->
+    <div class="adm-fade">
+      <div class="adm-section-label mb-4">Quick Actions</div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <a href="<?= BASE_URL ?>projects-view?action=add" class="adm-stat">
+          <div class="adm-stat-icon-box"><i class="fas fa-plus"></i></div>
+          <div>
+            <div class="adm-stat-title">Add New Project</div>
+            <div class="adm-stat-desc">Create a new project</div>
+          </div>
+        </a>
+
+        <a href="<?= BASE_URL ?>projects-cabinet-cost-settings" class="adm-stat">
+          <div class="adm-stat-icon-box"><i class="fas fa-image"></i></div>
+          <div>
+            <div class="adm-stat-title">Cabinet Cost Image</div>
+            <div class="adm-stat-desc">Update section image</div>
+          </div>
+        </a>
+
+        <a href="<?= BASE_URL ?>projects-view" class="adm-stat">
+          <div class="adm-stat-icon-box"><i class="fas fa-list-check"></i></div>
+          <div>
+            <div class="adm-stat-title">View All Projects</div>
+            <div class="adm-stat-desc">Manage existing projects</div>
+          </div>
+        </a>
+
+      </div>
+    </div>
+
+  </div>
+
 </body>
+
 </html>

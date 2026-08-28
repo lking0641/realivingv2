@@ -142,9 +142,9 @@ $stmt->bind_param("ss", $item['item_family'], $item['item_code']);
             $addon_stmt->close();
           }
           ?>
-          <div class="bg-white shadow-lg rounded-xl overflow-hidden md:flex">
+          <div class="overflow-hidden md:flex" style="background: var(--adm-surface); border: 1px solid var(--adm-line); border-radius: 10px;">
             <!-- Main Image -->
-            <div class="md:w-1/3 bg-gray-100 flex items-center justify-center p-4">
+            <div class="md:w-1/3 flex items-center justify-center p-4" style="background: var(--adm-bg);">
               <?php if (!empty($item['item_image_path'])): ?>
                 <?php $itemImgSrc = CLIENT_ASSET . '/images/products/' . htmlspecialchars($item['item_image_path']); ?>
                 <img id="item_main_image" src="<?= $itemImgSrc ?>"
@@ -193,7 +193,7 @@ $default_size_type = (!empty($item['is_fixed_modular']) && $item['is_fixed_modul
 </p>
 
               <!-- Size Type Selector -->
-<div class="mb-6 bg-gray-50 p-4 rounded-lg">
+<div class="mb-6 p-4 rounded-lg" style="background: var(--adm-bg); border: 1px solid var(--adm-line);">
   <h4 class="font-semibold mb-3 text-gray-700">Size Options</h4>
   
   <div class="flex gap-3 mb-4">
@@ -502,7 +502,7 @@ $default_size_type = (!empty($item['is_fixed_modular']) && $item['is_fixed_modul
 
           <!-- Addons Section -->
           <?php if (!empty($addons)): ?>
-            <details class="mt-8 border border-gray-300 rounded-lg bg-white shadow-sm">
+            <details class="mt-8 rounded-lg" style="border: 1px solid var(--adm-line); background: var(--adm-surface);">
               <summary class="cursor-pointer px-4 py-3 text-base font-semibold bg-white hover:bg-gray-50 rounded-lg transition-colors flex items-center justify-between border-b">
                 <span class="flex items-center text-gray-700">
                   <i class="fas fa-puzzle-piece mr-2 text-gray-500"></i>
@@ -793,13 +793,16 @@ $default_size_type = (!empty($item['is_fixed_modular']) && $item['is_fixed_modul
           <!-- Back to Products Button -->
 <div class="mt-6 flex gap-3">
   <button type="submit" name="submit_quotation"
-    class="flex-1 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 font-semibold transition-all">
+    class="flex-1 px-6 py-3 rounded-lg font-semibold transition-all"
+    style="background: var(--adm-ink); color: #fff;"
+    onmouseover="this.style.opacity=0.85" onmouseout="this.style.opacity=1">
     <i class="fas fa-save mr-2"></i>
     Save Quotation
   </button>
 
   <a href="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=all&family=all"
-     class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition-all flex items-center justify-center">
+     class="px-6 py-3 rounded-lg font-semibold transition-all flex items-center justify-center"
+     style="background: var(--adm-bg); color: var(--adm-ink); border: 1px solid var(--adm-line);">
     <i class="fas fa-arrow-left mr-2"></i>
     Back to Products
   </a>
@@ -894,51 +897,84 @@ function jumpToAddon(addonId, category) {
   }, 100);
 }
 
+function styleTabActive(tab) {
+  tab.classList.add('tab-active');
+  tab.style.background = '#0B0B0B';
+  tab.style.borderColor = '#0B0B0B';
+  tab.querySelectorAll('i, span.font-semibold').forEach(el => {
+    el.style.color = '#FFFFFF';
+  });
+  const badge = tab.querySelector('span.bg-gray-200');
+  if (badge) {
+    badge.style.background = 'rgba(255,255,255,0.2)';
+    badge.style.color = '#FFFFFF';
+  }
+}
+
+function styleTabInactive(tab) {
+  tab.classList.remove('tab-active');
+  tab.style.background = '#FFFFFF';
+  tab.style.borderColor = '#E2E2E2';
+  tab.querySelectorAll('i, span.font-semibold').forEach(el => {
+    el.style.color = '#6B6B6B';
+  });
+  const badge = tab.querySelector('span.bg-gray-200');
+  if (badge) {
+    badge.style.background = '#E2E2E2';
+    badge.style.color = '#6B6B6B';
+  }
+}
+
+function styleTabActive(tab) {
+  tab.classList.add('tab-active');
+  tab.style.background = '#0B0B0B';
+  tab.style.borderColor = '#0B0B0B';
+  tab.querySelectorAll('i, span.font-semibold').forEach(el => {
+    el.style.color = '#FFFFFF';
+  });
+  const badge = tab.querySelector('span.bg-gray-200');
+  if (badge) {
+    badge.style.background = 'rgba(255,255,255,0.2)';
+    badge.style.color = '#FFFFFF';
+  }
+}
+
 function showCategory(category) {
-  // Hide all content panels
   document.querySelectorAll('.category-content').forEach(el => el.classList.add('hidden'));
 
-  // Reset all sidebar tab styles
   document.querySelectorAll('.category-tab').forEach(btn => {
-    btn.classList.remove('bg-indigo-600', 'border-indigo-600');
-    btn.classList.add('bg-gray-50', 'border-transparent');
-    btn.querySelectorAll('i').forEach(i => {
-      i.classList.remove('text-white');
-      i.classList.add('text-gray-400');
-    });
-    btn.querySelectorAll('span.font-semibold').forEach(s => {
-      s.classList.remove('text-white');
-      s.classList.add('text-gray-700');
-    });
-    btn.querySelectorAll('span.bg-gray-200').forEach(s => {
-      s.classList.remove('bg-indigo-500', 'text-white');
-      s.classList.add('bg-gray-200', 'text-gray-600');
-    });
+    styleTabInactive(btn);
   });
 
-  // Show selected content panel
   const content = document.getElementById('category-content-' + category);
   if (content) content.classList.remove('hidden');
 
-  // Highlight active sidebar tab
   const activeTab = document.querySelector(`.category-tab[data-category="${category}"]`);
   if (activeTab) {
-    activeTab.classList.add('bg-indigo-600', 'border-indigo-600');
-    activeTab.classList.remove('bg-gray-50', 'border-transparent');
-    activeTab.querySelectorAll('i').forEach(i => {
-      i.classList.add('text-white');
-      i.classList.remove('text-gray-400');
-    });
-    activeTab.querySelectorAll('span.font-semibold').forEach(s => {
-      s.classList.add('text-white');
-      s.classList.remove('text-gray-700');
-    });
-    activeTab.querySelectorAll('span.bg-gray-200').forEach(s => {
-      s.classList.add('bg-indigo-500', 'text-white');
-      s.classList.remove('bg-gray-200', 'text-gray-600');
-    });
+    styleTabActive(activeTab);
   }
 }
+
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.category-tab').forEach(tab => {
+    tab.addEventListener('mouseenter', function () {
+      if (this.classList.contains('tab-active')) {
+        this.style.background = '#262626';
+        this.style.borderColor = '#262626';
+      } else {
+        this.style.background = '#F5F5F5';
+        this.style.borderColor = '#9A9A9A';
+      }
+    });
+    tab.addEventListener('mouseleave', function () {
+      if (this.classList.contains('tab-active')) {
+        styleTabActive(this);
+      } else {
+        styleTabInactive(this);
+      }
+    });
+  });
+});
 
 function showSizeType(type) {
   currentSizeType = type;
@@ -1431,7 +1467,32 @@ function filterByType(btn, category, type) {
   background: #667eea;
   border-color: #667eea;
 }
+.addon-card.border-indigo-500 .selection-indicator {
+  background: #667eea;
+  border-color: #667eea;
+}
 
+.category-tab.active,
+.category-tab.active:hover {
+  background: #0B0B0B !important;
+  border-color: #0B0B0B !important;
+}
+.category-tab.active i,
+.category-tab.active span.font-semibold {
+  color: #FFFFFF !important;
+}
+.category-tab:not(.active) {
+  background: #F9FAFB !important;
+  border-color: #E2E2E2 !important;
+}
+.category-tab:not(.active) i,
+.category-tab:not(.active) span.font-semibold {
+  color: #374151 !important;
+}
+.category-tab:not(.active):hover {
+  background: #F5F5F5 !important;
+  border-color: #9A9A9A !important;
+}
 /* Modal styles */
 .modal {
   display: none;
@@ -1493,6 +1554,33 @@ function filterByType(btn, category, type) {
   background: #f3f4f6;
   color: #111827;
 }
+
+/* ── Recolor indigo/purple utility classes to match adm-* design system ── */
+.text-indigo-700, .text-indigo-600, .text-indigo-500, .text-indigo-400,
+.hover\:text-indigo-800:hover { color: var(--adm-ink) !important; }
+
+.bg-indigo-50, .hover\:bg-indigo-50:hover { background: var(--adm-bg) !important; }
+.bg-indigo-500, .bg-indigo-600 { background: var(--adm-ink) !important; color: #fff !important; }
+
+.border-indigo-500, .border-indigo-600, .border-indigo-300, .border-indigo-400,
+.hover\:border-indigo-300:hover, .hover\:border-indigo-400:hover {
+  border-color: var(--adm-ink) !important;
+}
+
+.ring-indigo-500 { --tw-ring-color: var(--adm-ink) !important; }
+
+.bg-gradient-to-r.from-indigo-600.to-purple-600,
+.size-select-btn.active {
+  background: var(--adm-ink) !important;
+  background-image: none !important;
+  border-color: var(--adm-ink) !important;
+}
+.hover\:from-indigo-700:hover, .hover\:to-purple-700:hover { opacity: 0.85; }
+
+.text-blue-600, .hover\:text-blue-800:hover { color: var(--adm-soft) !important; }
+.border-blue-300 { border-color: var(--adm-line) !important; }
+.bg-blue-50 { background: var(--adm-bg) !important; }
+.bg-blue-500 { background: var(--adm-ink) !important; }
 </style>
       </form>
 
@@ -1509,7 +1597,7 @@ function filterByType(btn, category, type) {
       <?php foreach ($variants as $v): ?>
         <a href="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&search=<?= urlencode($v['item_code']) ?>"
           class="block hover:shadow-lg transition">
-          <div class="bg-white shadow-md rounded-lg p-4 text-center">
+          <div class="rounded-lg p-4 text-center" style="background: var(--adm-surface); border: 1px solid var(--adm-line);">
             <?php if (!empty($v['item_image_path'])): ?>
               <img src="<?= CLIENT_ASSET ?>/images/products/<?= htmlspecialchars($v['item_image_path']) ?>"
                 class="mx-auto mb-2 w-24 h-24 object-contain rounded" alt="Variant Image">

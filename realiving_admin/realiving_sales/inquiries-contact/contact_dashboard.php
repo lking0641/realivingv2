@@ -128,39 +128,52 @@ $type_stats = $conn->query($type_stats_sql);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact Inquiries — Realiving</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg: #f4f1ee;
-      --surface: #ffffff;
-      --surface2: #faf8f6;
-      --border: #e8e2db;
-      --text: #1a1208;
-      --text-muted: #7a6f65;
-      --brand: #3b1f0f;
-      --brand-mid: #7a4030;
-      --brand-light: #c9956a;
-      --accent: #e8c49a;
-      --success: #2d6a4f;
-      --success-bg: #d8f3dc;
-      --warning: #7d5a00;
-      --warning-bg: #fff3cd;
-      --danger: #9b1c1c;
-      --danger-bg: #fee2e2;
-      --info: #1e3a8a;
-      --info-bg: #dbeafe;
-      --purple: #4f46e5;
-      --purple-bg: #ede9fe;
-      --teal: #0f766e;
-      --teal-bg: #ccfbf1;
-      --radius: 14px;
-      --radius-sm: 8px;
-      --shadow: 0 2px 12px rgba(59, 31, 15, 0.08);
-      --shadow-md: 0 6px 24px rgba(59, 31, 15, 0.12);
-    }
+  --bg: #F5F5F5;
+  --surface: #FFFFFF;
+  --surface2: #FAFAFA;
+  --border: #E2E2E2;
+  --text: #0B0B0B;
+  --text-muted: #6B6B6B;
+  --text-mute2: #9A9A9A;
+  --brand: #0B0B0B;
+  --brand-mid: #262626;
+  --brand-light: #9A9A9A;
+  --accent: #E8E8E8;
+  --hover-bg: #F2F2F2;
+
+  --success: #1F6F43;
+  --success-bg: #E8F3EC;
+  --success-border: #BFE0CC;
+
+  --warning: #8A6100;
+  --warning-bg: #FBF1D8;
+  --warning-border: #EAD9A6;
+
+  --danger: #9B1C1C;
+  --danger-bg: #FBEAEA;
+  --danger-border: #E3B7B7;
+
+  --info: #33475B;
+  --info-bg: #EDF0F3;
+  --info-border: #C7D0DA;
+
+  --purple: #46424F;
+  --purple-bg: #F0EFF1;
+  --purple-border: #D8D6DA;
+
+  --teal: #2C5F5D;
+  --teal-bg: #E7F0EF;
+  --teal-border: #C3D9D7;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(11, 11, 11, .06);
+  --shadow-md: 0 10px 26px -16px rgba(11, 11, 11, .25);
+}
 
     * {
       margin: 0;
@@ -265,12 +278,12 @@ $type_stats = $conn->query($type_stats_sql);
       background: var(--tile-color, var(--brand-light));
     }
 
-    .stat-tile .num {
-      font-family: 'Syne', sans-serif;
-      font-size: 34px;
-      font-weight: 700;
+        .stat-tile .num {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
       line-height: 1;
-      color: var(--tile-color, var(--brand));
+      color: var(--text);
     }
 
     .stat-tile .lbl {
@@ -287,27 +300,28 @@ $type_stats = $conn->query($type_stats_sql);
       right: 14px;
       top: 14px;
       font-size: 22px;
-      opacity: .18;
+      opacity: .12;
+      color: var(--tile-color, var(--brand-light));
     }
 
-    .tile-total {
-      --tile-color: #5b7cf7;
+        .tile-total {
+      --tile-color: #33475B;
     }
 
     .tile-pending {
-      --tile-color: #f59e0b;
+      --tile-color: #8A6100;
     }
 
     .tile-responded {
-      --tile-color: #10b981;
+      --tile-color: #1F6F43;
     }
 
     .tile-today {
-      --tile-color: #6366f1;
+      --tile-color: #46424F;
     }
 
     .tile-done {
-      --tile-color: #059669;
+      --tile-color: #0B0B0B;
     }
 
     /* ALERTS */
@@ -353,7 +367,7 @@ $type_stats = $conn->query($type_stats_sql);
     }
 
     .section-head h2 {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
       font-weight: 700;
       display: flex;
@@ -392,7 +406,7 @@ $type_stats = $conn->query($type_stats_sql);
 
     .inq-card:hover {
       border-color: var(--brand-light);
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .inq-info {
@@ -508,21 +522,21 @@ $type_stats = $conn->query($type_stats_sql);
       background: var(--surface2);
     }
 
-    .btn-danger {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1.5px solid #fca5a5;
+        .btn-danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1.5px solid var(--danger-border);
     }
 
     .btn-danger:hover {
-      background: #dc2626;
+      background: var(--danger);
       color: #fff;
     }
 
     .btn-success {
       background: var(--success-bg);
       color: var(--success);
-      border: 1.5px solid #b7e4c7;
+      border: 1.5px solid var(--success-border);
     }
 
     .btn-success:hover {
@@ -533,7 +547,7 @@ $type_stats = $conn->query($type_stats_sql);
     .btn-purple {
       background: var(--purple-bg);
       color: var(--purple);
-      border: 1.5px solid #c4b5fd;
+      border: 1.5px solid var(--purple-border);
     }
 
     .btn-purple:hover {
@@ -544,7 +558,7 @@ $type_stats = $conn->query($type_stats_sql);
     .btn-teal {
       background: var(--teal-bg);
       color: var(--teal);
-      border: 1.5px solid #5eead4;
+      border: 1.5px solid var(--teal-border);
     }
 
     .btn-teal:hover {
@@ -598,9 +612,9 @@ $type_stats = $conn->query($type_stats_sql);
       transition: border-color .18s;
     }
 
-    .filter-input:focus {
+        .filter-input:focus {
       outline: none;
-      border-color: var(--brand-light);
+      border-color: var(--brand);
     }
 
     .qtag {
@@ -620,32 +634,32 @@ $type_stats = $conn->query($type_stats_sql);
       background: var(--surface);
     }
 
-    .qtag-all:hover,
+        .qtag-all:hover,
     .qtag-all.active {
       border-color: var(--brand);
       color: var(--brand);
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .qtag-active {
-      border-color: #10b981;
-      color: #065f46;
-      background: #d1fae5;
+      border-color: var(--success-border);
+      color: var(--success);
+      background: var(--success-bg);
     }
 
     .qtag-active:hover {
-      background: #10b981;
+      background: var(--success);
       color: #fff;
     }
 
     .qtag-done {
-      border-color: #3b82f6;
-      color: #1e3a8a;
-      background: #dbeafe;
+      border-color: var(--info-border);
+      color: var(--info);
+      background: var(--info-bg);
     }
 
     .qtag-done:hover {
-      background: #3b82f6;
+      background: var(--info);
       color: #fff;
     }
 
@@ -684,8 +698,8 @@ $type_stats = $conn->query($type_stats_sql);
       transition: background .15s;
     }
 
-    .inq-table tbody tr:hover {
-      background: #fdf9f5;
+        .inq-table tbody tr:hover {
+      background: var(--hover-bg);
     }
 
     .inq-table td {
@@ -705,11 +719,11 @@ $type_stats = $conn->query($type_stats_sql);
     }
 
     /* MODAL */
-    .modal-bg {
+        .modal-bg {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(26, 18, 8, .55);
+      background: rgba(11, 11, 11, .55);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -756,7 +770,7 @@ $type_stats = $conn->query($type_stats_sql);
     }
 
     .modal-head h3 {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 18px;
       font-weight: 700;
     }
@@ -800,7 +814,7 @@ $type_stats = $conn->query($type_stats_sql);
 
     .form-control:focus {
       outline: none;
-      border-color: var(--brand-light);
+      border-color: var(--brand);
       background: #fff;
     }
 
@@ -839,8 +853,8 @@ $type_stats = $conn->query($type_stats_sql);
     /* RIGHT COLUMN ITEMS */
     .priority-item {
       padding: 12px;
-      background: #fffbf5;
-      border: 1.5px solid var(--accent);
+      background: var(--surface2);
+      border: 1.5px solid var(--warning-border);
       border-radius: var(--radius-sm);
       margin-bottom: 10px;
     }
@@ -892,7 +906,7 @@ $type_stats = $conn->query($type_stats_sql);
       align-items: center;
       padding: 9px 12px;
       background: var(--teal-bg);
-      border: 1px solid #5eead4;
+      border: 1px solid var(--teal-border);
       border-radius: var(--radius-sm);
       margin-bottom: 6px;
     }
@@ -955,7 +969,7 @@ $type_stats = $conn->query($type_stats_sql);
           <i class="fas fa-user-plus"></i> Convert to Clients
           <?php if ($responded_contacts > 0): ?>
             <span
-              style="position:absolute;top:4px;right:4px;background:#10b981;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $responded_contacts; ?></span>
+              style="position:absolute;top:4px;right:4px;background:#fff;color:var(--brand);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $responded_contacts; ?></span>
           <?php endif; ?>
         </a>
         <a href="contact" target="_blank" class="nav-btn"><i class="fas fa-external-link-alt"></i> View Contact
@@ -965,7 +979,7 @@ $type_stats = $conn->query($type_stats_sql);
             style="position:relative;">
             <i class="fas fa-hourglass-half"></i> Pending
             <span
-              style="position:absolute;top:4px;right:4px;background:#f59e0b;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $pending_contacts; ?></span>
+              style="position:absolute;top:4px;right:4px;background:#fff;color:var(--brand);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $pending_contacts; ?></span>
           </button>
         <?php endif; ?>
       </div>
@@ -1014,7 +1028,7 @@ $type_stats = $conn->query($type_stats_sql);
           <!-- Recent Contacts -->
           <div class="section-card">
             <div class="section-head">
-              <h2><i class="fas fa-envelope" style="color:#6366f1;"></i> Recent Contact Inquiries
+              <h2><i class="fas fa-envelope" style="color:var(--info);"></i> Recent Contact Inquiries
                 <span
                   style="background:var(--purple-bg);color:var(--purple);padding:3px 10px;border-radius:20px;font-size:13px;font-family:inherit;font-weight:600;"><?php echo $recent_contacts->num_rows; ?></span>
               </h2>
@@ -1083,7 +1097,7 @@ $type_stats = $conn->query($type_stats_sql);
           <!-- Needs Attention -->
           <div class="section-card" style="margin-bottom:20px;">
             <div class="section-head">
-              <h2><i class="fas fa-exclamation-circle" style="color:#f59e0b;"></i> Needs Attention</h2>
+              <h2><i class="fas fa-exclamation-circle" style="color:var(--warning);"></i> Needs Attention</h2>
             </div>
             <div class="section-body" style="padding:14px 20px;">
               <?php if ($priority_contacts->num_rows > 0): ?>
@@ -1116,7 +1130,7 @@ $type_stats = $conn->query($type_stats_sql);
           <!-- Inquiry Type Stats -->
           <div class="section-card" style="margin-bottom:20px;">
             <div class="section-head">
-              <h2><i class="fas fa-chart-bar" style="color:#10b981;"></i> Inquiry Types</h2>
+              <h2><i class="fas fa-chart-bar" style="color:var(--success);"></i> Inquiry Types</h2>
             </div>
             <div class="section-body" style="padding:14px 20px;">
               <?php if ($type_stats->num_rows > 0): ?>
@@ -1138,19 +1152,19 @@ $type_stats = $conn->query($type_stats_sql);
           <!-- Quick Actions -->
           <div class="section-card">
             <div class="section-head">
-              <h2><i class="fas fa-bolt" style="color:#f59e0b;"></i> Quick Actions</h2>
+              <h2><i class="fas fa-bolt" style="color:var(--warning);"></i> Quick Actions</h2>
             </div>
             <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
               <a href="?view=list" class="btn btn-outline" style="justify-content:flex-start;"><i class="fas fa-list"></i>
                 All Contacts</a>
               <a href="?view=list&filter_active=1" class="btn btn-outline"
-                style="justify-content:flex-start;color:#065f46;border-color:#6ee7b7;"><i class="fas fa-check-circle"></i>
+                style="justify-content:flex-start;color:var(--success);border-color:var(--success-border);"><i class="fas fa-check-circle"></i>
                 Active Only</a>
               <a href="?view=list&filter_type=contact_with_items" class="btn btn-outline"
                 style="justify-content:flex-start;color:var(--teal);border-color:#5eead4;"><i class="fas fa-box"></i>
                 Product Inquiries</a>
               <a href="?view=list&filter_status=completed" class="btn btn-outline"
-                style="justify-content:flex-start;color:#1e3a8a;border-color:#93c5fd;"><i class="fas fa-trophy"></i>
+                style="justify-content:flex-start;color:var(--info);border-color:var(--info-border);"><i class="fas fa-trophy"></i>
                 Completed</a>
               <a href="contact_clients.php" class="btn btn-primary" style="justify-content:flex-start;"><i
                   class="fas fa-user-plus"></i> Convert to Client</a>
@@ -1283,7 +1297,7 @@ $type_stats = $conn->query($type_stats_sql);
                           class="btn btn-sm btn-teal btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
                         <button onclick="openStatus(<?php echo $contact['id']; ?>,'<?php echo $contact['status']; ?>')"
                           class="btn btn-sm btn-outline btn-icon" title="Update Status"
-                          style="color:#059669;border-color:#6ee7b7;"><i class="fas fa-pen"></i></button>
+                          style="color:var(--success);border-color:var(--success-border);"><i class="fas fa-pen"></i></button>
                         <?php if ($contact['status'] === 'pending'): ?>
                           <form method="POST" style="display:inline;margin:0;">
                             <input type="hidden" name="contact_id" value="<?php echo $contact['id']; ?>">
@@ -1328,7 +1342,7 @@ $type_stats = $conn->query($type_stats_sql);
   <div class="modal-bg" id="statusModal">
     <div class="modal-box">
       <div class="modal-head">
-        <h3><i class="fas fa-pen" style="color:#10b981;"></i> Update Status</h3>
+        <h3><i class="fas fa-trash" style="color:#dc2626;"></i> Delete Contact</h3>
         <button class="modal-close" onclick="document.getElementById('statusModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1357,7 +1371,7 @@ $type_stats = $conn->query($type_stats_sql);
   <div class="modal-bg" id="deleteModal">
     <div class="modal-box" style="max-width:440px;">
       <div class="modal-head">
-        <h3><i class="fas fa-trash" style="color:#dc2626;"></i> Delete Contact</h3>
+        <h3><i class="fas fa-trash" style="color:var(--danger);"></i> Delete Contact</h3>
         <button class="modal-close" onclick="document.getElementById('deleteModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1381,7 +1395,7 @@ $type_stats = $conn->query($type_stats_sql);
   <div class="modal-bg" id="pendingPopup">
     <div class="modal-box" style="max-width:520px;">
       <div class="modal-head">
-        <h3><i class="fas fa-hourglass-half" style="color:#f59e0b;"></i> Pending Contacts</h3>
+        <h3><i class="fas fa-hourglass-half" style="color:var(--warning);"></i> Pending Contacts</h3>
         <button class="modal-close" onclick="document.getElementById('pendingPopup').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1395,7 +1409,7 @@ $type_stats = $conn->query($type_stats_sql);
           while ($c = $pp->fetch_assoc()):
             ?>
             <div
-              style="background:var(--warning-bg);border:1.5px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;">
+              style="background:var(--warning-bg);border:1.5px solid var(--warning-border);border-radius:var(--radius-sm);padding:12px 14px;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                 <div>
                   <div style="font-weight:600;font-size:14px;"><?php echo htmlspecialchars($c['name']); ?></div>
@@ -1407,7 +1421,7 @@ $type_stats = $conn->query($type_stats_sql);
                 <button
                   onclick="openStatus(<?php echo $c['id']; ?>,'<?php echo $c['status']; ?>');document.getElementById('pendingPopup').classList.remove('open');"
                   class="btn btn-sm"
-                  style="background:var(--warning-bg);color:var(--warning);border:1.5px solid #fde68a;flex-shrink:0;margin-left:10px;">
+                  style="background:var(--warning-bg);color:var(--warning);border:1.5px solid var(--warning-border);flex-shrink:0;margin-left:10px;">
                   <i class="fas fa-pen"></i> Update
                 </button>
               </div>

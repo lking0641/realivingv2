@@ -315,85 +315,33 @@ if ($business_type === 'Project') {
 <head>
   <meta charset="UTF-8">
   <title>Computation List</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    .client-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      position: relative;
-      overflow: hidden;
+    :root {
+      --adm-bg: #F5F5F5;
+      --adm-surface: #FFFFFF;
+      --adm-ink: #0B0B0B;
+      --adm-soft: #6B6B6B;
+      --adm-muted: #9A9A9A;
+      --adm-line: #E2E2E2;
     }
 
-    .client-header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.03)"/><circle cx="10" cy="60" r="0.5" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-      opacity: 0.3;
+        .adm-th {
+      padding: 8px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--adm-ink);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--adm-line);
     }
 
-    .info-card {
-      backdrop-filter: blur(10px);
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      transition: all 0.3s ease;
+    body {
+      font-family: 'Inter', sans-serif;
+      color: var(--adm-ink);
     }
-
-    .info-card:hover {
-      background: rgba(255, 255, 255, 0.25);
-      transform: translateY(-2px);
-    }
-
-    .info-icon {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(5px);
-      transition: all 0.3s ease;
-    }
-
-    .info-card:hover .info-icon {
-      background: rgba(255, 255, 255, 0.3);
-      transform: scale(1.1);
-    }
-
-    .client-badge {
-      background: rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      animation: fadeInDown 0.6s ease-out;
-    }
-
-    @keyframes fadeInDown {
-      from {
-        opacity: 0;
-        transform: translateY(-20px);
-      }
-
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .pulse-icon {
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0% {
-        transform: scale(1);
-      }
-
-      50% {
-        transform: scale(1.05);
-      }
-
-      100% {
-        transform: scale(1);
-      }
-    }
-
     /* Optional hover for swatches */
     img[data-full] {
       transition: transform 0.2s ease;
@@ -426,7 +374,7 @@ if ($business_type === 'Project') {
   </style>
 </head>
 
-<body>
+<body style="background: var(--adm-bg);">
   <!-- Client Information Header -->
   <?php include $includes ['client-header']; ?>
 
@@ -449,27 +397,27 @@ if ($business_type === 'Project') {
     <div style="display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
       <a href="quotation-items?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>"
         class="btn"
-        style="background: #6b7280; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; text-decoration: none;">
+        style="background: var(--adm-surface); border:1px solid var(--adm-line); color: var(--adm-ink); padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; text-decoration: none;">
         <i class="fas fa-arrow-left"></i>
         Back
       </a>
 
       <!-- Computation Lock Toggle -->
       <button onclick="toggleComputationLock()"
-        style="padding:12px 20px; background:<?= $computation_locked ? '#ef4444' : '#10b981' ?>; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:8px;">
+        style="padding:12px 20px; background:var(--adm-ink); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px; display:inline-flex; align-items:center; gap:8px;">
         <i class="fas <?= $computation_locked ? 'fa-unlock' : 'fa-lock' ?>"></i>
         <?= $computation_locked ? 'Unlock Computation' : 'Lock Computation' ?>
       </button>
 
       <a href="export-computation?client_id=<?= $client_id ?>&client_name=<?= urlencode($client_name) ?>"
         class="btn"
-        style="background: #ef4444; color: white; padding: 12px 20px; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
+        style="background: var(--adm-ink); color: white; padding: 12px 20px; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
         <i class="fas fa-file-pdf"></i>
         Export to PDF
       </a>
 
       <a href="export-quotation?client_id=<?= $client_id ?>&client_name=<?= urlencode($client_name) ?>" class="btn"
-        style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 12px 20px; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+        style="background: var(--adm-surface); border:1px solid var(--adm-line); color: var(--adm-ink); padding: 12px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;">
         <i class="fas fa-file-excel"></i>
         Export Quotation to Excel
       </a>
@@ -480,7 +428,7 @@ if ($business_type === 'Project') {
           <i class="fas fa-list-ol"></i> Tracker Mode:
         </label>
         <select id="tracker-mode"
-          style="padding: 10px 16px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; background: white;">
+          style="padding: 10px 16px; border: 1px solid var(--adm-line); border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; background: white;">
           <option value="non-sequential" <?= ($tracker_mode ?? 'non-sequential') === 'non-sequential' ? 'selected' : '' ?>>
             Non-Sequential
           </option>
@@ -499,9 +447,9 @@ if ($business_type === 'Project') {
         <div style="position:relative; flex:1; min-width:240px; max-width:340px;">
           <i class="fas fa-search" style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#9ca3af; font-size:13px; pointer-events:none;"></i>
           <input type="text" id="computation-search" placeholder="Search by area name..."
-            style="width:100%; padding:11px 36px; border:1px solid #e5e7eb; border-radius:24px; font-size:14px; background:#f9fafb; transition:all 0.2s ease; outline:none;"
-            onfocus="this.style.background='white'; this.style.borderColor='#8a5a44'; this.style.boxShadow='0 0 0 3px rgba(138,90,68,0.12)';"
-            onblur="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+            style="width:100%; padding:11px 36px; border:1px solid var(--adm-line); border-radius:24px; font-size:14px; background:#f9fafb; transition:all 0.2s ease; outline:none;"
+            onfocus="this.style.background='white'; this.style.borderColor='var(--adm-ink)'; this.style.boxShadow='0 0 0 3px rgba(11,11,11,0.08)';"
+            onblur="this.style.background='#f9fafb'; this.style.borderColor='var(--adm-line)'; this.style.boxShadow='none';">
           <button type="button" id="clear-search-btn" title="Clear search"
             style="display:none; position:absolute; right:10px; top:50%; transform:translateY(-50%); background:#e5e7eb; color:#6b7280; border:none; width:20px; height:20px; border-radius:50%; font-size:11px; line-height:1; cursor:pointer; align-items:center; justify-content:center;">
             <i class="fas fa-times"></i>
@@ -511,9 +459,9 @@ if ($business_type === 'Project') {
         <!-- Area Filter -->
         <div style="position:relative;">
           <select id="area-filter"
-            style="appearance:none; -webkit-appearance:none; padding:11px 34px 11px 16px; border:1px solid #e5e7eb; border-radius:24px; font-size:13px; font-weight:600; color:#374151; cursor:pointer; background:#f9fafb; transition:all 0.2s ease; outline:none;"
-            onfocus="this.style.borderColor='#8a5a44'; this.style.boxShadow='0 0 0 3px rgba(138,90,68,0.12)';"
-            onblur="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none';">
+            style="appearance:none; -webkit-appearance:none; padding:11px 34px 11px 16px; border:1px solid var(--adm-line); border-radius:24px; font-size:13px; font-weight:600; color:var(--adm-ink); cursor:pointer; background:#f9fafb; transition:all 0.2s ease; outline:none;"
+            onfocus="this.style.borderColor='var(--adm-ink)'; this.style.boxShadow='0 0 0 3px rgba(11,11,11,0.08)';"
+            onblur="this.style.borderColor='var(--adm-line)'; this.style.boxShadow='none';">
             <option value="">All Areas</option>
             <?php foreach ($areas as $area): ?>
               <option value="<?= htmlspecialchars($area) ?>"><?= htmlspecialchars($area) ?></option>
@@ -524,8 +472,8 @@ if ($business_type === 'Project') {
 
         <!-- Sort Order Toggle -->
         <button type="button" id="sort-toggle-btn" data-order="asc"
-          style="padding:11px 18px; border:1px solid #e5e7eb; border-radius:24px; font-size:13px; font-weight:600; color:#374151; cursor:pointer; background:#f9fafb; transition:all 0.2s ease; display:inline-flex; align-items:center; gap:8px;"
-          onmouseover="this.style.borderColor='#8a5a44';" onmouseout="this.style.borderColor='#e5e7eb';">
+          style="padding:11px 18px; border:1px solid var(--adm-line); border-radius:24px; font-size:13px; font-weight:600; color:var(--adm-ink); cursor:pointer; background:#f9fafb; transition:all 0.2s ease; display:inline-flex; align-items:center; gap:8px;"
+          onmouseover="this.style.borderColor='var(--adm-ink)';" onmouseout="this.style.borderColor='var(--adm-line)';">
           <i class="fas fa-arrow-down-short-wide"></i>
           <span id="sort-toggle-label">Oldest First</span>
         </button>
@@ -535,12 +483,13 @@ if ($business_type === 'Project') {
 
     <?php if (empty($entriesArr) && empty($fixedEntriesArr)): ?>
       <div
-        style="text-align:center; padding:60px 20px; background:white; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+        style="text-align:center; padding:60px 20px; background:white; border-radius:12px; border:1px solid var(--adm-line);">
         <i class="fas fa-clipboard-list" style="font-size:48px; color:#d1d5db; margin-bottom:16px; display:block;"></i>
         <p style="color:#6b7280; font-size:16px; font-weight:500;">No computations found for this client.</p>
       </div>
     <?php else: ?>
 
+      <div id="areas-list">
       <?php foreach ($areas as $area):
         // Check if this area has any entries
         $areaCustomized = array_filter($entriesArr, fn($r) => $r['area'] === $area);
@@ -551,11 +500,11 @@ if ($business_type === 'Project') {
 
         <!-- ═══════════════════════════════════════ AREA CARD ═══════════════════════════════════════ -->
         <div class="area-card" data-area="<?= htmlspecialchars($area) ?>"
-          style="background:white; border-radius:16px; box-shadow:0 2px 12px rgba(0,0,0,0.08); margin-bottom:24px; overflow:hidden; border:1px solid #e5e7eb;">
+          style="background:var(--adm-surface); border-radius:16px; margin-bottom:24px; overflow:hidden; border:1px solid var(--adm-line);">
 
           <!-- Area Header -->
           <div
-            style="background:linear-gradient(135deg,#3b1f0f,#6b3a26); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            style="background:var(--adm-ink); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
             <div style="display:flex; align-items:center; gap:10px;">
               <div
                 style="background:rgba(255,255,255,0.15); width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center;">
@@ -571,13 +520,13 @@ if ($business_type === 'Project') {
             <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
               <?php if (!empty($areaCustomized)): ?>
                 <span
-                  style="background:rgba(59,130,246,0.25); border:1px solid rgba(59,130,246,0.4); color:#bfdbfe; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600;">
+                  style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.35); color:#ffffff; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600;">
                   <i class="fas fa-ruler"></i> <?= count($areaCustomized) ?> Customized
                 </span>
               <?php endif; ?>
               <?php if (!empty($areaFixed)): ?>
                 <span
-                  style="background:rgba(139,92,246,0.25); border:1px solid rgba(139,92,246,0.4); color:#ddd6fe; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600;">
+                  style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.25); color:#e5e5e5; padding:4px 12px; border-radius:20px; font-size:11px; font-weight:600;">
                   <i class="fas fa-ruler-combined"></i> <?= count($areaFixed) ?> Fixed Size
                 </span>
               <?php endif; ?>
@@ -597,11 +546,12 @@ if ($business_type === 'Project') {
 
       <?php endforeach; // end areas loop 
       ?>
-
-      <!-- ── SUMMARY PANEL ── -->
-      <?php include $includes['summary-pannel']; ?>
+      </div><!-- #areas-list -->
 
     <?php endif; ?>
+
+    <!-- ── SUMMARY PANEL ── -->
+      <?php include $includes['summary-pannel']; ?>
 
   </div><!-- closes max-w-7xl div -->
 

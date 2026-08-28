@@ -90,8 +90,27 @@ if (!empty($filter_project))
   $sql .= " AND ci.project_type = '" . $conn->real_escape_string($filter_project) . "'";
 if ($filter_active)
   $sql .= " AND ci.status NOT IN ('completed', 'cancelled')";
+// Completed inquiries now live under their own tab, keep the main list focused on active leads
+$sql .= " AND ci.status != 'completed'";
 $sql .= " ORDER BY ci.created_at DESC";
 $all_inquiries = $conn->query($sql);
+
+// Completed inquiries (their own tab, keeps the main list free of already-closed leads)
+$completed_sql = "SELECT ci.*, acc.full_name as sales_name, cs.title as style_title, cs.id as style_id
+        FROM concept_inquiries ci
+        LEFT JOIN account acc ON ci.assigned_to = acc.id
+        LEFT JOIN concept_styles cs ON ci.concept_id = cs.id
+        WHERE ci.status = 'completed'";
+if ($admin_role !== 'superadmin')
+  $completed_sql .= " AND ci.assigned_to = $admin_id";
+if (!empty($search)) {
+  $s = $conn->real_escape_string($search);
+  $completed_sql .= " AND (ci.name LIKE '%$s%' OR ci.email LIKE '%$s%' OR ci.phone LIKE '%$s%')";
+}
+if (!empty($filter_project))
+  $completed_sql .= " AND ci.project_type = '" . $conn->real_escape_string($filter_project) . "'";
+$completed_sql .= " ORDER BY ci.updated_at DESC";
+$completed_inquiries_list = $conn->query($completed_sql);
 
 // Dashboard: recent (not completed/cancelled)
 $recent_sql = "SELECT ci.*, acc.full_name as sales_name, cs.title as style_title
@@ -129,36 +148,47 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Concept Inquiries — Realiving</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg: #f4f1ee;
-      --surface: #ffffff;
-      --surface2: #faf8f6;
-      --border: #e8e2db;
-      --text: #1a1208;
-      --text-muted: #7a6f65;
-      --brand: #3b1f0f;
-      --brand-mid: #7a4030;
-      --brand-light: #c9956a;
-      --accent: #e8c49a;
-      --success: #2d6a4f;
-      --success-bg: #d8f3dc;
-      --warning: #7d5a00;
-      --warning-bg: #fff3cd;
-      --danger: #9b1c1c;
-      --danger-bg: #fee2e2;
-      --info: #1e3a8a;
-      --info-bg: #dbeafe;
-      --purple: #4f46e5;
-      --purple-bg: #ede9fe;
-      --radius: 14px;
+      --bg: #F5F5F5;
+      --surface: #FFFFFF;
+      --surface2: #FAFAFA;
+      --border: #E2E2E2;
+      --text: #0B0B0B;
+      --text-muted: #6B6B6B;
+      --text-mute2: #9A9A9A;
+      --brand: #0B0B0B;
+      --brand-mid: #262626;
+      --brand-light: #9A9A9A;
+      --accent: #E8E8E8;
+      --hover-bg: #F2F2F2;
+
+      --success: #1F6F43;
+      --success-bg: #E8F3EC;
+      --success-border: #BFE0CC;
+
+      --warning: #8A6100;
+      --warning-bg: #FBF1D8;
+      --warning-border: #EAD9A6;
+
+      --danger: #9B1C1C;
+      --danger-bg: #FBEAEA;
+      --danger-border: #E3B7B7;
+
+      --info: #33475B;
+      --info-bg: #EDF0F3;
+      --info-border: #C7D0DA;
+
+      --purple: #46424F;
+      --purple-bg: #F0EFF1;
+      --purple-border: #D8D6DA;
+
+      --radius: 12px;
       --radius-sm: 8px;
-      --shadow: 0 2px 12px rgba(59, 31, 15, 0.08);
-      --shadow-md: 0 6px 24px rgba(59, 31, 15, 0.12);
+      --shadow: 0 1px 3px rgba(11, 11, 11, .06);
+      --shadow-md: 0 10px 26px -16px rgba(11, 11, 11, .25);
     }
 
     * {
@@ -168,7 +198,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -190,6 +220,8 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
       padding: 18px 28px;
       margin-bottom: 24px;
       box-shadow: var(--shadow-md);
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .top-bar-left {
@@ -233,6 +265,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     /* STATS ROW */
     .stats-row {
       display: grid;
+      grid-template-columns: repeat(2, 1fr) repeat(3, 1fr);
       grid-template-columns: repeat(5, 1fr);
       gap: 14px;
       margin-bottom: 24px;
@@ -265,11 +298,11 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     }
 
     .stat-tile .num {
-      font-family: 'Syne', sans-serif;
-      font-size: 34px;
-      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
       line-height: 1;
-      color: var(--tile-color, var(--brand));
+      color: var(--text);
     }
 
     .stat-tile .lbl {
@@ -286,27 +319,28 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
       right: 14px;
       top: 14px;
       font-size: 22px;
-      opacity: .18;
+      opacity: .12;
+      color: var(--tile-color, var(--brand-light));
     }
 
     .tile-total {
-      --tile-color: #5b7cf7;
+      --tile-color: #33475B;
     }
 
     .tile-pending {
-      --tile-color: #f59e0b;
+      --tile-color: #8A6100;
     }
 
     .tile-responded {
-      --tile-color: #10b981;
+      --tile-color: #1F6F43;
     }
 
     .tile-today {
-      --tile-color: #6366f1;
+      --tile-color: #46424F;
     }
 
     .tile-done {
-      --tile-color: #059669;
+      --tile-color: #0B0B0B;
     }
 
     /* ALERTS */
@@ -324,13 +358,13 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     .alert-success {
       background: var(--success-bg);
       color: var(--success);
-      border: 1px solid #b7e4c7;
+      border: 1px solid var(--success-border);
     }
 
     .alert-error {
       background: var(--danger-bg);
       color: var(--danger);
-      border: 1px solid #fca5a5;
+      border: 1px solid var(--danger-border);
     }
 
     /* SECTION CARD */
@@ -349,11 +383,13 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
       justify-content: space-between;
       padding: 18px 24px;
       border-bottom: 1.5px solid var(--border);
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .section-head h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15.5px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -391,7 +427,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
 
     .inq-card:hover {
       border-color: var(--brand-light);
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .inq-info {
@@ -503,20 +539,20 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     }
 
     .btn-danger {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1.5px solid #fca5a5;
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1.5px solid var(--danger-border);
     }
 
     .btn-danger:hover {
-      background: #dc2626;
+      background: var(--danger);
       color: #fff;
     }
 
     .btn-success {
       background: var(--success-bg);
       color: var(--success);
-      border: 1.5px solid #b7e4c7;
+      border: 1.5px solid var(--success-border);
     }
 
     .btn-success:hover {
@@ -527,7 +563,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     .btn-purple {
       background: var(--purple-bg);
       color: var(--purple);
-      border: 1.5px solid #c4b5fd;
+      border: 1.5px solid var(--purple-border);
     }
 
     .btn-purple:hover {
@@ -577,7 +613,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
 
     .filter-input:focus {
       outline: none;
-      border-color: var(--brand-light);
+      border-color: var(--brand);
     }
 
     .qtag {
@@ -601,28 +637,28 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     .qtag-all.active {
       border-color: var(--brand);
       color: var(--brand);
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .qtag-active {
-      border-color: #10b981;
-      color: #065f46;
-      background: #d1fae5;
+      border-color: var(--success-border);
+      color: var(--success);
+      background: var(--success-bg);
     }
 
     .qtag-active:hover {
-      background: #10b981;
+      background: var(--success);
       color: #fff;
     }
 
     .qtag-done {
-      border-color: #3b82f6;
-      color: #1e3a8a;
-      background: #dbeafe;
+      border-color: var(--info-border);
+      color: var(--info);
+      background: var(--info-bg);
     }
 
     .qtag-done:hover {
-      background: #3b82f6;
+      background: var(--info);
       color: #fff;
     }
 
@@ -651,7 +687,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     }
 
     .inq-table tbody tr:hover {
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .inq-table td {
@@ -675,7 +711,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(26, 18, 8, .55);
+      background: rgba(11, 11, 11, .55);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -722,8 +758,8 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     }
 
     .modal-head h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 18px;
+      font-family: 'Inter', sans-serif;
+      font-size: 17px;
       font-weight: 700;
     }
 
@@ -766,7 +802,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
 
     .form-control:focus {
       outline: none;
-      border-color: var(--brand-light);
+      border-color: var(--brand);
       background: #fff;
     }
 
@@ -805,8 +841,8 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
     /* RIGHT COLUMN ITEMS */
     .priority-item {
       padding: 12px;
-      background: #fffbf5;
-      border: 1.5px solid var(--accent);
+      background: var(--surface2);
+      border: 1.5px solid var(--warning-border);
       border-radius: var(--radius-sm);
       margin-bottom: 10px;
     }
@@ -846,7 +882,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
 
     .empty-state i {
       font-size: 40px;
-      opacity: .3;
+      opacity: .25;
       display: block;
       margin-bottom: 12px;
     }
@@ -890,14 +926,19 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
           <a href="?view=list" class="nav-btn <?php echo $view === 'list' ? 'active' : ''; ?>">
             <i class="fas fa-list"></i> All Inquiries
           </a>
+          <a href="?view=completed" class="nav-btn <?php echo $view === 'completed' ? 'active' : ''; ?>">
+            <i class="fas fa-trophy"></i> Completed
+            <span
+              style="background:<?php echo $view === 'completed' ? 'var(--brand)' : 'rgba(255,255,255,.15)'; ?>;color:<?php echo $view === 'completed' ? '#fff' : 'rgba(255,255,255,.85)'; ?>;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700;"><?php echo $completed_inquiries_count; ?></span>
+          </a>
         </div>
       </div>
-      <div style="display:flex;gap:10px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <a href="concept-inquiries-clients" class="nav-btn" style="position:relative;">
           <i class="fas fa-user-plus"></i> Convert to Clients
           <?php if ($responded_inquiries > 0): ?>
             <span
-              style="position:absolute;top:4px;right:4px;background:#10b981;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $responded_inquiries; ?></span>
+              style="position:absolute;top:4px;right:4px;background:#fff;color:var(--brand);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $responded_inquiries; ?></span>
           <?php endif; ?>
         </a>
         <a href="concepts" target="_blank" class="nav-btn"><i class="fas fa-external-link-alt"></i> View
@@ -907,7 +948,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
             style="position:relative;">
             <i class="fas fa-hourglass-half"></i> Pending
             <span
-              style="position:absolute;top:4px;right:4px;background:#f59e0b;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $pending_inquiries; ?></span>
+              style="position:absolute;top:4px;right:4px;background:#fff;color:var(--brand);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $pending_inquiries; ?></span>
           </button>
         <?php endif; ?>
       </div>
@@ -958,7 +999,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
           <!-- Recent Inquiries -->
           <div class="section-card">
             <div class="section-head">
-              <h2><i class="fas fa-palette" style="color:#6366f1;"></i> Recent Concept Inquiries
+              <h2><i class="fas fa-palette" style="color:var(--text-muted);"></i> Recent Concept Inquiries
                 <span
                   style="background:var(--purple-bg);color:var(--purple);padding:3px 10px;border-radius:20px;font-size:13px;font-family:inherit;font-weight:600;"><?php echo $recent_inquiries->num_rows; ?></span>
               </h2>
@@ -1020,7 +1061,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
           <!-- Needs Attention -->
           <div class="section-card" style="margin-bottom:20px;">
             <div class="section-head">
-              <h2><i class="fas fa-exclamation-circle" style="color:#f59e0b;"></i> Needs Attention</h2>
+              <h2><i class="fas fa-exclamation-circle" style="color:var(--warning);"></i> Needs Attention</h2>
             </div>
             <div class="section-body" style="padding:14px 20px;">
               <?php if ($priority_inquiries->num_rows > 0): ?>
@@ -1050,7 +1091,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
           <!-- Popular Project Types -->
           <div class="section-card" style="margin-bottom:20px;">
             <div class="section-head">
-              <h2><i class="fas fa-chart-bar" style="color:#10b981;"></i> Popular Project Types</h2>
+              <h2><i class="fas fa-chart-bar" style="color:var(--success);"></i> Popular Project Types</h2>
             </div>
             <div class="section-body" style="padding:14px 20px;">
               <?php if ($project_type_stats->num_rows > 0): ?>
@@ -1072,17 +1113,17 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
           <!-- Quick Actions -->
           <div class="section-card">
             <div class="section-head">
-              <h2><i class="fas fa-bolt" style="color:#f59e0b;"></i> Quick Actions</h2>
+              <h2><i class="fas fa-bolt" style="color:var(--warning);"></i> Quick Actions</h2>
             </div>
             <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
               <a href="?view=list" class="btn btn-outline" style="justify-content:flex-start;"><i class="fas fa-list"></i>
                 All Inquiries</a>
               <a href="?view=list&filter_active=1" class="btn btn-outline"
-                style="justify-content:flex-start;color:#065f46;border-color:#6ee7b7;"><i class="fas fa-check-circle"></i>
+                style="justify-content:flex-start;color:var(--success);border-color:var(--success-border);"><i class="fas fa-check-circle"></i>
                 Active Only</a>
-              <a href="?view=list&filter_status=completed" class="btn btn-outline"
-                style="justify-content:flex-start;color:#1e3a8a;border-color:#93c5fd;"><i class="fas fa-trophy"></i>
-                Completed</a>
+              <a href="?view=completed" class="btn btn-outline"
+                style="justify-content:flex-start;color:var(--info);border-color:var(--info-border);"><i class="fas fa-trophy"></i>
+                Completed (<?php echo $completed_inquiries_count; ?>)</a>
               <a href="concept-inquiries-clients" class="btn btn-primary" style="justify-content:flex-start;"><i
                   class="fas fa-user-plus"></i> Convert to Client</a>
             </div>
@@ -1090,18 +1131,126 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
         </div>
       </div>
 
+    <?php elseif ($view === 'completed'): ?>
+      <!-- ===================== COMPLETED VIEW ===================== -->
+      <div class="section-card">
+        <div class="section-head">
+          <h2><i class="fas fa-trophy" style="color:var(--info);"></i> Completed Inquiries
+            <span class="badge badge-completed"><?php echo $completed_inquiries_count; ?> total</span>
+          </h2>
+          <a href="concept-inquiries-clients" class="btn btn-sm btn-primary"><i class="fas fa-external-link-alt"></i>
+            Manage Clients</a>
+        </div>
+
+        <!-- Filters (search + project type only — status no longer applies once completed) -->
+        <form method="GET">
+          <input type="hidden" name="view" value="completed">
+          <div class="filters-bar">
+            <div class="filter-group">
+              <label>Search</label>
+              <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>"
+                placeholder="Name, email, phone…" class="filter-input" style="width:200px;">
+            </div>
+            <div class="filter-group">
+              <label>Project Type</label>
+              <select name="filter_project" class="filter-input">
+                <option value="">All Projects</option>
+                <?php
+                $project_types_result->data_seek(0);
+                while ($pt = $project_types_result->fetch_assoc()):
+                  ?>
+                  <option value="<?php echo htmlspecialchars($pt['project_type']); ?>" <?php echo $filter_project === $pt['project_type'] ? 'selected' : ''; ?>>
+                    <?php echo htmlspecialchars($pt['project_type']); ?>
+                  </option>
+                <?php endwhile; ?>
+              </select>
+            </div>
+            <div class="filter-group" style="justify-content:flex-end;gap:8px;flex-direction:row;align-items:flex-end;">
+              <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Search</button>
+              <a href="?view=completed" class="btn btn-outline btn-sm"><i class="fas fa-redo"></i></a>
+            </div>
+          </div>
+        </form>
+
+        <?php if ($completed_inquiries_list->num_rows > 0): ?>
+          <div style="overflow-x:auto;">
+            <table class="inq-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Client</th>
+                  <th>Contact</th>
+                  <th>Concept Details</th>
+                  <?php if ($admin_role === 'superadmin'): ?>
+                    <th>Assigned</th><?php endif; ?>
+                  <th>Closed</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php while ($inq = $completed_inquiries_list->fetch_assoc()): ?>
+                  <tr>
+                    <td><span style="font-size:12px;color:var(--text-muted);">#<?php echo $inq['id']; ?></span></td>
+                    <td>
+                      <div class="td-name"><?php echo htmlspecialchars($inq['name']); ?></div>
+                      <div class="td-sub" style="color:var(--info);"><i class="fas fa-trophy"></i> Completed</div>
+                    </td>
+                    <td>
+                      <div class="td-sub"><i class="fas fa-envelope" style="opacity:.5;"></i>
+                        <?php echo htmlspecialchars($inq['email']); ?></div>
+                      <div class="td-sub"><i class="fas fa-phone" style="opacity:.5;"></i>
+                        <?php echo htmlspecialchars($inq['phone']); ?></div>
+                    </td>
+                    <td>
+                      <?php if ($inq['style_title']): ?>
+                        <div style="font-weight:600;font-size:13px;color:var(--purple);"><i class="fas fa-palette"></i>
+                          <?php echo htmlspecialchars($inq['style_title']); ?></div><?php endif; ?>
+                      <div style="font-size:13.5px;"><?php echo htmlspecialchars($inq['project_type']); ?></div>
+                    </td>
+                    <?php if ($admin_role === 'superadmin'): ?>
+                      <td class="td-sub"><?php echo htmlspecialchars($inq['sales_name'] ?? '—'); ?></td>
+                    <?php endif; ?>
+                    <td class="td-sub"><?php echo date('M d, Y', strtotime($inq['updated_at'] ?? $inq['created_at'])); ?></td>
+                    <td>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button onclick="openDetail(<?php echo htmlspecialchars(json_encode($inq)); ?>)"
+                          class="btn btn-sm btn-outline btn-icon" title="View"><i class="fas fa-eye"></i></button>
+                        <?php if (!empty($inq['style_id'])): ?>
+                          <a href="concepts?style=<?php echo $inq['style_id']; ?>" target="_blank"
+                            class="btn btn-sm btn-purple btn-icon" title="View Concept Style"><i
+                              class="fas fa-external-link-alt"></i></a>
+                        <?php endif; ?>
+                        <a href="concept-inquiries-clients" class="btn btn-sm btn-success btn-icon" title="Open in Clients"><i
+                            class="fas fa-user-check"></i></a>
+                      </div>
+                    </td>
+                  </tr>
+                <?php endwhile; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else: ?>
+          <div class="empty-state"><i class="fas fa-trophy"></i>
+            <p>No completed inquiries yet</p>
+          </div>
+        <?php endif; ?>
+      </div>
+
     <?php else: ?>
       <!-- ===================== LIST VIEW ===================== -->
       <div class="section-card">
         <div class="section-head">
-          <h2><i class="fas fa-palette" style="color:var(--brand-light);"></i> All Concept Inquiries
+          <h2><i class="fas fa-palette" style="color:var(--text-muted);"></i> All Concept Inquiries
             <?php if ($filter_active): ?>
               <span class="badge badge-responded">Active Only</span>
-            <?php elseif ($filter_status === 'completed'): ?>
-              <span class="badge badge-completed">Completed</span>
             <?php endif; ?>
           </h2>
-          <span style="font-size:13px;color:var(--text-muted);"><?php echo $all_inquiries->num_rows; ?> records</span>
+          <span style="font-size:13px;color:var(--text-muted);"><?php echo $all_inquiries->num_rows; ?> records
+            <?php if ($completed_inquiries_count > 0): ?>
+              <a href="?view=completed" style="color:var(--info);text-decoration:none;font-weight:600;margin-left:8px;">
+                · <?php echo $completed_inquiries_count; ?> completed &rarr;</a>
+            <?php endif; ?>
+          </span>
         </div>
 
         <!-- Filters -->
@@ -1117,7 +1266,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
               <label>Status</label>
               <select name="filter_status" class="filter-input">
                 <option value="">All Statuses</option>
-                <?php foreach (['pending', 'responded', 'completed', 'cancelled'] as $s): ?>
+                <?php foreach (['pending', 'responded', 'cancelled'] as $s): ?>
                   <option value="<?php echo $s; ?>" <?php echo $filter_status === $s ? 'selected' : ''; ?>>
                     <?php echo ucfirst($s); ?>
                   </option>
@@ -1148,12 +1297,11 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
             style="padding:12px 24px;background:var(--surface2);border-bottom:1.5px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <span
               style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Quick:</span>
-            <a href="?view=list"
-              class="qtag qtag-all <?php echo (!$filter_active && $filter_status !== 'completed') ? 'active' : ''; ?>">All</a>
-            <a href="?view=list&filter_active=1" class="qtag qtag-active <?php echo $filter_active ? 'active' : ''; ?>">✅
-              Active</a>
-            <a href="?view=list&filter_status=completed"
-              class="qtag qtag-done <?php echo $filter_status === 'completed' ? 'active' : ''; ?>">🎉 Completed</a>
+            <a href="?view=list" class="qtag qtag-all <?php echo !$filter_active ? 'active' : ''; ?>">All</a>
+            <a href="?view=list&filter_active=1" class="qtag qtag-active <?php echo $filter_active ? 'active' : ''; ?>">
+              <i class="fas fa-check" style="font-size:10px;"></i> Active</a>
+            <a href="?view=completed" class="qtag qtag-done">
+              <i class="fas fa-trophy" style="font-size:10px;"></i> Completed (<?php echo $completed_inquiries_count; ?>)</a>
           </div>
         </form>
 
@@ -1212,7 +1360,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
                           class="btn btn-sm btn-outline btn-icon" title="View"><i class="fas fa-eye"></i></button>
                         <button onclick="openStatus(<?php echo $inq['id']; ?>,'<?php echo $inq['status']; ?>')"
                           class="btn btn-sm btn-outline btn-icon" title="Update Status"
-                          style="color:#059669;border-color:#6ee7b7;"><i class="fas fa-pen"></i></button>
+                          style="color:var(--success);border-color:var(--success-border);"><i class="fas fa-pen"></i></button>
                         <?php if ($inq['status'] === 'pending'): ?>
                           <form method="POST" style="display:inline;">
                             <input type="hidden" name="inquiry_id" value="<?php echo $inq['id']; ?>">
@@ -1262,7 +1410,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
   <div class="modal-bg" id="statusModal">
     <div class="modal-box">
       <div class="modal-head">
-        <h3><i class="fas fa-pen" style="color:#10b981;"></i> Update Status</h3>
+        <h3><i class="fas fa-pen" style="color:var(--success);"></i> Update Status</h3>
         <button class="modal-close" onclick="document.getElementById('statusModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1291,7 +1439,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
   <div class="modal-bg" id="deleteModal">
     <div class="modal-box" style="max-width:440px;">
       <div class="modal-head">
-        <h3><i class="fas fa-trash" style="color:#dc2626;"></i> Delete Inquiry</h3>
+        <h3><i class="fas fa-trash" style="color:var(--danger);"></i> Delete Inquiry</h3>
         <button class="modal-close" onclick="document.getElementById('deleteModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1315,7 +1463,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
   <div class="modal-bg" id="pendingPopup">
     <div class="modal-box" style="max-width:500px;">
       <div class="modal-head">
-        <h3><i class="fas fa-hourglass-half" style="color:#f59e0b;"></i> Pending Inquiries</h3>
+        <h3><i class="fas fa-hourglass-half" style="color:var(--warning);"></i> Pending Inquiries</h3>
         <button class="modal-close" onclick="document.getElementById('pendingPopup').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1329,7 +1477,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
           while ($inq = $pending_popup->fetch_assoc()):
             ?>
             <div
-              style="background:var(--warning-bg);border:1.5px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;">
+              style="background:var(--warning-bg);border:1.5px solid var(--warning-border);border-radius:var(--radius-sm);padding:12px 14px;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                 <div>
                   <div style="font-weight:600;font-size:14px;"><?php echo htmlspecialchars($inq['name']); ?></div>
@@ -1344,7 +1492,7 @@ $project_types_result = $conn->query("SELECT DISTINCT project_type FROM concept_
                 <button
                   onclick="openStatus(<?php echo $inq['id']; ?>,'<?php echo $inq['status']; ?>');document.getElementById('pendingPopup').classList.remove('open');"
                   class="btn btn-sm"
-                  style="background:var(--warning-bg);color:var(--warning);border:1.5px solid #fde68a;flex-shrink:0;margin-left:10px;">
+                  style="background:var(--warning-bg);color:var(--warning);border:1.5px solid var(--warning-border);flex-shrink:0;margin-left:10px;">
                   <i class="fas fa-pen"></i> Update
                 </button>
               </div>

@@ -83,24 +83,54 @@ $converted_clients = $conn->query($completed_query);
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact Client Conversion — Realiving</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 :root {
-  --bg:#f4f1ee; --surface:#fff; --surface2:#faf8f6; --border:#e8e2db;
-  --text:#1a1208; --text-muted:#7a6f65;
-  --brand:#3b1f0f; --brand-mid:#7a4030; --brand-light:#c9956a; --accent:#e8c49a;
-  --success:#2d6a4f; --success-bg:#d8f3dc;
-  --warning:#7d5a00; --warning-bg:#fff3cd;
-  --danger:#9b1c1c; --danger-bg:#fee2e2;
-  --info:#1e3a8a; --info-bg:#dbeafe;
-  --purple:#4f46e5; --purple-bg:#ede9fe;
-  --teal:#0f766e; --teal-bg:#ccfbf1;
-  --radius:14px; --radius-sm:8px;
-  --shadow:0 2px 12px rgba(59,31,15,0.08); --shadow-md:0 6px 24px rgba(59,31,15,0.12);
+  --bg: #F5F5F5;
+  --surface: #FFFFFF;
+  --surface2: #FAFAFA;
+  --border: #E2E2E2;
+  --text: #0B0B0B;
+  --text-muted: #6B6B6B;
+  --text-mute2: #9A9A9A;
+  --brand: #0B0B0B;
+  --brand-mid: #262626;
+  --brand-light: #9A9A9A;
+  --accent: #E8E8E8;
+  --hover-bg: #F2F2F2;
+
+  --success: #1F6F43;
+  --success-bg: #E8F3EC;
+  --success-border: #BFE0CC;
+
+  --warning: #8A6100;
+  --warning-bg: #FBF1D8;
+  --warning-border: #EAD9A6;
+
+  --danger: #9B1C1C;
+  --danger-bg: #FBEAEA;
+  --danger-border: #E3B7B7;
+
+  --info: #33475B;
+  --info-bg: #EDF0F3;
+  --info-border: #C7D0DA;
+
+  --purple: #46424F;
+  --purple-bg: #F0EFF1;
+  --purple-border: #D8D6DA;
+
+  --teal: #2C5F5D;
+  --teal-bg: #E7F0EF;
+  --teal-border: #C3D9D7;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(11, 11, 11, .06);
+  --shadow-md: 0 10px 26px -16px rgba(11, 11, 11, .25);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 .app-wrap{max-width:1300px;margin:0 auto;padding:28px 24px;}
 
 .top-bar{display:flex;align-items:center;justify-content:space-between;background:var(--brand);border-radius:var(--radius);padding:18px 28px;margin-bottom:24px;box-shadow:var(--shadow-md);}
@@ -109,25 +139,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .nav-btn.back{background:rgba(255,255,255,.15);color:#fff;}
 
 .alert{display:flex;align-items:center;gap:12px;padding:14px 18px;border-radius:var(--radius-sm);margin-bottom:18px;font-size:14px;font-weight:500;}
-.alert-success{background:var(--success-bg);color:var(--success);border:1px solid #b7e4c7;}
-.alert-error{background:var(--danger-bg);color:var(--danger);border:1px solid #fca5a5;}
+.alert-success{background:var(--success-bg);color:var(--success);border:1px solid var(--success-border);}
+.alert-error{background:var(--danger-bg);color:var(--danger);border:1px solid var(--danger-border);}
 
 /* TABS */
 .tabs{display:flex;gap:4px;margin-bottom:22px;background:var(--surface);border-radius:var(--radius);padding:6px;box-shadow:var(--shadow);border:1.5px solid var(--border);}
-.tab-btn{flex:1;padding:11px 20px;border-radius:10px;border:none;background:transparent;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
-.tab-btn.active{background:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(59,31,15,.2);}
+.tab-btn{flex:1;padding:11px 20px;border-radius:10px;border:none;background:transparent;font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.tab-btn.active{background:var(--brand);color:#fff;box-shadow:0 2px 8px rgba(11,11,11,.2);}
 .tab-btn:not(.active):hover{background:var(--surface2);color:var(--text);}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 
 .section-card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);border:1.5px solid var(--border);overflow:hidden;margin-bottom:22px;}
 .section-head{display:flex;align-items:center;justify-content:space-between;padding:18px 24px;border-bottom:1.5px solid var(--border);}
-.section-head h2{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;display:flex;align-items:center;gap:9px;}
+.section-head h2{font-family:'Inter',sans-serif;font-size:15.5px;font-weight:700;display:flex;align-items:center;gap:9px;}
 
 .apt-table{width:100%;border-collapse:collapse;font-size:13.5px;}
 .apt-table thead th{padding:11px 16px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);background:var(--surface2);border-bottom:1.5px solid var(--border);}
 .apt-table tbody tr{border-bottom:1px solid var(--border);transition:background .15s;}
-.apt-table tbody tr:hover{background:#fdf9f5;}
+.apt-table tbody tr:hover{background:var(--hover-bg);}
 .apt-table td{padding:13px 16px;vertical-align:top;}
 .td-name{font-weight:600;font-size:14px;}
 .td-sub{font-size:12px;color:var(--text-muted);margin-top:2px;}
@@ -143,17 +173,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .btn-primary:hover{background:var(--brand-mid);}
 .btn-sm{padding:6px 13px;font-size:12.5px;}
 .btn-outline{background:transparent;border:1.5px solid var(--border);color:var(--text-muted);}
-.btn-outline:hover{border-color:var(--brand-light);color:var(--brand);}
-.btn-convert{background:linear-gradient(135deg,#3b1f0f,#7a4030);color:#fff;border:none;}
-.btn-convert:hover{background:linear-gradient(135deg,#5a3220,#a05040);transform:translateY(-1px);box-shadow:0 4px 12px rgba(59,31,15,.25);}
+.btn-outline:hover{border-color:var(--brand-light);color:var(--brand);background:var(--surface2);}
+.btn-convert{background:var(--brand);color:#fff;border:none;}
+.btn-convert:hover{background:var(--brand-mid);transform:translateY(-1px);box-shadow:var(--shadow-md);}
 
 /* MODAL */
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(26,18,8,.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(11,11,11,.55);z-index:999;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
 .modal-bg.open{display:flex;}
 .modal-box{background:var(--surface);border-radius:var(--radius);padding:32px;max-width:860px;width:94%;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.22);animation:modalIn .22s ease;}
 @keyframes modalIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
-.modal-head h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;}
+.modal-head h3{font-family:'Inter',sans-serif;font-size:17px;font-weight:700;}
 .modal-close{background:none;border:none;font-size:20px;color:var(--text-muted);cursor:pointer;padding:4px;border-radius:6px;}
 .modal-close:hover{color:var(--text);background:var(--surface2);}
 
@@ -162,16 +192,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min
 .form-row{display:grid;gap:14px;margin-bottom:14px;}
 .form-row.cols-2{grid-template-columns:1fr 1fr;}
 .form-group label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px;}
-.form-group label .req{color:#dc2626;}
+.form-group label .req{color:var(--danger);}
 .form-control{width:100%;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13.5px;font-family:inherit;color:var(--text);background:var(--surface2);transition:border-color .18s;}
-.form-control:focus{outline:none;border-color:var(--brand-light);background:#fff;}
+.form-control:focus{outline:none;border-color:var(--brand);background:#fff;}
 textarea.form-control{resize:vertical;}
 .form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px;padding-top:18px;border-top:1.5px solid var(--border);}
 
 .empty-state{text-align:center;padding:52px 20px;color:var(--text-muted);}
-.empty-state i{font-size:40px;opacity:.3;display:block;margin-bottom:12px;}
+.empty-state i{font-size:40px;opacity:.25;display:block;margin-bottom:12px;}
 
-.ref-mono{font-family:'Courier New',monospace;font-size:13px;color:var(--brand);background:#fdf9f5;padding:3px 8px;border-radius:5px;border:1px solid var(--accent);}
+.ref-mono{font-family:'Courier New',monospace;font-size:13px;color:var(--text);background:var(--surface2);padding:3px 8px;border-radius:5px;border:1px solid var(--border);}
 
 @media(max-width:700px){
   .form-row.cols-2{grid-template-columns:1fr;}
@@ -186,7 +216,7 @@ textarea.form-control{resize:vertical;}
       <span style="color:rgba(255,255,255,.4);">|</span>
       <span style="color:rgba(255,255,255,.85);font-size:15px;font-weight:500;">Contact Client Conversion</span>
     </div>
-    <a href="contact_dashboard.php" class="nav-btn back"><i class="fas fa-arrow-left"></i> Back to Contacts</a>
+    <a href="contact-dashboard" class="nav-btn back"><i class="fas fa-arrow-left"></i> Back to Contacts</a>
   </div>
 
   <?php if(isset($_SESSION['success_message'])): ?>
@@ -212,7 +242,7 @@ textarea.form-control{resize:vertical;}
   <div class="tab-content active" id="content-pending">
     <div class="section-card">
       <div class="section-head">
-        <h2><i class="fas fa-clock" style="color:#f59e0b;"></i> Responded Contact Inquiries — Ready to Convert</h2>
+        <h2><i class="fas fa-clock" style="color:var(--warning);"></i> Responded Contact Inquiries — Ready to Convert</h2>
       </div>
       <?php if($pending_inquiries->num_rows > 0): ?>
       <div style="overflow-x:auto;">
@@ -267,7 +297,7 @@ textarea.form-control{resize:vertical;}
   <div class="tab-content" id="content-converted">
     <div class="section-card">
       <div class="section-head">
-        <h2><i class="fas fa-user-check" style="color:#10b981;"></i> Converted Clients</h2>
+        <h2><i class="fas fa-user-check" style="color:var(--success);"></i> Converted Clients</h2>
       </div>
       <?php if($converted_clients->num_rows > 0): ?>
       <div style="overflow-x:auto;">
@@ -289,7 +319,7 @@ textarea.form-control{resize:vertical;}
             </td>
             <td>
               <div class="td-name"><?php echo htmlspecialchars($client['name']); ?></div>
-              <?php if($client['client_name']): ?><div class="td-sub" style="color:#059669;"><i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($client['client_name']); ?></div><?php endif; ?>
+              <?php if($client['client_name']): ?><div class="td-sub" style="color:var(--success);"><i class="fas fa-check-circle"></i> <?php echo htmlspecialchars($client['client_name']); ?></div><?php endif; ?>
               <?php if($client['client_id']): ?><div class="td-sub">Client ID: #<?php echo $client['client_id']; ?></div><?php endif; ?>
             </td>
             <td>
@@ -332,9 +362,9 @@ textarea.form-control{resize:vertical;}
       <input type="hidden" name="contact_id" id="modal_contact_id">
 
       <!-- Contact context panel -->
-      <div style="background:var(--teal-bg);border:1.5px solid #5eead4;border-radius:var(--radius-sm);padding:13px 16px;margin-bottom:18px;">
+      <div style="background:var(--teal-bg);border:1.5px solid var(--teal-border);border-radius:var(--radius-sm);padding:13px 16px;margin-bottom:18px;">
         <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;"><i class="fas fa-envelope"></i> Contact Inquiry Reference</div>
-        <div id="modal_contact_details" style="font-size:13px;color:#134e4a;"></div>
+        <div id="modal_contact_details" style="font-size:13px;color:var(--text);"></div>
       </div>
 
       <div class="form-row cols-2">

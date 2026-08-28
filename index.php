@@ -313,6 +313,9 @@ $routes = [
   'heartbeat' => 'config/heartbeat.php',
   'delete-admin' => 'realiving_admin/super-admin/admin-management/delete_admin.php',
   'admin-view' => 'realiving_admin/super-admin/admin-management/admin-view.php',
+  'admin-site-visits' => 'realiving_admin/super-admin/admin-management/admin_site_visits.php',
+  'site-visit-reset' => 'realiving_admin/super-admin/admin-management/site_visit_reset.php',
+  'site-visit-status-update' => 'realiving_admin/super-admin/admin-management/site_visit_status_update.php',
 
   //HR-MANAGEMENT
   'human-resource-dashboard' => 'realiving_admin/hr-management/dashboard.php',

@@ -7,25 +7,25 @@
 <?php if (!empty($areaFixed)): ?>
   <div>
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-      <div style="width:4px; height:20px; background:#8b5cf6; border-radius:2px;"></div>
-      <span style="font-size:12px; font-weight:700; color:#8b5cf6; text-transform:uppercase; letter-spacing:0.5px;">
+      <div style="width:4px; height:20px; background:var(--adm-ink); border-radius:2px;"></div>
+      <span style="font-size:12px; font-weight:700; color:var(--adm-ink); text-transform:uppercase; letter-spacing:0.5px;">
         <i class="fas fa-ruler-combined"></i> Fixed Size Items
       </span>
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%; border-collapse:collapse; min-width:700px;">
         <thead>
-          <tr style="background:#f5f3ff;">
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:left; border-bottom:2px solid #ddd6fe;">Image</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:left; border-bottom:2px solid #ddd6fe;">Item</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:left; border-bottom:2px solid #ddd6fe;">Size</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:left; border-bottom:2px solid #ddd6fe;">Color</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #ddd6fe;">Base Price</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #ddd6fe;">Qty</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #ddd6fe;">Type</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #ddd6fe;">Price/Item</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:right; border-bottom:2px solid #ddd6fe;">Total</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#6d28d9; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #ddd6fe;">Actions</th>
+          <tr style="background:var(--adm-bg);">
+            <th class="adm-th" style="text-align:left;">Image</th>
+            <th class="adm-th" style="text-align:left;">Item</th>
+            <th class="adm-th" style="text-align:left;">Size</th>
+            <th class="adm-th" style="text-align:left;">Color</th>
+            <th class="adm-th" style="text-align:center;">Base Price</th>
+            <th class="adm-th" style="text-align:center;">Qty</th>
+            <th class="adm-th" style="text-align:center;">Type</th>
+            <th class="adm-th" style="text-align:center;">Price/Item</th>
+            <th class="adm-th" style="text-align:right;">Total</th>
+            <th class="adm-th" style="text-align:center;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -122,7 +122,7 @@
               <td class="px-2 py-2 text-center">
                 <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
                   <a href="edit_quotation_entry.php?fixed_id=<?= $row['id'] ?>&client_id=<?= $client_id ?>&client_name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>"
-                    style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:#ede9fe; color:#5b21b6; border-radius:6px; font-size:11px; font-weight:700; text-decoration:none; <?= $quotationDone ? 'opacity:0.5; pointer-events:none;' : '' ?>">
+                    style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--adm-bg); border:1px solid var(--adm-line); color:var(--adm-ink); border-radius:6px; font-size:11px; font-weight:700; text-decoration:none; <?= $quotationDone ? 'opacity:0.5; pointer-events:none;' : '' ?>">
                     <i class="fas fa-edit"></i> Edit
                   </a>
                   <button class="delete-fixed-entry btn btn-sm text-red-600 hover:text-red-800"

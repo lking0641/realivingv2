@@ -191,7 +191,10 @@ include $includes['connection'];
             <span class="bp-bracket bp-bl"></span><span class="bp-bracket bp-br"></span>
 
             <div class="relative overflow-hidden rounded-sm shadow-[0_20px_50px_rgba(47,18,0,0.18)]">
-              <video autoplay loop muted playsinline class="h-[320px] w-full object-cover sm:h-[400px] md:h-[460px]">
+              <video autoplay loop muted playsinline
+                disablepictureinpicture
+                controlsList="nodownload noplaybackrate nofullscreen"
+                class="h-[320px] w-full object-cover pointer-events-none sm:h-[400px] md:h-[460px]">
                 <source src="<?= BASE_ASSET ?>/videos/realiving.mp4" type="video/mp4">
                 Your browser does not support the video tag.
               </video>

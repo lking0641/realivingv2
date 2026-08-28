@@ -147,8 +147,27 @@ if ($filter_overdue)
   $sql .= " AND ($overdue_base)";
 if ($filter_active)
   $sql .= " AND a.status NOT IN ('completed','cancelled')";
+// Converted appointments now live under their own tab, keep the main list focused on active leads
+$sql .= " AND a.converted_to_client = 0";
 $sql .= " ORDER BY CASE WHEN is_overdue=1 THEN 0 ELSE 1 END, a.preferred_date DESC, a.preferred_time DESC";
 $all_appointments = $conn->query($sql);
+
+// Converted appointments (their own tab, keeps the main list free of already-processed leads)
+$converted_sql = "SELECT a.*, acc.full_name as sales_name
+        FROM appointments a
+        LEFT JOIN account acc ON a.assigned_to = acc.id
+        WHERE a.converted_to_client = 1";
+if ($admin_role !== 'superadmin')
+  $converted_sql .= " AND a.assigned_to = $admin_id";
+if (!empty($search)) {
+  $s = $conn->real_escape_string($search);
+  $converted_sql .= " AND (a.first_name LIKE '%$s%' OR a.last_name LIKE '%$s%' OR a.email LIKE '%$s%' OR a.phone LIKE '%$s%')";
+}
+if (!empty($filter_service))
+  $converted_sql .= " AND a.service_type = '" . $conn->real_escape_string($filter_service) . "'";
+$converted_sql .= " ORDER BY a.preferred_date DESC";
+$converted_appointments = $conn->query($converted_sql);
+$converted_total = $conn->query("SELECT COUNT(*) as c FROM appointments WHERE converted_to_client = 1" . ($admin_role !== 'superadmin' ? " AND assigned_to=$admin_id" : ""))->fetch_assoc()['c'];
 
 // Today's appointments
 $today_sql = "SELECT a.*, acc.full_name as sales_name FROM appointments a LEFT JOIN account acc ON a.assigned_to = acc.id WHERE DATE(a.preferred_date) = CURDATE() AND a.status != 'cancelled'" . ($admin_role !== 'superadmin' ? " AND a.assigned_to=$admin_id" : "") . " ORDER BY a.preferred_time ASC";
@@ -185,34 +204,47 @@ $convertible_result->data_seek(0); // reset pointer
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Appointments — Realiving</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg: #f4f1ee;
-      --surface: #ffffff;
-      --surface2: #faf8f6;
-      --border: #e8e2db;
-      --text: #1a1208;
-      --text-muted: #7a6f65;
-      --brand: #3b1f0f;
-      --brand-mid: #7a4030;
-      --brand-light: #c9956a;
-      --accent: #e8c49a;
-      --success: #2d6a4f;
-      --success-bg: #d8f3dc;
-      --warning: #7d5a00;
-      --warning-bg: #fff3cd;
-      --danger: #9b1c1c;
-      --danger-bg: #fee2e2;
-      --info: #1e3a8a;
-      --info-bg: #dbeafe;
-      --radius: 14px;
+      --bg: #F5F5F5;
+      --surface: #FFFFFF;
+      --surface2: #FAFAFA;
+      --border: #E2E2E2;
+      --text: #0B0B0B;
+      --text-muted: #6B6B6B;
+      --text-mute2: #9A9A9A;
+      --brand: #0B0B0B;
+      --brand-mid: #262626;
+      --brand-light: #9A9A9A;
+      --accent: #E8E8E8;
+      --hover-bg: #F2F2F2;
+
+      --success: #1F6F43;
+      --success-bg: #E8F3EC;
+      --success-border: #BFE0CC;
+
+      --warning: #8A6100;
+      --warning-bg: #FBF1D8;
+      --warning-border: #EAD9A6;
+
+      --danger: #9B1C1C;
+      --danger-bg: #FBEAEA;
+      --danger-border: #E3B7B7;
+
+      --info: #33475B;
+      --info-bg: #EDF0F3;
+      --info-border: #C7D0DA;
+
+      --purple: #46424F;
+      --purple-bg: #F0EFF1;
+      --purple-border: #D8D6DA;
+
+      --radius: 12px;
       --radius-sm: 8px;
-      --shadow: 0 2px 12px rgba(59, 31, 15, 0.08);
-      --shadow-md: 0 6px 24px rgba(59, 31, 15, 0.12);
+      --shadow: 0 1px 3px rgba(11, 11, 11, .06);
+      --shadow-md: 0 10px 26px -16px rgba(11, 11, 11, .25);
     }
 
     * {
@@ -222,20 +254,19 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
     }
 
-    /* LAYOUT */
     .app-wrap {
       max-width: 1380px;
       margin: 0 auto;
       padding: 28px 24px;
     }
 
-    /* TOP NAV */
+    /* TOP BAR */
     .top-bar {
       display: flex;
       align-items: center;
@@ -245,23 +276,14 @@ $convertible_result->data_seek(0); // reset pointer
       padding: 18px 28px;
       margin-bottom: 24px;
       box-shadow: var(--shadow-md);
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
     .top-bar-left {
       display: flex;
       align-items: center;
       gap: 14px;
-    }
-
-    .top-bar-logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 22px;
-      color: #fff;
-      letter-spacing: -0.5px;
-    }
-
-    .top-bar-logo span {
-      color: var(--accent);
     }
 
     .top-bar-nav {
@@ -331,11 +353,11 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     .stat-tile .num {
-      font-family: 'Syne', sans-serif;
-      font-size: 34px;
-      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
       line-height: 1;
-      color: var(--tile-color, var(--brand));
+      color: var(--text);
     }
 
     .stat-tile .lbl {
@@ -352,35 +374,36 @@ $convertible_result->data_seek(0); // reset pointer
       right: 14px;
       top: 14px;
       font-size: 22px;
-      opacity: .18;
+      opacity: .12;
+      color: var(--tile-color, var(--brand-light));
     }
 
     .tile-total {
-      --tile-color: #5b7cf7;
+      --tile-color: #33475B;
     }
 
     .tile-pending {
-      --tile-color: #f59e0b;
+      --tile-color: #8A6100;
     }
 
     .tile-confirmed {
-      --tile-color: #10b981;
+      --tile-color: #1F6F43;
     }
 
     .tile-today {
-      --tile-color: #6366f1;
+      --tile-color: #46424F;
     }
 
     .tile-done {
-      --tile-color: #059669;
+      --tile-color: #0B0B0B;
     }
 
     .tile-overdue {
-      --tile-color: #ef4444;
+      --tile-color: #9B1C1C;
     }
 
     .tile-overdue .num {
-      color: #ef4444;
+      color: var(--danger);
     }
 
     /* ALERTS */
@@ -398,13 +421,13 @@ $convertible_result->data_seek(0); // reset pointer
     .alert-success {
       background: var(--success-bg);
       color: var(--success);
-      border: 1px solid #b7e4c7;
+      border: 1px solid var(--success-border);
     }
 
     .alert-error {
       background: var(--danger-bg);
       color: var(--danger);
-      border: 1px solid #fca5a5;
+      border: 1px solid var(--danger-border);
     }
 
     /* SECTION CARD */
@@ -423,11 +446,13 @@ $convertible_result->data_seek(0); // reset pointer
       justify-content: space-between;
       padding: 18px 24px;
       border-bottom: 1.5px solid var(--border);
+      flex-wrap: wrap;
+      gap: 10px;
     }
 
     .section-head h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15.5px;
       font-weight: 700;
       display: flex;
       align-items: center;
@@ -445,7 +470,7 @@ $convertible_result->data_seek(0); // reset pointer
       gap: 20px;
     }
 
-    /* APPOINTMENT CARD (dashboard list style) */
+    /* APPOINTMENT CARD */
     .apt-list {
       display: flex;
       flex-direction: column;
@@ -465,12 +490,12 @@ $convertible_result->data_seek(0); // reset pointer
 
     .apt-card:hover {
       border-color: var(--brand-light);
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .apt-card.overdue {
-      border-left: 3px solid #ef4444 !important;
-      background: #fff8f8;
+      border-left: 3px solid var(--danger) !important;
+      background: var(--danger-bg);
     }
 
     .apt-time-col {
@@ -479,10 +504,10 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     .apt-time {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 15px;
       font-weight: 700;
-      color: var(--brand);
+      color: var(--text);
       line-height: 1.1;
     }
 
@@ -559,14 +584,15 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     .badge-draft {
-      background: #f3f4f6;
-      color: #374151;
+      background: var(--surface2);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
     }
 
     .badge-overdue {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fca5a5;
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1px solid var(--danger-border);
     }
 
     /* BUTTONS */
@@ -612,35 +638,46 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     .btn-danger {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1.5px solid #fca5a5;
+      background: var(--danger-bg);
+      color: var(--danger);
+      border: 1.5px solid var(--danger-border);
     }
 
     .btn-danger:hover {
-      background: #dc2626;
+      background: var(--danger);
       color: #fff;
     }
 
     .btn-warning {
       background: var(--warning-bg);
       color: var(--warning);
-      border: 1.5px solid #fde68a;
+      border: 1.5px solid var(--warning-border);
     }
 
     .btn-warning:hover {
-      background: #f59e0b;
+      background: var(--warning);
       color: #fff;
     }
 
     .btn-success {
       background: var(--success-bg);
       color: var(--success);
-      border: 1.5px solid #b7e4c7;
+      border: 1.5px solid var(--success-border);
     }
 
     .btn-success:hover {
       background: var(--success);
+      color: #fff;
+    }
+
+    .btn-purple {
+      background: var(--purple-bg);
+      color: var(--purple);
+      border: 1.5px solid var(--purple-border);
+    }
+
+    .btn-purple:hover {
+      background: var(--purple);
       color: #fff;
     }
 
@@ -686,14 +723,7 @@ $convertible_result->data_seek(0); // reset pointer
 
     .filter-input:focus {
       outline: none;
-      border-color: var(--brand-light);
-    }
-
-    .quick-tags {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      align-items: center;
+      border-color: var(--brand);
     }
 
     .qtag {
@@ -717,39 +747,39 @@ $convertible_result->data_seek(0); // reset pointer
     .qtag-all.active {
       border-color: var(--brand);
       color: var(--brand);
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .qtag-active {
-      border-color: #10b981;
-      color: #065f46;
-      background: #d1fae5;
+      border-color: var(--success-border);
+      color: var(--success);
+      background: var(--success-bg);
     }
 
     .qtag-active:hover {
-      background: #10b981;
+      background: var(--success);
       color: #fff;
     }
 
     .qtag-overdue {
-      border-color: #ef4444;
-      color: #b91c1c;
-      background: #fee2e2;
+      border-color: var(--danger-border);
+      color: var(--danger);
+      background: var(--danger-bg);
     }
 
     .qtag-overdue:hover {
-      background: #ef4444;
+      background: var(--danger);
       color: #fff;
     }
 
     .qtag-done {
-      border-color: #3b82f6;
-      color: #1e3a8a;
-      background: #dbeafe;
+      border-color: var(--info-border);
+      color: var(--info);
+      background: var(--info-bg);
     }
 
     .qtag-done:hover {
-      background: #3b82f6;
+      background: var(--info);
       color: #fff;
     }
 
@@ -778,12 +808,12 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     .apt-table tbody tr:hover {
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .apt-table tbody tr.row-overdue {
-      background: #fff8f8;
-      border-left: 3px solid #ef4444;
+      background: var(--danger-bg);
+      border-left: 3px solid var(--danger);
     }
 
     .apt-table td {
@@ -808,8 +838,8 @@ $convertible_result->data_seek(0); // reset pointer
       gap: 3px;
       font-size: 10.5px;
       font-weight: 700;
-      color: #dc2626;
-      background: #fee2e2;
+      color: var(--danger);
+      background: var(--danger-bg);
       padding: 2px 7px;
       border-radius: 10px;
       margin-left: 6px;
@@ -820,7 +850,7 @@ $convertible_result->data_seek(0); // reset pointer
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(26, 18, 8, .55);
+      background: rgba(11, 11, 11, .55);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -867,8 +897,8 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     .modal-head h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 18px;
+      font-family: 'Inter', sans-serif;
+      font-size: 17px;
       font-weight: 700;
     }
 
@@ -922,7 +952,7 @@ $convertible_result->data_seek(0); // reset pointer
 
     .form-control:focus {
       outline: none;
-      border-color: var(--brand-light);
+      border-color: var(--brand);
       background: #fff;
     }
 
@@ -961,22 +991,22 @@ $convertible_result->data_seek(0); // reset pointer
     /* EMPTY */
     .empty-state {
       text-align: center;
-      padding: 52px 20px;
+      padding: 48px 20px;
       color: var(--text-muted);
     }
 
     .empty-state i {
       font-size: 40px;
-      opacity: .3;
+      opacity: .25;
       display: block;
       margin-bottom: 12px;
     }
 
     .empty-state p {
-      font-size: 15px;
+      font-size: 14px;
     }
 
-    /* UPCOMING SMALL CARD */
+    /* UPCOMING ITEM */
     .upcoming-item {
       display: flex;
       gap: 12px;
@@ -999,7 +1029,7 @@ $convertible_result->data_seek(0); // reset pointer
     }
 
     .upc-date .day {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 18px;
       font-weight: 700;
       line-height: 1;
@@ -1022,32 +1052,80 @@ $convertible_result->data_seek(0); // reset pointer
       margin-top: 2px;
     }
 
-    /* TODAY OVERDUE BANNER */
+    /* OVERDUE BANNER */
     .overdue-banner {
-      background: #fff1f1;
-      border: 1.5px solid #fca5a5;
+      background: var(--danger-bg);
+      border: 1.5px solid var(--danger-border);
       border-radius: var(--radius);
       padding: 14px 20px;
       margin-bottom: 18px;
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-wrap: wrap;
     }
 
     .overdue-banner i {
-      color: #ef4444;
+      color: var(--danger);
       font-size: 20px;
       flex-shrink: 0;
     }
 
     .overdue-banner strong {
       font-size: 14px;
-      color: #b91c1c;
+      color: var(--danger);
     }
 
     .overdue-banner span {
       font-size: 13px;
-      color: #dc2626;
+      color: var(--danger);
+    }
+
+    /* HOLIDAY ITEM */
+    .holiday-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: var(--purple-bg);
+      border: 1.5px solid var(--purple-border);
+      border-radius: var(--radius-sm);
+    }
+
+    .holiday-item .name {
+      font-weight: 600;
+      font-size: 13.5px;
+      color: var(--purple);
+    }
+
+    .holiday-item .meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .holiday-item .countdown {
+      margin-left: 6px;
+      font-size: 11px;
+      color: var(--purple);
+    }
+
+    @keyframes adm-fade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation: none !important;
+      }
     }
 
     /* RESPONSIVE */
@@ -1091,16 +1169,21 @@ $convertible_result->data_seek(0); // reset pointer
           <a href="?view=list" class="nav-btn <?php echo $view === 'list' ? 'active' : ''; ?>">
             <i class="fas fa-list"></i> All Appointments
           </a>
+          <a href="?view=converted" class="nav-btn <?php echo $view === 'converted' ? 'active' : ''; ?>">
+            <i class="fas fa-user-check"></i> Converted
+            <span
+              style="background:<?php echo $view === 'converted' ? 'var(--brand)' : 'rgba(255,255,255,.15)'; ?>;color:<?php echo $view === 'converted' ? '#fff' : 'rgba(255,255,255,.85)'; ?>;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:700;"><?php echo $converted_total; ?></span>
+          </a>
         </div>
       </div>
-      <div style="display:flex;gap:10px;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <a href="appointment-clients" class="nav-btn"><i class="fas fa-user-plus"></i> Clients</a>
         <?php if ($pending_appointments > 0): ?>
           <button onclick="document.getElementById('pendingPopup').classList.add('open')" class="nav-btn"
             style="position:relative;">
             <i class="fas fa-hourglass-half"></i> Pending
             <span
-              style="position:absolute;top:4px;right:4px;background:#f59e0b;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $pending_appointments; ?></span>
+              style="position:absolute;top:4px;right:4px;background:#fff;color:var(--brand);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $pending_appointments; ?></span>
           </button>
         <?php endif; ?>
         <?php if ($convertible_count > 0): ?>
@@ -1108,7 +1191,7 @@ $convertible_result->data_seek(0); // reset pointer
             style="position:relative;">
             <i class="fas fa-user-plus"></i> Convert
             <span
-              style="position:absolute;top:4px;right:4px;background:#10b981;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $convertible_count; ?></span>
+              style="position:absolute;top:4px;right:4px;background:#fff;color:var(--brand);border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;"><?php echo $convertible_count; ?></span>
           </button>
         <?php endif; ?>
         <a href="appointment" target="_blank" class="nav-btn"><i class="fas fa-external-link-alt"></i> Booking
@@ -1177,9 +1260,9 @@ $convertible_result->data_seek(0); // reset pointer
           <!-- Today's Schedule -->
           <div class="section-card">
             <div class="section-head">
-              <h2><i class="fas fa-calendar-day" style="color:#6366f1;"></i> Today's Schedule
+              <h2><i class="fas fa-calendar-day" style="color:var(--text-muted);"></i> Today's Schedule
                 <span
-                  style="background:#ede9fe;color:#4f46e5;padding:3px 10px;border-radius:20px;font-size:13px;font-family:inherit;font-weight:600;"><?php echo $today_details->num_rows; ?></span>
+                  style="background:var(--purple-bg);color:var(--purple);padding:3px 10px;border-radius:20px;font-size:13px;font-family:inherit;font-weight:600;"><?php echo $today_details->num_rows; ?></span>
               </h2>
               <a href="?view=list" class="btn btn-sm btn-outline">View All</a>
             </div>
@@ -1196,7 +1279,7 @@ $convertible_result->data_seek(0); // reset pointer
                       </div>
                       <div class="apt-info" style="flex:1;">
                         <div class="apt-name"><?php echo htmlspecialchars($apt['first_name'] . ' ' . $apt['last_name']); ?>
-                          <?php if ($is_past): ?><span style="color:#dc2626;font-size:11px;font-weight:400;margin-left:6px;">⚠
+                          <?php if ($is_past): ?><span style="color:var(--danger);font-size:11px;font-weight:400;margin-left:6px;">⚠
                               Passed</span><?php endif; ?>
                         </div>
                         <div class="apt-meta">
@@ -1227,22 +1310,22 @@ $convertible_result->data_seek(0); // reset pointer
 
           <!-- Overdue Appointments -->
           <?php if ($overdue_details->num_rows > 0): ?>
-            <div class="section-card" style="border-color:#fca5a5;">
-              <div class="section-head" style="background:#fff1f1;">
-                <h2 style="color:#dc2626;"><i class="fas fa-exclamation-triangle"></i> Overdue</h2>
+            <div class="section-card" style="border-color:var(--danger-border);">
+              <div class="section-head" style="background:var(--danger-bg);">
+                <h2 style="color:var(--danger);"><i class="fas fa-exclamation-triangle"></i> Overdue</h2>
               </div>
               <div class="section-body">
                 <div class="apt-list">
                   <?php while ($apt = $overdue_details->fetch_assoc()): ?>
                     <div class="apt-card overdue">
                       <div class="apt-time-col">
-                        <div class="apt-time" style="color:#dc2626;">
+                        <div class="apt-time" style="color:var(--danger);">
                           <?php echo date('M j', strtotime($apt['preferred_date'])); ?>
                         </div>
                         <div class="apt-ampm"><?php echo date('g:i A', strtotime($apt['preferred_time'])); ?></div>
                       </div>
                       <div class="apt-info" style="flex:1;">
-                        <div class="apt-name" style="color:#dc2626;">
+                        <div class="apt-name" style="color:var(--danger);">
                           <?php echo htmlspecialchars($apt['first_name'] . ' ' . $apt['last_name']); ?>
                         </div>
                         <div class="apt-meta">
@@ -1270,7 +1353,7 @@ $convertible_result->data_seek(0); // reset pointer
           <!-- Upcoming -->
           <div class="section-card" style="margin-bottom:20px;">
             <div class="section-head">
-              <h2><i class="fas fa-arrow-right" style="color:#10b981;"></i> Upcoming</h2>
+              <h2><i class="fas fa-arrow-right" style="color:var(--success);"></i> Upcoming</h2>
             </div>
             <div class="section-body" style="padding:12px 20px;">
               <?php if ($upcoming_appointments->num_rows > 0): ?>
@@ -1301,7 +1384,7 @@ $convertible_result->data_seek(0); // reset pointer
           <!-- Holiday Manager -->
           <div class="section-card" style="margin-bottom:20px;">
             <div class="section-head">
-              <h2><i class="fas fa-umbrella-beach" style="color:#6366f1;"></i> Holiday Manager</h2>
+              <h2><i class="fas fa-umbrella-beach" style="color:var(--purple);"></i> Holiday Manager</h2>
               <button onclick="document.getElementById('addHolidayModal').classList.add('open')"
                 class="btn btn-sm btn-primary">
                 <i class="fas fa-plus"></i> Add
@@ -1315,15 +1398,12 @@ $convertible_result->data_seek(0); // reset pointer
               <?php else: ?>
                 <div style="display:flex;flex-direction:column;gap:8px;">
                   <?php foreach ($holidays_list as $h): ?>
-                    <div
-                      style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:#f3f0ff;border:1.5px solid #c4b5fd;border-radius:var(--radius-sm);">
+                    <div class="holiday-item">
                       <div>
-                        <div style="font-weight:600;font-size:13.5px;color:#4f46e5;">
-                          <?php echo htmlspecialchars($h['holiday_name']); ?>
-                        </div>
-                        <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">
+                        <div class="name"><?php echo htmlspecialchars($h['holiday_name']); ?></div>
+                        <div class="meta">
                           <i class="fas fa-calendar"></i> <?php echo date('M d, Y', strtotime($h['holiday_date'])); ?>
-                          <span style="margin-left:6px;font-size:11px;color:#7c3aed;">(<?php
+                          <span class="countdown">(<?php
                           $diff = (new DateTime($h['holiday_date']))->diff(new DateTime())->days;
                           echo $diff === 0 ? 'Today' : "in {$diff} day" . ($diff > 1 ? 's' : '');
                           ?>)</span>
@@ -1347,17 +1427,20 @@ $convertible_result->data_seek(0); // reset pointer
           <!-- Quick Actions -->
           <div class="section-card">
             <div class="section-head">
-              <h2><i class="fas fa-bolt" style="color:#f59e0b;"></i> Quick Actions</h2>
+              <h2><i class="fas fa-bolt" style="color:var(--warning);"></i> Quick Actions</h2>
             </div>
             <div class="section-body" style="display:flex;flex-direction:column;gap:10px;">
               <a href="?view=list" class="btn btn-outline" style="justify-content:flex-start;"><i class="fas fa-list"></i>
                 All Appointments</a>
               <a href="?view=list&filter_active=1" class="btn btn-outline"
-                style="justify-content:flex-start;color:#065f46;border-color:#6ee7b7;"><i class="fas fa-check-circle"></i>
+                style="justify-content:flex-start;color:var(--success);border-color:var(--success-border);"><i class="fas fa-check-circle"></i>
                 Active Only</a>
               <a href="?view=list&filter_overdue=1" class="btn btn-outline"
-                style="justify-content:flex-start;color:#dc2626;border-color:#fca5a5;"><i
+                style="justify-content:flex-start;color:var(--danger);border-color:var(--danger-border);"><i
                   class="fas fa-exclamation-triangle"></i> Overdue</a>
+              <a href="?view=converted" class="btn btn-outline"
+                style="justify-content:flex-start;color:var(--info);border-color:var(--info-border);"><i
+                  class="fas fa-user-check"></i> Converted (<?php echo $converted_total; ?>)</a>
               <a href="appointment-clients" class="btn btn-primary" style="justify-content:flex-start;"><i
                   class="fas fa-user-plus"></i> Convert to Client</a>
             </div>
@@ -1365,20 +1448,128 @@ $convertible_result->data_seek(0); // reset pointer
         </div>
       </div>
 
+    <?php elseif ($view === 'converted'): ?>
+      <!-- ===================== CONVERTED VIEW ===================== -->
+      <div class="section-card">
+        <div class="section-head">
+          <h2><i class="fas fa-user-check" style="color:var(--success);"></i> Converted Appointments
+            <span class="badge badge-confirmed"><?php echo $converted_total; ?> total</span>
+          </h2>
+          <a href="appointment-clients" class="btn btn-sm btn-primary"><i class="fas fa-external-link-alt"></i> Manage
+            Clients</a>
+        </div>
+
+        <!-- Filters (search + service only — status no longer applies once converted) -->
+        <form method="GET">
+          <input type="hidden" name="view" value="converted">
+          <div class="filters-bar">
+            <div class="filter-group">
+              <label>Search</label>
+              <input type="text" name="search" value="<?php echo htmlspecialchars($search); ?>"
+                placeholder="Name, email, phone…" class="filter-input" style="width:200px;">
+            </div>
+            <div class="filter-group">
+              <label>Service</label>
+              <select name="filter_service" class="filter-input">
+                <option value="">All Services</option>
+                <?php foreach (['Consultation', 'Site Visit', 'Project Discussion', 'Follow-up', 'Other'] as $sv): ?>
+                  <option value="<?php echo $sv; ?>" <?php echo $filter_service === $sv ? 'selected' : ''; ?>>
+                    <?php echo $sv; ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="filter-group" style="justify-content:flex-end;gap:8px;flex-direction:row;align-items:flex-end;">
+              <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Search</button>
+              <a href="?view=converted" class="btn btn-outline btn-sm"><i class="fas fa-redo"></i></a>
+            </div>
+          </div>
+        </form>
+
+        <?php if ($converted_appointments->num_rows > 0): ?>
+          <div style="overflow-x:auto;">
+            <table class="apt-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Client</th>
+                  <th>Contact</th>
+                  <th>Service</th>
+                  <th>Original Schedule</th>
+                  <?php if ($admin_role === 'superadmin'): ?>
+                    <th>Assigned</th><?php endif; ?>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php while ($apt = $converted_appointments->fetch_assoc()): ?>
+                  <tr>
+                    <td><span style="font-size:12px;color:var(--text-muted);">#<?php echo $apt['appointment_id']; ?></span>
+                    </td>
+                    <td>
+                      <div class="td-name"><?php echo htmlspecialchars($apt['first_name'] . ' ' . $apt['last_name']); ?></div>
+                      <div class="td-sub" style="color:var(--success);"><i class="fas fa-check-circle"></i> Converted to
+                        client</div>
+                    </td>
+                    <td>
+                      <div class="td-sub"><i class="fas fa-envelope" style="opacity:.5;"></i>
+                        <?php echo htmlspecialchars($apt['email']); ?></div>
+                      <div class="td-sub"><i class="fas fa-phone" style="opacity:.5;"></i>
+                        <?php echo htmlspecialchars($apt['country_code'] . ' ' . $apt['phone']); ?></div>
+                    </td>
+                    <td>
+                      <div style="font-size:13.5px;"><?php echo htmlspecialchars($apt['service_type']); ?></div>
+                      <?php if ($apt['service_type'] === 'Other' && !empty($apt['other_service'])): ?>
+                        <div class="td-sub"><?php echo htmlspecialchars($apt['other_service']); ?></div><?php endif; ?>
+                    </td>
+                    <td>
+                      <div style="font-weight:600;font-size:13px;">
+                        <?php echo date('M d, Y', strtotime($apt['preferred_date'])); ?>
+                      </div>
+                      <div class="td-sub"><?php echo date('g:i A', strtotime($apt['preferred_time'])); ?></div>
+                    </td>
+                    <?php if ($admin_role === 'superadmin'): ?>
+                      <td class="td-sub"><?php echo htmlspecialchars($apt['sales_name'] ?? '—'); ?></td>
+                    <?php endif; ?>
+                    <td>
+                      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button onclick="openDetail(<?php echo htmlspecialchars(json_encode($apt)); ?>)"
+                          class="btn btn-sm btn-outline btn-icon" title="View"><i class="fas fa-eye"></i></button>
+                        <a href="appointment-clients" class="btn btn-sm btn-purple btn-icon" title="Open in Clients"><i
+                            class="fas fa-external-link-alt"></i></a>
+                      </div>
+                    </td>
+                  </tr>
+                <?php endwhile; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else: ?>
+          <div class="empty-state"><i class="fas fa-user-check"></i>
+            <p>No converted appointments yet</p>
+          </div>
+        <?php endif; ?>
+      </div>
+
     <?php else: ?>
       <!-- ===================== LIST VIEW ===================== -->
       <div class="section-card">
         <div class="section-head">
-          <h2><i class="fas fa-calendar-check" style="color:var(--brand-light);"></i> All Appointments
+          <h2><i class="fas fa-calendar-check" style="color:var(--text-muted);"></i> All Appointments
             <?php if ($filter_active): ?>
               <span class="badge badge-confirmed">Active Only</span>
             <?php elseif ($filter_overdue): ?>
-              <span class="badge" style="background:#fee2e2;color:#dc2626;">Overdue</span>
+              <span class="badge badge-overdue">Overdue</span>
             <?php elseif ($filter_status === 'completed'): ?>
               <span class="badge badge-completed">Completed</span>
             <?php endif; ?>
           </h2>
-          <span style="font-size:13px;color:var(--text-muted);"><?php echo $all_appointments->num_rows; ?> records</span>
+          <span style="font-size:13px;color:var(--text-muted);"><?php echo $all_appointments->num_rows; ?> records
+            <?php if ($converted_total > 0): ?>
+              <a href="?view=converted" style="color:var(--info);text-decoration:none;font-weight:600;margin-left:8px;">
+                · <?php echo $converted_total; ?> converted &rarr;</a>
+            <?php endif; ?>
+          </span>
         </div>
 
         <!-- Filters -->
@@ -1423,13 +1614,14 @@ $convertible_result->data_seek(0); // reset pointer
               style="font-size:12px;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;">Quick:</span>
             <a href="?view=list"
               class="qtag qtag-all <?php echo (!$filter_active && !$filter_overdue && $filter_status !== 'completed') ? 'active' : ''; ?>">All</a>
-            <a href="?view=list&filter_active=1" class="qtag qtag-active <?php echo $filter_active ? 'active' : ''; ?>">✅
-              Active</a>
+            <a href="?view=list&filter_active=1" class="qtag qtag-active <?php echo $filter_active ? 'active' : ''; ?>">
+              <i class="fas fa-check" style="font-size:10px;"></i> Active</a>
             <a href="?view=list&filter_overdue=1"
-              class="qtag qtag-overdue <?php echo $filter_overdue ? 'active' : ''; ?>">⚠
-              Overdue</a>
+              class="qtag qtag-overdue <?php echo $filter_overdue ? 'active' : ''; ?>">
+              <i class="fas fa-exclamation-triangle" style="font-size:10px;"></i> Overdue</a>
             <a href="?view=list&filter_status=completed"
-              class="qtag qtag-done <?php echo $filter_status === 'completed' ? 'active' : ''; ?>">🎉 Completed</a>
+              class="qtag qtag-done <?php echo $filter_status === 'completed' ? 'active' : ''; ?>">
+              <i class="fas fa-trophy" style="font-size:10px;"></i> Completed</a>
           </div>
         </form>
 
@@ -1463,7 +1655,7 @@ $convertible_result->data_seek(0); // reset pointer
                     <td>
                       <div class="td-name"><?php echo htmlspecialchars($apt['first_name'] . ' ' . $apt['last_name']); ?></div>
                       <?php if ($apt['converted_to_client']): ?>
-                        <div class="td-sub" style="color:#059669;"><i class="fas fa-check-circle"></i> Converted</div>
+                        <div class="td-sub" style="color:var(--success);"><i class="fas fa-check-circle"></i> Converted</div>
                       <?php endif; ?>
                     </td>
                     <td>
@@ -1486,7 +1678,7 @@ $convertible_result->data_seek(0); // reset pointer
                     <td>
                       <span class="badge badge-<?php echo $apt['status']; ?>"><?php echo ucfirst($apt['status']); ?></span>
                       <?php if ($is_overdue): ?>
-                        <div style="margin-top:4px;font-size:11px;color:#dc2626;font-weight:600;">Overdue</div><?php endif; ?>
+                        <div style="margin-top:4px;font-size:11px;color:var(--danger);font-weight:600;">Overdue</div><?php endif; ?>
                     </td>
                     <?php if ($admin_role === 'superadmin'): ?>
                       <td class="td-sub"><?php echo htmlspecialchars($apt['sales_name'] ?? '—'); ?></td>
@@ -1497,7 +1689,7 @@ $convertible_result->data_seek(0); // reset pointer
                           class="btn btn-sm btn-outline btn-icon" title="View"><i class="fas fa-eye"></i></button>
                         <button onclick="openStatus(<?php echo $apt['appointment_id']; ?>,'<?php echo $apt['status']; ?>')"
                           class="btn btn-sm btn-outline btn-icon" title="Update Status"
-                          style="color:#059669;border-color:#6ee7b7;"><i class="fas fa-pen"></i></button>
+                          style="color:var(--success);border-color:var(--success-border);"><i class="fas fa-pen"></i></button>
                         <button
                           onclick="openReschedule(<?php echo $apt['appointment_id']; ?>,'<?php echo $apt['preferred_date']; ?>','<?php echo $apt['preferred_time']; ?>')"
                           class="btn btn-sm btn-warning btn-icon" title="Reschedule"><i
@@ -1534,7 +1726,7 @@ $convertible_result->data_seek(0); // reset pointer
   <div class="modal-bg" id="detailModal">
     <div class="modal-box modal-lg">
       <div class="modal-head">
-        <h3><i class="fas fa-calendar-check" style="color:var(--brand-light);"></i> Appointment Details</h3>
+        <h3><i class="fas fa-calendar-check" style="color:var(--purple);"></i> Appointment Details</h3>
         <button class="modal-close" onclick="document.getElementById('detailModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1546,7 +1738,7 @@ $convertible_result->data_seek(0); // reset pointer
   <div class="modal-bg" id="statusModal">
     <div class="modal-box">
       <div class="modal-head">
-        <h3><i class="fas fa-pen" style="color:#10b981;"></i> Update Status</h3>
+        <h3><i class="fas fa-pen" style="color:var(--success);"></i> Update Status</h3>
         <button class="modal-close" onclick="document.getElementById('statusModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1576,7 +1768,7 @@ $convertible_result->data_seek(0); // reset pointer
   <div class="modal-bg" id="rescheduleModal">
     <div class="modal-box">
       <div class="modal-head">
-        <h3><i class="fas fa-calendar-alt" style="color:#f59e0b;"></i> Reschedule Appointment</h3>
+        <h3><i class="fas fa-calendar-alt" style="color:var(--warning);"></i> Reschedule Appointment</h3>
         <button class="modal-close" onclick="document.getElementById('rescheduleModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1596,7 +1788,7 @@ $convertible_result->data_seek(0); // reset pointer
         </div>
         <p
           style="font-size:13px;color:var(--text-muted);background:var(--surface2);padding:10px 13px;border-radius:var(--radius-sm);border:1px solid var(--border);">
-          <i class="fas fa-info-circle" style="color:#6366f1;"></i> Rescheduling will set the status to
+          <i class="fas fa-info-circle" style="color:var(--info);"></i> Rescheduling will set the status to
           <strong>Confirmed</strong>.
         </p>
         <div class="form-actions">
@@ -1612,7 +1804,7 @@ $convertible_result->data_seek(0); // reset pointer
   <div class="modal-bg" id="addHolidayModal">
     <div class="modal-box" style="max-width:420px;">
       <div class="modal-head">
-        <h3><i class="fas fa-umbrella-beach" style="color:#6366f1;"></i> Add Holiday</h3>
+        <h3><i class="fas fa-umbrella-beach" style="color:var(--purple);"></i> Add Holiday</h3>
         <button class="modal-close" onclick="document.getElementById('addHolidayModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1623,18 +1815,18 @@ $convertible_result->data_seek(0); // reset pointer
         <input type="hidden" name="add_holiday" value="1">
         <div class="form-row cols-2" style="margin-bottom:0;">
           <div class="form-group">
-            <label>Holiday Date <span style="color:#dc2626;">*</span></label>
+            <label>Holiday Date <span style="color:var(--danger);">*</span></label>
             <input type="date" name="holiday_date" class="form-control" required min="<?php echo date('Y-m-d'); ?>">
           </div>
           <div class="form-group">
-            <label>Holiday Name <span style="color:#dc2626;">*</span></label>
+            <label>Holiday Name <span style="color:var(--danger);">*</span></label>
             <input type="text" name="holiday_name" class="form-control" required placeholder="e.g. Christmas Day"
               maxlength="100">
           </div>
         </div>
         <p
           style="font-size:12px;color:var(--text-muted);background:var(--surface2);padding:10px 13px;border-radius:var(--radius-sm);border:1px solid var(--border);margin-top:12px;">
-          <i class="fas fa-info-circle" style="color:#6366f1;"></i> The holiday will be <strong>automatically
+          <i class="fas fa-info-circle" style="color:var(--info);"></i> The holiday will be <strong>automatically
             removed</strong> the day after it passes.
         </p>
         <div class="form-actions">
@@ -1650,7 +1842,7 @@ $convertible_result->data_seek(0); // reset pointer
   <div class="modal-bg" id="deleteModal">
     <div class="modal-box" style="max-width:440px;">
       <div class="modal-head">
-        <h3><i class="fas fa-trash" style="color:#dc2626;"></i> Delete Appointment</h3>
+        <h3><i class="fas fa-trash" style="color:var(--danger);"></i> Delete Appointment</h3>
         <button class="modal-close" onclick="document.getElementById('deleteModal').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1670,55 +1862,11 @@ $convertible_result->data_seek(0); // reset pointer
     </div>
   </div>
 
-  <script>
-    function openStatus(id, status) {
-      document.getElementById('status_id').value = id;
-      document.getElementById('status_val').value = status;
-      document.getElementById('statusModal').classList.add('open');
-    }
-    function openReschedule(id, date, time) {
-      document.getElementById('resched_id').value = id;
-      document.getElementById('resched_date').value = date;
-      document.getElementById('resched_time').value = time;
-      document.getElementById('rescheduleModal').classList.add('open');
-    }
-    function confirmDelete(id, name) {
-      document.getElementById('delete_id').value = id;
-      document.getElementById('delete_name').textContent = name;
-      document.getElementById('deleteModal').classList.add('open');
-    }
-    function openDetail(apt) {
-      const svc = apt.service_type === 'Other' && apt.other_service ? apt.service_type + ' — ' + apt.other_service : apt.service_type;
-      const statusColors = { pending: 'var(--warning-bg)', confirmed: 'var(--success-bg)', completed: 'var(--info-bg)', cancelled: 'var(--danger-bg)', draft: '#f3f4f6' };
-      document.getElementById('detailContent').innerHTML = `
-    <div class="detail-grid">
-      <div class="detail-item"><label>Full Name</label><p>${apt.first_name} ${apt.last_name}</p></div>
-      <div class="detail-item"><label>Email</label><p>${apt.email}</p></div>
-      <div class="detail-item"><label>Phone</label><p>${apt.country_code} ${apt.phone}</p></div>
-      <div class="detail-item"><label>Service</label><p>${svc}</p></div>
-      <div class="detail-item"><label>Date</label><p>${new Date(apt.preferred_date + 'T00:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p></div>
-      <div class="detail-item"><label>Time</label><p>${apt.preferred_time}</p></div>
-      <div class="detail-item"><label>Status</label><p><span class="badge badge-${apt.status}">${apt.status}</span></p></div>
-      <div class="detail-item"><label>Inquiry Type</label><p>${apt.inquiry_type || '—'}</p></div>
-    </div>
-    ${apt.notes ? `<div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);"><label style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px;">Notes</label><p style="font-size:14px;">${apt.notes}</p></div>` : ''}
-    <div style="margin-top:16px;font-size:12px;color:var(--text-muted);">Created: ${new Date(apt.created_at).toLocaleString()}</div>
-  `;
-      document.getElementById('detailModal').classList.add('open');
-    }
-
-    // Close modals on backdrop click
-    document.querySelectorAll('.modal-bg').forEach(m => {
-      m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); });
-    });
-  </script>
-  <!-- NOTIFICATION POPUPS -->
-
-  <!-- Pending Popup -->
+  <!-- PENDING POPUP -->
   <div class="modal-bg" id="pendingPopup">
     <div class="modal-box" style="max-width:500px;">
       <div class="modal-head">
-        <h3><i class="fas fa-hourglass-half" style="color:#f59e0b;"></i> Pending Appointments</h3>
+        <h3><i class="fas fa-hourglass-half" style="color:var(--warning);"></i> Pending Appointments</h3>
         <button class="modal-close" onclick="document.getElementById('pendingPopup').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1733,7 +1881,7 @@ $convertible_result->data_seek(0); // reset pointer
           while ($apt = $pending_popup->fetch_assoc()):
             ?>
             <div
-              style="background:var(--warning-bg);border:1.5px solid #fde68a;border-radius:var(--radius-sm);padding:12px 14px;">
+              style="background:var(--warning-bg);border:1.5px solid var(--warning-border);border-radius:var(--radius-sm);padding:12px 14px;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                 <div>
                   <div style="font-weight:600;font-size:14px;">
@@ -1751,7 +1899,8 @@ $convertible_result->data_seek(0); // reset pointer
                 </div>
                 <button
                   onclick="openStatus(<?php echo $apt['appointment_id']; ?>,'<?php echo $apt['status']; ?>');document.getElementById('pendingPopup').classList.remove('open');"
-                  class="btn btn-sm btn-warning" style="flex-shrink:0;margin-left:10px;">
+                  class="btn btn-sm"
+                  style="background:var(--warning-bg);color:var(--warning);border:1.5px solid var(--warning-border);flex-shrink:0;margin-left:10px;">
                   <i class="fas fa-pen"></i> Update
                 </button>
               </div>
@@ -1771,11 +1920,11 @@ $convertible_result->data_seek(0); // reset pointer
     </div>
   </div>
 
-  <!-- Convert Popup -->
+  <!-- CONVERT POPUP -->
   <div class="modal-bg" id="convertPopup">
     <div class="modal-box" style="max-width:500px;">
       <div class="modal-head">
-        <h3><i class="fas fa-user-plus" style="color:#10b981;"></i> Ready to Convert</h3>
+        <h3><i class="fas fa-user-plus" style="color:var(--success);"></i> Ready to Convert</h3>
         <button class="modal-close" onclick="document.getElementById('convertPopup').classList.remove('open')"><i
             class="fas fa-times"></i></button>
       </div>
@@ -1787,7 +1936,7 @@ $convertible_result->data_seek(0); // reset pointer
           $convertible_result->data_seek(0);
           while ($apt = $convertible_result->fetch_assoc()): ?>
             <div
-              style="background:var(--success-bg);border:1.5px solid #b7e4c7;border-radius:var(--radius-sm);padding:12px 14px;">
+              style="background:var(--success-bg);border:1.5px solid var(--success-border);border-radius:var(--radius-sm);padding:12px 14px;">
               <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                 <div>
                   <div style="font-weight:600;font-size:14px;">

@@ -7,30 +7,30 @@
 <?php if (!empty($areaCustomized)): ?>
   <div style="margin-bottom:<?= !empty($areaFixed) ? '20px' : '0' ?>;">
     <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
-      <div style="width:4px; height:20px; background:#3b82f6; border-radius:2px;"></div>
-      <span style="font-size:12px; font-weight:700; color:#3b82f6; text-transform:uppercase; letter-spacing:0.5px;">
+      <div style="width:4px; height:20px; background:var(--adm-ink); border-radius:2px;"></div>
+      <span style="font-size:12px; font-weight:700; color:var(--adm-ink); text-transform:uppercase; letter-spacing:0.5px;">
         <i class="fas fa-ruler"></i> Customized Items
       </span>
     </div>
     <div style="overflow-x:auto;">
       <table style="width:100%; border-collapse:collapse; min-width:900px;">
         <thead>
-          <tr style="background:#eff6ff;">
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:left; border-bottom:2px solid #bfdbfe;">Image</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:left; border-bottom:2px solid #bfdbfe;">Item</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;" colspan="3">Dimensions</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Unit</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Qty</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Type</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Mats</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Labor</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Tot Mats</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Tot Labor</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Jack-up%</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Dim Adj%</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Price/Item</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:right; border-bottom:2px solid #bfdbfe;">Total</th>
-            <th style="padding:8px 10px; font-size:10px; font-weight:700; color:#1e40af; text-transform:uppercase; letter-spacing:0.5px; text-align:center; border-bottom:2px solid #bfdbfe;">Actions</th>
+          <tr style="background:var(--adm-bg);">
+            <th class="adm-th" style="text-align:left;">Image</th>
+            <th class="adm-th" style="text-align:left;">Item</th>
+            <th class="adm-th" style="text-align:center;" colspan="3">Dimensions</th>
+            <th class="adm-th" style="text-align:center;">Unit</th>
+            <th class="adm-th" style="text-align:center;">Qty</th>
+            <th class="adm-th" style="text-align:center;">Type</th>
+            <th class="adm-th" style="text-align:center;">Mats</th>
+            <th class="adm-th" style="text-align:center;">Labor</th>
+            <th class="adm-th" style="text-align:center;">Tot Mats</th>
+            <th class="adm-th" style="text-align:center;">Tot Labor</th>
+            <th class="adm-th" style="text-align:center;">Jack-up%</th>
+            <th class="adm-th" style="text-align:center;">Dim Adj%</th>
+            <th class="adm-th" style="text-align:center;">Price/Item</th>
+            <th class="adm-th" style="text-align:right;">Total</th>
+            <th class="adm-th" style="text-align:center;">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -136,7 +136,7 @@
                   style="font-size:13px; font-weight:500; color:#1f2937; outline:none; border-bottom:1px dashed transparent; transition:border-color 0.2s; min-width:120px; max-width:190px; word-break:break-word; white-space:normal; overflow-wrap:break-word; display:block; padding:2px 4px; border-radius:4px; <?= $quotationDone ? 'cursor:not-allowed; color:#9ca3af;' : 'cursor:text;' ?>"
                   onmouseover="if(this.contentEditable==='true') this.style.borderBottomColor='#9ca3af';"
                   onmouseout="if(document.activeElement!==this) this.style.borderBottomColor='transparent';"
-                  onfocus="this.style.borderBottomColor='#6366f1'; this.style.background='#f5f3ff';"
+                  onfocus="this.style.borderBottomColor='var(--adm-ink)'; this.style.background='var(--adm-bg)';"
                   onblur="this.style.borderBottomColor='transparent'; this.style.background=''; saveItemName(this);">
                   <?= htmlspecialchars($row['item_name'] ?? '') ?>
                 </div>
@@ -275,7 +275,7 @@
               <td class="px-2 py-2 text-center">
                 <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
                   <a href="edit-quotation-entry?entry_id=<?= $row['entry_id'] ?>&client_id=<?= $client_id ?>&client_name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>"
-                    style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:#dbeafe; color:#1e40af; border-radius:6px; font-size:11px; font-weight:700; text-decoration:none; <?= $quotationDone ? 'opacity:0.5; pointer-events:none;' : '' ?>">
+                    style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; background:var(--adm-bg); border:1px solid var(--adm-line); color:var(--adm-ink); border-radius:6px; font-size:11px; font-weight:700; text-decoration:none; <?= $quotationDone ? 'opacity:0.5; pointer-events:none;' : '' ?>">
                     <i class="fas fa-edit"></i> Edit
                   </a>
                   <button

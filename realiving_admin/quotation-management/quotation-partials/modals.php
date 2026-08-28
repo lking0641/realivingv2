@@ -5,8 +5,8 @@
     style="background-color: #fefefe; padding: 30px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto;">
     <div class="modal-header"
       style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-      <h2 style="font-size: 24px; font-weight: bold; color: #3b1f0f;">
-        <i class="fas fa-user-circle" style="color: #3b1f0f;"></i> Client Details
+      <h2 style="font-size: 24px; font-weight: bold; color: var(--adm-ink);">
+        <i class="fas fa-user-circle" style="color: var(--adm-ink);"></i> Client Details
       </h2>
       <button onclick="closeClientModal()" class="modal-close"
         style="font-size: 24px; color: #666; cursor: pointer; background: none; border: none;">
@@ -17,7 +17,7 @@
       <div class="detail-row"
         style="display: grid; grid-template-columns: 140px 1fr; padding: 12px 0; border-bottom: 1px solid #e9ecef;">
         <div class="detail-label" style="font-weight: 600; color: #666;">Reference Number:</div>
-        <div class="detail-value" style="color: #111; font-family: monospace; color: #3b82f6;">
+        <div class="detail-value" style="color: var(--adm-ink); font-family: monospace;">
           <?= htmlspecialchars($reference_number) ?></div>
       </div>
       <div class="detail-row"
@@ -166,8 +166,8 @@
     style="background:#fefefe; padding:30px; border-radius:12px; max-width:700px; width:90%; max-height:90vh; overflow-y:auto; margin:20px;">
     <div
       style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid #e5e7eb; padding-bottom:15px;">
-      <h2 style="font-size:22px; font-weight:bold; color:#3b1f0f;">
-        <i class="fas fa-edit" style="color:#f59e0b;"></i> Edit Client Info
+      <h2 style="font-size:22px; font-weight:bold; color:var(--adm-ink);">
+        <i class="fas fa-edit" style="color:var(--adm-ink);"></i> Edit Client Info
       </h2>
       <button onclick="closeEditModal()"
         style="font-size:24px; color:#666; cursor:pointer; background:none; border:none;">
@@ -303,7 +303,7 @@
           style="display:flex; align-items:center; gap:8px; margin-top:4px; font-size:13px; color:#6b7280; cursor:pointer; font-weight:normal;">
           <input type="checkbox" id="edit-no-movein-date" onchange="toggleEditMoveInDate(this)"
             <?= empty($target_movein_date) ? 'checked' : '' ?>
-            style="width:15px; height:15px; cursor:pointer; accent-color:#3b82f6;">
+            style="width:15px; height:15px; cursor:pointer; accent-color:var(--adm-ink);">
           None / Not yet determined
         </label>
       </div>
@@ -313,11 +313,11 @@
     <div
       style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; padding-top:16px; border-top:1px solid #e5e7eb;">
       <button onclick="closeEditModal()"
-        style="padding:10px 20px; background:#6b7280; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px;">
+        style="padding:10px 20px; background:var(--adm-surface); border:1px solid var(--adm-line); color:var(--adm-ink); border-radius:8px; cursor:pointer; font-weight:600; font-size:14px;">
         Cancel
       </button>
       <button onclick="saveClientEdit()"
-        style="padding:10px 24px; background:linear-gradient(135deg,#3b82f6,#2563eb); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px;">
+        style="padding:10px 24px; background:var(--adm-ink); color:white; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:14px;">
         <i class="fas fa-save"></i> Save Changes
       </button>
     </div>
@@ -583,11 +583,11 @@
   // Add hover effects to info cards
   document.querySelectorAll('.info-card').forEach(card => {
     card.addEventListener('mouseenter', function () {
-      this.style.background = 'rgba(255, 255, 255, 0.25)';
+      this.style.background = 'rgba(255, 255, 255, 0.14)';
       this.style.transform = 'translateY(-2px)';
     });
     card.addEventListener('mouseleave', function () {
-      this.style.background = 'rgba(255, 255, 255, 0.15)';
+      this.style.background = 'rgba(255, 255, 255, 0.08)';
       this.style.transform = 'translateY(0)';
     });
   });

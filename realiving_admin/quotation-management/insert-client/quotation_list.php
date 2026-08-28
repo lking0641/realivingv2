@@ -83,9 +83,50 @@ $finished_count = count($finishedRows);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Quotation Requests</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>My Quotation Requests — Realiving</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
+        :root {
+            --bg: #F5F5F5;
+            --surface: #FFFFFF;
+            --surface2: #FAFAFA;
+            --border: #E2E2E2;
+            --text: #0B0B0B;
+            --text-muted: #6B6B6B;
+            --text-mute2: #9A9A9A;
+            --brand: #0B0B0B;
+            --brand-mid: #262626;
+            --brand-light: #9A9A9A;
+            --accent: #E8E8E8;
+            --hover-bg: #F2F2F2;
+
+            --success: #1F6F43;
+            --success-bg: #E8F3EC;
+            --success-border: #BFE0CC;
+
+            --warning: #8A6100;
+            --warning-bg: #FBF1D8;
+            --warning-border: #EAD9A6;
+
+            --danger: #9B1C1C;
+            --danger-bg: #FBEAEA;
+            --danger-border: #E3B7B7;
+
+            --info: #33475B;
+            --info-bg: #EDF0F3;
+            --info-border: #C7D0DA;
+
+            --purple: #46424F;
+            --purple-bg: #F0EFF1;
+            --purple-border: #D8D6DA;
+
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 1px 3px rgba(11, 11, 11, .06);
+            --shadow-md: 0 10px 26px -16px rgba(11, 11, 11, .25);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -93,274 +134,528 @@ $finished_count = count($finishedRows);
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
         }
 
-        .dashboard-container {
+        .app-wrap {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 30px;
+            padding: 28px 24px;
         }
 
-        /* Header */
-        .dashboard-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 12px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .dashboard-header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-
-        .dashboard-header p {
-            opacity: 0.9;
-            font-size: 16px;
-        }
-
-        /* Stats Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-        }
-
-        .stat-header {
+        /* TOP BAR */
+        .top-bar {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
+            background: var(--brand);
+            border-radius: var(--radius);
+            padding: 20px 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+            flex-wrap: wrap;
+            gap: 14px;
         }
 
-        .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
+        .top-bar h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
             display: flex;
             align-items: center;
-            justify-content: center;
-            font-size: 24px;
+            gap: 10px;
         }
 
-        .icon-total {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        .icon-new {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        .icon-old {
-            background: linear-gradient(135deg, #48c6ef 0%, #6f86d6 100%);
-        }
-
-        .stat-content h3 {
+        .top-bar p {
             font-size: 13px;
-            color: #666;
-            margin-bottom: 5px;
-            font-weight: 500;
+            color: rgba(255, 255, 255, .6);
+            margin-top: 3px;
         }
 
-        .stat-number {
-            font-size: 32px;
-            font-weight: bold;
-            color: #3b1f0f;
+        /* STATS ROW */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 22px;
         }
 
-        /* Table Card */
-        .table-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        .stat-tile {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 20px 18px;
+            box-shadow: var(--shadow);
+            border: 1.5px solid var(--border);
+            position: relative;
             overflow: hidden;
+            transition: transform .2s, box-shadow .2s;
         }
 
-        .table-header {
-            background: #3b1f0f;
-            color: white;
-            padding: 20px;
+        .stat-tile:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
         }
 
-        .table-header h2 {
-            font-size: 20px;
+        .stat-tile::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: var(--tile-color, var(--brand-light));
         }
 
-        /* Table */
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .stat-tile .num {
+            font-family: 'Inter', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text);
         }
 
-        thead {
-            background: #f8f9fa;
-        }
-
-        th {
-            padding: 15px;
-            text-align: left;
-            font-size: 13px;
-            font-weight: 600;
-            color: #666;
+        .stat-tile .lbl {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 500;
+            letter-spacing: .3px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
-        td {
-            padding: 15px;
-            border-top: 1px solid #e9ecef;
+        .stat-tile .ico {
+            position: absolute;
+            right: 14px;
+            top: 14px;
+            font-size: 22px;
+            opacity: .12;
+            color: var(--tile-color, var(--brand-light));
         }
 
-        tbody tr {
-            transition: background 0.2s;
+        .tile-total {
+            --tile-color: #33475B;
         }
 
-        tbody tr:hover {
-            background: #f8f9fa;
+        .tile-new {
+            --tile-color: #8A6100;
         }
 
-        /* Buttons */
-        .btn {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
+        .tile-old {
+            --tile-color: #46424F;
+        }
+
+        .tile-finished {
+            --tile-color: #1F6F43;
+        }
+
+        /* SECTION CARD */
+        .section-card {
+            background: var(--surface);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1.5px solid var(--border);
+            overflow: hidden;
+            margin-bottom: 22px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            border-bottom: 1.5px solid var(--border);
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .section-head h2 {
+            font-family: 'Inter', sans-serif;
+            font-size: 15.5px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        /* FILTERS BAR */
+        .filters-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            padding: 18px 24px;
+            background: var(--surface2);
+            border-bottom: 1.5px solid var(--border);
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: .4px;
+        }
+
+        .filter-input {
+            padding: 9px 13px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            font-size: 13.5px;
+            font-family: inherit;
+            color: var(--text);
+            background: var(--surface);
+            transition: border-color .18s;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: var(--brand);
+        }
+
+        /* TABS */
+        .tabs-row {
+            display: flex;
+            gap: 8px;
+            padding: 16px 24px;
+            flex-wrap: wrap;
+        }
+
+        .tab-pill {
+            padding: 9px 20px;
+            border-radius: 30px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 13px;
             cursor: pointer;
-            text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            font-weight: 500;
-            font-size: 13px;
-            transition: all 0.2s;
+            gap: 8px;
+            transition: all .18s;
+            font-family: inherit;
         }
 
-        .btn-quotation {
-            background: #10b981;
-            color: white;
+        .tab-pill:hover {
+            border-color: var(--brand-light);
+            color: var(--brand);
         }
 
-        .btn-quotation:hover {
-            background: #059669;
-            transform: translateY(-1px);
+        .tab-pill.active {
+            background: var(--brand);
+            border-color: var(--brand);
+            color: #fff;
         }
 
-        .btn-view {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-view:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        .btn-header {
-            background: white;
-            color: #3b1f0f;
-            padding: 12px 20px;
-        }
-
-        .btn-header:hover {
-            background: #f8f9fa;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
-        }
-
-        /* Badge */
-        .badge {
-            padding: 4px 12px;
+        .tab-pill .count {
+            background: rgba(0, 0, 0, .08);
             border-radius: 12px;
+            padding: 1px 8px;
+            font-size: 11px;
+        }
+
+        .tab-pill.active .count {
+            background: rgba(255, 255, 255, .22);
+        }
+
+        /* BADGES */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 9px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
+            letter-spacing: .3px;
             text-transform: uppercase;
         }
 
         .badge-new {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--warning-bg);
+            color: var(--warning);
         }
 
         .badge-old {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--info-bg);
+            color: var(--info);
         }
 
-        /* Modal */
-        .modal {
+        .badge-project {
+            background: var(--success-bg);
+            color: var(--success);
+        }
+
+        .badge-individual {
+            background: var(--purple-bg);
+            color: var(--purple);
+        }
+
+        /* BUTTONS */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all .18s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--brand);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--brand-mid);
+        }
+
+        .btn-header {
+            background: #fff;
+            color: var(--brand);
+        }
+
+        .btn-header:hover {
+            background: var(--hover-bg);
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        .btn-outline:hover {
+            border-color: var(--brand-light);
+            color: var(--brand);
+            background: var(--surface2);
+        }
+
+        .btn-success {
+            background: var(--success-bg);
+            color: var(--success);
+            border: 1.5px solid var(--success-border);
+        }
+
+        .btn-success:hover {
+            background: var(--success);
+            color: #fff;
+        }
+
+        .btn-info {
+            background: var(--info-bg);
+            color: var(--info);
+            border: 1.5px solid var(--info-border);
+        }
+
+        .btn-info:hover {
+            background: var(--info);
+            color: #fff;
+        }
+
+        .btn-warning {
+            background: var(--warning-bg);
+            color: var(--warning);
+            border: 1.5px solid var(--warning-border);
+        }
+
+        .btn-warning:hover {
+            background: var(--warning);
+            color: #fff;
+        }
+
+        .btn-danger {
+            background: var(--danger-bg);
+            color: var(--danger);
+            border: 1.5px solid var(--danger-border);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        /* TABLE */
+        .qt-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        .qt-table thead th {
+            padding: 11px 16px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--text-muted);
+            background: var(--surface2);
+            border-bottom: 1.5px solid var(--border);
+            white-space: nowrap;
+        }
+
+        .qt-table tbody tr {
+            border-bottom: 1px solid var(--border);
+            transition: background .15s;
+        }
+
+        .qt-table tbody tr:hover {
+            background: var(--hover-bg);
+        }
+
+        .qt-table td {
+            padding: 13px 16px;
+            vertical-align: top;
+        }
+
+        .td-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .td-sub {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .ref-mono {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text);
+            background: var(--surface2);
+            padding: 3px 8px;
+            border-radius: 5px;
+            border: 1px solid var(--border);
+            display: inline-block;
+        }
+
+        .actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            white-space: nowrap;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            text-align: center;
+            padding: 56px 20px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 42px;
+            opacity: .25;
+            display: block;
+            margin-bottom: 14px;
+        }
+
+        .empty-state p:first-of-type {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        /* MODAL */
+        .modal-bg {
             display: none;
             position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            inset: 0;
+            background: rgba(11, 11, 11, .55);
+            z-index: 999;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(3px);
         }
 
-        .modal.active {
+        .modal-bg.open {
             display: flex;
         }
 
-        .modal-content {
-            background-color: #fefefe;
-            padding: 30px;
-            border-radius: 12px;
-            max-width: 600px;
-            width: 90%;
+        .modal-box {
+            background: var(--surface);
+            border-radius: var(--radius);
+            padding: 32px;
+            max-width: 560px;
+            width: 92%;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, .22);
+            animation: modalIn .22s ease;
         }
 
-        .modal-header {
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px) scale(.97)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        .modal-head {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
             margin-bottom: 20px;
         }
 
-        .modal-header h2 {
-            font-size: 24px;
-            font-weight: bold;
-            color: #3b1f0f;
+        .modal-head h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 17px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 9px;
         }
 
         .modal-close {
-            font-size: 24px;
-            color: #666;
-            cursor: pointer;
             background: none;
             border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 6px;
         }
 
         .modal-close:hover {
-            color: #000;
+            color: var(--text);
+            background: var(--surface2);
         }
 
         .detail-row {
             display: grid;
             grid-template-columns: 140px 1fr;
-            padding: 12px 0;
-            border-bottom: 1px solid #e9ecef;
+            padding: 11px 0;
+            border-bottom: 1px solid var(--border);
         }
 
         .detail-row:last-child {
@@ -369,216 +664,94 @@ $finished_count = count($finishedRows);
 
         .detail-label {
             font-weight: 600;
-            color: #666;
+            font-size: 13px;
+            color: var(--text-muted);
         }
 
         .detail-value {
-            color: #111;
+            font-size: 13.5px;
+            color: var(--text);
         }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            margin-bottom: 20px;
-            color: #ddd;
-        }
-
-        /* Search & Filter Bar */
-        .filter-bar {
-            background: white;
-            border-radius: 12px;
-            padding: 20px 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .filter-bar input[type="text"] {
-            flex: 1;
-            min-width: 220px;
-            padding: 10px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.2s;
-        }
-
-        .filter-bar input[type="text"]:focus {
-            outline: none;
-            border-color: #3b1f0f;
-        }
-
-        .filter-bar select {
-            padding: 10px 15px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
-            transition: border-color 0.2s;
-            min-width: 170px;
-        }
-
-        .filter-bar select:focus {
-            outline: none;
-            border-color: #3b1f0f;
-        }
-
-        .btn-filter {
-            background: #3b1f0f;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-            text-decoration: none;
-        }
-
-        .btn-filter:hover {
-            background: #2a1609;
-            transform: translateY(-1px);
-        }
-
-        .btn-clear {
-            background: #e9ecef;
-            color: #555;
-            padding: 10px 16px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .btn-clear:hover {
-            background: #dee2e6;
-        }
-
-        .btn-backup {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .btn-backup:hover {
-            background: #d97706;
-            transform: translateY(-1px);
-        }
-
-        .btn-delete {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
-
-        /* Delete Confirmation Modal */
-        #deleteModal .modal-content {
+        /* DELETE MODAL */
+        #deleteModal .modal-box {
             max-width: 440px;
             text-align: center;
         }
 
         .delete-warning-icon {
-            font-size: 56px;
-            margin-bottom: 16px;
+            font-size: 46px;
+            color: var(--danger);
+            margin-bottom: 14px;
         }
 
-        #deleteModal h2 {
-            font-size: 22px;
-            color: #111;
+        #deleteModal h3 {
+            justify-content: center;
+            font-size: 18px;
             margin-bottom: 8px;
         }
 
         #deleteModal p {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 24px;
+            color: var(--text-muted);
+            font-size: 13.5px;
+            margin-bottom: 20px;
             line-height: 1.5;
+        }
+
+        #deleteConfirmInput {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1.5px solid var(--danger-border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            letter-spacing: 2px;
+            outline: none;
+            transition: border-color .18s;
+            font-family: inherit;
+            margin-bottom: 18px;
+            color: var(--text);
+        }
+
+        #deleteConfirmInput:focus {
+            border-color: var(--danger);
         }
 
         .delete-modal-actions {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             justify-content: center;
         }
 
-        .btn-cancel-delete {
-            background: #e9ecef;
-            color: #555;
-            padding: 11px 28px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .btn-cancel-delete:hover {
-            background: #dee2e6;
-        }
-
-        .btn-confirm-delete {
-            background: #ef4444;
-            color: white;
-            padding: 11px 28px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .btn-confirm-delete:hover {
-            background: #dc2626;
-        }
-
         .btn-confirm-delete:disabled {
-            background: #fca5a5;
+            background: var(--danger-bg);
+            color: var(--danger-border);
             cursor: not-allowed;
         }
 
-        @media (max-width: 768px) {
-            .dashboard-container {
-                padding: 15px;
-            }
-
-            .dashboard-header {
-                padding: 20px;
-            }
-
-            .dashboard-header h1 {
-                font-size: 22px;
-            }
-
-            .stats-grid {
+        @media (max-width: 1100px) {
+            .stats-row {
                 grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .app-wrap {
+                padding: 16px;
+            }
+
+            .top-bar {
+                padding: 16px 20px;
+            }
+
+            .filters-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-input {
+                width: 100% !important;
             }
 
             /* Hide less important columns on mobile */
@@ -591,465 +764,332 @@ $finished_count = count($finishedRows);
                 display: none;
             }
 
-            table {
+            .qt-table {
                 font-size: 12px;
             }
 
-            th,
-            td {
-                padding: 8px 6px;
+            .qt-table th,
+            .qt-table td {
+                padding: 9px 8px;
             }
 
-            .btn {
-                padding: 5px 8px;
-                font-size: 11px;
-            }
-
-            .btn span {
-                display: none;
-            }
-
-            .btn i {
-                margin: 0;
-            }
-
-            /* Make action buttons a 2x2 grid */
-            td:last-child div[style*="display: flex"] {
+            .actions-cell {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr;
-                gap: 4px;
+                gap: 5px;
             }
 
-            .btn {
+            .actions-cell .btn {
                 justify-content: center;
-                padding: 6px !important;
+                padding: 7px !important;
             }
 
-            .filter-bar {
-                flex-direction: column;
-            }
-
-            .filter-bar input[type="text"],
-            .filter-bar select {
-                width: 100%;
-                min-width: unset;
-            }
-
-            td:first-child div {
-                font-size: 9px !important;
-                word-break: break-all;
+            .actions-cell .btn span {
+                display: none;
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <!-- Dashboard Header -->
-        <div class="dashboard-header">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-                <div>
-                    <h1>📋 My Quotation Requests</h1>
-                    <p>Manage and track your client quotations</p>
-                </div>
-                <a href="allclient" class="btn btn-header">
-                    <i class="fas fa-user-plus"></i>
-                    <span>Add New Client</span>
-                </a>
+    <div class="app-wrap">
+
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div>
+                <h1><i class="fas fa-file-invoice"></i> My Quotation Requests</h1>
+                <p>Manage and track your client quotations</p>
+            </div>
+            <a href="allclient" class="btn btn-header">
+                <i class="fas fa-user-plus"></i> Add New Client
+            </a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-tile tile-total"> <i class="fas fa-file-invoice ico"></i>
+                <div class="num"><?php echo $total_quotations; ?></div>
+                <div class="lbl">Total Quotations</div>
+            </div>
+            <div class="stat-tile tile-new"> <i class="fas fa-user-plus ico"></i>
+                <div class="num"><?php echo $new_clients; ?></div>
+                <div class="lbl">New Clients</div>
+            </div>
+            <div class="stat-tile tile-old"> <i class="fas fa-user-check ico"></i>
+                <div class="num"><?php echo $old_clients; ?></div>
+                <div class="lbl">Returning Clients</div>
+            </div>
+            <div class="stat-tile tile-finished"> <i class="fas fa-check-double ico"></i>
+                <div class="num"><?php echo $finished_count; ?></div>
+                <div class="lbl">Finished</div>
             </div>
         </div>
 
-        <!-- Search & Filter Bar -->
-        <form method="get" class="filter-bar">
-            <input type="text" name="search_name" placeholder="🔍 Search by client, project, or reference…"
-                value="<?php echo htmlspecialchars($search_name); ?>" />
-            <select name="filter_business">
-                <option value="">All Business Types</option>
-                <option value="Project" <?php echo $filter_business === 'Project' ? 'selected' : ''; ?>>
-                    Project
-                </option>
-                <option value="Non-Project" <?php echo $filter_business === 'Non-Project' ? 'selected' : ''; ?>>
-                    Individual
-                </option>
-            </select>
-            <button type="submit" class="btn-filter">
-                <i class="fas fa-filter"></i> Apply
-            </button>
-            <?php if ($search_name !== '' || $filter_business !== ''): ?>
-                <a href="quotation-list" class="btn-clear">
-                    <i class="fas fa-times"></i> Clear
-                </a>
-            <?php endif; ?>
-        </form>
-
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-content">
-                        <h3>Total Quotations</h3>
-                        <div class="stat-number"><?php echo $total_quotations; ?></div>
-                    </div>
-                    <div class="stat-icon icon-total">📋</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-content">
-                        <h3>New Clients</h3>
-                        <div class="stat-number"><?php echo $new_clients; ?></div>
-                    </div>
-                    <div class="stat-icon icon-new">🆕</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-content">
-                        <h3>Returning Clients</h3>
-                        <div class="stat-number"><?php echo $old_clients; ?></div>
-                    </div>
-                    <div class="stat-icon icon-old">🔄</div>
-                </div>
-            </div>
-            <div class="stat-card" style="border-left: 4px solid #10b981;">
-                <div class="stat-header">
-                    <div class="stat-content">
-                        <h3>Finished</h3>
-                        <div class="stat-number" style="color:#065f46;"><?php echo $finished_count; ?></div>
-                    </div>
-                    <div class="stat-icon" style="background: linear-gradient(135deg, #065f46 0%, #10b981 100%);">✅
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active / Finished Tabs -->
-        <div style="display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;">
-            <button id="tabActive" onclick="setTab('active')"
-                style="padding:10px 24px; border-radius:25px; border:2px solid #3b1f0f; background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
-                <i class="fas fa-tasks"></i> Active
-                <span id="activeCount"
-                    style="background:rgba(255,255,255,.25); border-radius:12px; padding:1px 8px; font-size:11px;"><?php echo $result->num_rows; ?></span>
-            </button>
-            <button id="tabFinished" onclick="setTab('finished')"
-                style="padding:10px 24px; border-radius:25px; border:2px solid #e9ecef; background:white; color:#555; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
-                <i class="fas fa-check-double"></i> Finished
-                <span id="finishedCount"
-                    style="background:#e9ecef; border-radius:12px; padding:1px 8px; font-size:11px;"><?php echo $finished_count; ?></span>
-            </button>
-        </div>
-
-        <!-- Quotations Table -->
-        <div class="table-card" id="activeTable">
-            <div class="table-header">
-                <h2>All Quotation Requests</h2>
+        <!-- MAIN TABLE CARD (filters + tabs + table together) -->
+        <div class="section-card">
+            <div class="section-head">
+                <h2><i class="fas fa-file-invoice" style="color:var(--brand-light);"></i> Quotation Requests</h2>
+                <span id="resultCount" style="font-size:13px;color:var(--text-muted);"><?php echo $result->num_rows; ?> records</span>
             </div>
 
-            <?php if ($result->num_rows > 0): ?>
-                <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ref #</th>
-                                <th>Client Name</th>
-                                <th>Project Name</th>
-                                <th>Status</th>
-                                <th>Business Type</th>
-                                <th>Contact</th>
-                                <th>Last Updated</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($row = $result->fetch_assoc()): ?>
+            <!-- Search & Filter -->
+            <form method="get" class="filters-bar">
+                <div class="filter-group" style="flex:1;min-width:220px;">
+                    <label>Search</label>
+                    <input type="text" name="search_name" placeholder="Client, project, or reference…"
+                        value="<?php echo htmlspecialchars($search_name); ?>" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label>Business Type</label>
+                    <select name="filter_business" class="filter-input" style="min-width:170px;">
+                        <option value="">All Business Types</option>
+                        <option value="Project" <?php echo $filter_business === 'Project' ? 'selected' : ''; ?>>Project</option>
+                        <option value="Non-Project" <?php echo $filter_business === 'Non-Project' ? 'selected' : ''; ?>>Individual</option>
+                    </select>
+                </div>
+                <div class="filter-group" style="justify-content:flex-end;gap:8px;flex-direction:row;align-items:flex-end;">
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i> Apply</button>
+                    <?php if ($search_name !== '' || $filter_business !== ''): ?>
+                        <a href="quotation-list" class="btn btn-outline btn-sm"><i class="fas fa-redo"></i></a>
+                    <?php endif; ?>
+                </div>
+            </form>
+
+            <!-- TABS -->
+            <div class="tabs-row">
+                <button id="tabActive" class="tab-pill active" onclick="setTab('active')">
+                    <i class="fas fa-tasks"></i> Active
+                    <span class="count" id="activeCount"><?php echo $result->num_rows; ?></span>
+                </button>
+                <button id="tabFinished" class="tab-pill" onclick="setTab('finished')">
+                    <i class="fas fa-check-double"></i> Finished
+                    <span class="count" id="finishedCount"><?php echo $finished_count; ?></span>
+                </button>
+            </div>
+
+            <!-- ACTIVE TABLE -->
+            <div id="activeTable">
+                <?php if ($result->num_rows > 0): ?>
+                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                        <table class="qt-table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <div style="font-family: monospace; font-size: 12px; color: #3b82f6;">
-                                            <?php echo htmlspecialchars($row['reference_number']); ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="font-weight: 600; color: #111;">
-                                            <?php echo htmlspecialchars($row['clientname']); ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="color: #666;">
-                                            <?php echo htmlspecialchars($row['nameproject']); ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span
-                                            class="badge badge-<?php echo $row['status'] === 'New Client' ? 'new' : 'old'; ?>">
-                                            <?php echo htmlspecialchars($row['status']); ?>
-                                        </span>
-                                    </td>
-
-                                    <td>
-                                        <?php
-                                        $btype = $row['business_type'] ?? '';
-                                        $display = $btype === 'Non-Project' ? 'Individual' : htmlspecialchars($btype);
-                                        $color = $btype === 'Project' ? '#d1fae5; color: #065f46' : '#ede9fe; color: #4c1d95';
-                                        ?>
-                                        <span
-                                            style="padding: 4px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; background: <?php echo $color; ?>;">
-                                            <?php echo $display; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style="font-size: 13px;">
-                                            <div><i class="fas fa-phone"
-                                                    style="color: #999; margin-right: 5px;"></i><?php echo htmlspecialchars($row['contact'] ?: 'N/A'); ?>
-                                            </div>
-                                            <div style="color: #666; margin-top: 2px;"><i class="fas fa-envelope"
-                                                    style="color: #999; margin-right: 5px;"></i><?php echo htmlspecialchars($row['email'] ?: 'N/A'); ?>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="font-size: 13px; color: #666;">
-                                            <?php echo $row['update_time'] ? date('M d, Y', strtotime($row['update_time'])) : 'N/A'; ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                            <a href="quotation-items?prefill=1&id=<?php echo urlencode($row['id']); ?>&name=<?php echo urlencode($row['clientname']); ?>&contact=<?php echo urlencode($row['contact']); ?>&email=<?php echo urlencode($row['email']); ?>&address=<?php echo urlencode($row['address']); ?>"
-                                                class="btn btn-quotation">
-                                                <i class="fas fa-file-invoice"></i>
-                                                <span>Open</span>
-                                            </a>
-
-                                            <button class="btn btn-view"
-                                                onclick="viewDetails(<?php echo htmlspecialchars(json_encode($row)); ?>)">
-                                                <i class="fas fa-eye"></i>
-                                                <span>View</span>
-                                            </button>
-
-                                            <a href="backup-client?client_id=<?php echo (int) $row['id']; ?>"
-                                                class="btn btn-backup" title="Download backup before deleting">
-                                                <i class="fas fa-download"></i>
-                                                <span>Backup</span>
-                                            </a>
-
-                                            <button class="btn btn-delete"
-                                                onclick="confirmDelete(<?php echo (int) $row['id']; ?>, '<?php echo htmlspecialchars(addslashes($row['clientname'])); ?>')">
-                                                <i class="fas fa-trash"></i>
-                                                <span>Delete</span>
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <th>Ref #</th>
+                                    <th>Client Name</th>
+                                    <th>Project Name</th>
+                                    <th>Status</th>
+                                    <th>Business Type</th>
+                                    <th>Contact</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
                                 </tr>
-                            <?php endwhile; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <div class="empty-state">
-                    <i class="fas fa-file-invoice"></i>
-                    <p style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">No quotation requests found</p>
-                    <p style="font-size: 14px;">Quotation requests will appear here when available</p>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Finished Table -->
-        <div class="table-card" id="finishedTable" style="display:none;">
-            <div class="table-header" style="background:#065f46;">
-                <h2><i class="fas fa-check-double"></i> Finished Quotations</h2>
+                            </thead>
+                            <tbody>
+                                <?php while ($row = $result->fetch_assoc()): ?>
+                                    <tr>
+                                        <td><span class="ref-mono"><?php echo htmlspecialchars($row['reference_number']); ?></span></td>
+                                        <td><div class="td-name"><?php echo htmlspecialchars($row['clientname']); ?></div></td>
+                                        <td><div class="td-sub" style="color:var(--text);"><?php echo htmlspecialchars($row['nameproject']); ?></div></td>
+                                        <td>
+                                            <span class="badge badge-<?php echo $row['status'] === 'New Client' ? 'new' : 'old'; ?>">
+                                                <?php echo htmlspecialchars($row['status']); ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            $btype = $row['business_type'] ?? '';
+                                            $display = $btype === 'Non-Project' ? 'Individual' : htmlspecialchars($btype);
+                                            $badgeClass = $btype === 'Project' ? 'badge-project' : 'badge-individual';
+                                            ?>
+                                            <span class="badge <?php echo $badgeClass; ?>"><?php echo $display; ?></span>
+                                        </td>
+                                        <td>
+                                            <div class="td-sub"><i class="fas fa-phone" style="opacity:.5;"></i> <?php echo htmlspecialchars($row['contact'] ?: 'N/A'); ?></div>
+                                            <div class="td-sub"><i class="fas fa-envelope" style="opacity:.5;"></i> <?php echo htmlspecialchars($row['email'] ?: 'N/A'); ?></div>
+                                        </td>
+                                        <td><div class="td-sub"><?php echo $row['update_time'] ? date('M d, Y', strtotime($row['update_time'])) : 'N/A'; ?></div></td>
+                                        <td>
+                                            <div class="actions-cell">
+                                                <a href="quotation-items?prefill=1&id=<?php echo urlencode($row['id']); ?>&name=<?php echo urlencode($row['clientname']); ?>&contact=<?php echo urlencode($row['contact']); ?>&email=<?php echo urlencode($row['email']); ?>&address=<?php echo urlencode($row['address']); ?>"
+                                                    class="btn btn-success btn-sm" title="Open Quotation Form">
+                                                    <i class="fas fa-file-invoice"></i> <span>Open</span>
+                                                </a>
+                                                <button class="btn btn-info btn-sm" title="View Details"
+                                                    onclick="viewDetails(<?php echo htmlspecialchars(json_encode($row)); ?>)">
+                                                    <i class="fas fa-eye"></i> <span>View</span>
+                                                </button>
+                                                <a href="backup-client?client_id=<?php echo (int) $row['id']; ?>"
+                                                    class="btn btn-warning btn-sm" title="Download backup before deleting">
+                                                    <i class="fas fa-download"></i> <span>Backup</span>
+                                                </a>
+                                                <button class="btn btn-danger btn-sm" title="Delete Client"
+                                                    onclick="confirmDelete(<?php echo (int) $row['id']; ?>, '<?php echo htmlspecialchars(addslashes($row['clientname'])); ?>')">
+                                                    <i class="fas fa-trash"></i> <span>Delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <i class="fas fa-file-invoice"></i>
+                        <p>No quotation requests found</p>
+                        <p style="font-size:13px;">Quotation requests will appear here when available</p>
+                    </div>
+                <?php endif; ?>
             </div>
-            <?php if (!empty($finishedRows)): ?>
-                <div style="overflow-x: auto;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Ref #</th>
-                                <th>Client Name</th>
-                                <th>Project Name</th>
-                                <th>Status</th>
-                                <th>Business Type</th>
-                                <th>Contact</th>
-                                <th>Last Updated</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($finishedRows as $row): ?>
+
+            <!-- FINISHED TABLE -->
+            <div id="finishedTable" style="display:none;">
+                <?php if (!empty($finishedRows)): ?>
+                    <div style="overflow-x: auto;">
+                        <table class="qt-table">
+                            <thead>
                                 <tr>
-                                    <td>
-                                        <div style="font-family:monospace; font-size:12px; color:#3b82f6;">
-                                            <?php echo htmlspecialchars($row['reference_number']); ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="font-weight:600; color:#111;">
-                                            <?php echo htmlspecialchars($row['clientname']); ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="color:#666;"><?php echo htmlspecialchars($row['nameproject']); ?></div>
-                                    </td>
-                                    <td>
-                                        <span
-                                            class="badge badge-<?php echo $row['status'] === 'New Client' ? 'new' : 'old'; ?>">
-                                            <?php echo htmlspecialchars($row['status']); ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <?php
-                                        $btype = $row['business_type'] ?? '';
-                                        $display = $btype === 'Non-Project' ? 'Individual' : htmlspecialchars($btype);
-                                        $color = $btype === 'Project' ? '#d1fae5; color: #065f46' : '#ede9fe; color: #4c1d95';
-                                        ?>
-                                        <span
-                                            style="padding:4px 10px; border-radius:10px; font-size:11px; font-weight:600; background:<?php echo $color; ?>;">
-                                            <?php echo $display; ?>
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div style="font-size:13px;">
-                                            <div><i class="fas fa-phone"
-                                                    style="color:#999; margin-right:5px;"></i><?php echo htmlspecialchars($row['contact'] ?: 'N/A'); ?>
-                                            </div>
-                                            <div style="color:#666; margin-top:2px;"><i class="fas fa-envelope"
-                                                    style="color:#999; margin-right:5px;"></i><?php echo htmlspecialchars($row['email'] ?: 'N/A'); ?>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="font-size:13px; color:#666;">
-                                            <?php echo $row['update_time'] ? date('M d, Y', strtotime($row['update_time'])) : 'N/A'; ?>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
-                                            <a href="quotation-items?prefill=1&id=<?php echo urlencode($row['id']); ?>&name=<?php echo urlencode($row['clientname']); ?>&contact=<?php echo urlencode($row['contact']); ?>&email=<?php echo urlencode($row['email']); ?>&address=<?php echo urlencode($row['address']); ?>"
-                                                class="btn btn-quotation">
-                                                <i class="fas fa-file-invoice"></i> Open
-                                            </a>
-                                            <button class="btn btn-view"
-                                                onclick="viewDetails(<?php echo htmlspecialchars(json_encode($row)); ?>)">
-                                                <i class="fas fa-eye"></i> View
-                                            </button>
-
-                                            <a href="backup-client?client_id=<?php echo (int) $row['id']; ?>"
-                                                class="btn btn-backup" title="Download backup before deleting">
-                                                <i class="fas fa-download"></i> Backup
-                                            </a>
-
-                                            <button class="btn btn-delete"
-                                                onclick="confirmDelete(<?php echo (int) $row['id']; ?>, '<?php echo htmlspecialchars(addslashes($row['clientname'])); ?>')">
-                                                <i class="fas fa-trash"></i> Delete
-                                            </button>
-                                        </div>
-                                    </td>
+                                    <th>Ref #</th>
+                                    <th>Client Name</th>
+                                    <th>Project Name</th>
+                                    <th>Status</th>
+                                    <th>Business Type</th>
+                                    <th>Contact</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <div class="empty-state">
-                    <i class="fas fa-check-double"></i>
-                    <p style="font-size:18px; font-weight:600; margin-bottom:8px;">No finished clients yet</p>
-                    <p style="font-size:14px;">Clients will appear here once all their stages are completed.</p>
-                </div>
-            <?php endif; ?>
-        </div>
-
-        <!-- Delete Confirmation Modal -->
-        <div id="deleteModal" class="modal">
-            <div class="modal-content">
-                <div class="delete-warning-icon">⚠️</div>
-                <h2>Delete Client?</h2>
-                <p id="deleteModalText">
-                    This will permanently delete the client and <strong>all related data</strong>
-                    including quotations, files, payments, site visits, and more.<br><br>
-                    <strong>This action cannot be undone.</strong>
-                </p>
-                <div style="margin-bottom: 18px;">
-                    <input type="text" id="deleteConfirmInput" placeholder="Type DELETE here"
-                        oninput="document.getElementById('btnConfirmDelete').disabled = this.value !== 'DELETE';" style="
-                        width: 100%;
-                        padding: 10px 14px;
-                        border: 2px solid #fca5a5;
-                        border-radius: 8px;
-                        font-size: 15px;
-                        font-weight: 600;
-                        text-align: center;
-                        letter-spacing: 2px;
-                        outline: none;
-                        transition: border-color 0.2s;
-                    " onkeyup="if(event.key==='Enter' && this.value==='DELETE') executeDelete();" />
-                </div>
-                <div class="delete-modal-actions">
-                    <button class="btn-cancel-delete" onclick="closeDeleteModal()">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                    <button class="btn-confirm-delete" id="btnConfirmDelete" onclick="executeDelete()" disabled>
-                        <i class="fas fa-trash"></i> Yes, Delete
-                    </button>
-                </div>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($finishedRows as $row): ?>
+                                    <tr>
+                                        <td><span class="ref-mono"><?php echo htmlspecialchars($row['reference_number']); ?></span></td>
+                                        <td><div class="td-name"><?php echo htmlspecialchars($row['clientname']); ?></div></td>
+                                        <td><div class="td-sub" style="color:var(--text);"><?php echo htmlspecialchars($row['nameproject']); ?></div></td>
+                                        <td>
+                                            <span class="badge badge-<?php echo $row['status'] === 'New Client' ? 'new' : 'old'; ?>">
+                                                <?php echo htmlspecialchars($row['status']); ?>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <?php
+                                            $btype = $row['business_type'] ?? '';
+                                            $display = $btype === 'Non-Project' ? 'Individual' : htmlspecialchars($btype);
+                                            $badgeClass = $btype === 'Project' ? 'badge-project' : 'badge-individual';
+                                            ?>
+                                            <span class="badge <?php echo $badgeClass; ?>"><?php echo $display; ?></span>
+                                        </td>
+                                        <td>
+                                            <div class="td-sub"><i class="fas fa-phone" style="opacity:.5;"></i> <?php echo htmlspecialchars($row['contact'] ?: 'N/A'); ?></div>
+                                            <div class="td-sub"><i class="fas fa-envelope" style="opacity:.5;"></i> <?php echo htmlspecialchars($row['email'] ?: 'N/A'); ?></div>
+                                        </td>
+                                        <td><div class="td-sub"><?php echo $row['update_time'] ? date('M d, Y', strtotime($row['update_time'])) : 'N/A'; ?></div></td>
+                                        <td>
+                                            <div class="actions-cell">
+                                                <a href="quotation-items?prefill=1&id=<?php echo urlencode($row['id']); ?>&name=<?php echo urlencode($row['clientname']); ?>&contact=<?php echo urlencode($row['contact']); ?>&email=<?php echo urlencode($row['email']); ?>&address=<?php echo urlencode($row['address']); ?>"
+                                                    class="btn btn-success btn-sm" title="Open Quotation Form">
+                                                    <i class="fas fa-file-invoice"></i> <span>Open</span>
+                                                </a>
+                                                <button class="btn btn-info btn-sm" title="View Details"
+                                                    onclick="viewDetails(<?php echo htmlspecialchars(json_encode($row)); ?>)">
+                                                    <i class="fas fa-eye"></i> <span>View</span>
+                                                </button>
+                                                <a href="backup-client?client_id=<?php echo (int) $row['id']; ?>"
+                                                    class="btn btn-warning btn-sm" title="Download backup before deleting">
+                                                    <i class="fas fa-download"></i> <span>Backup</span>
+                                                </a>
+                                                <button class="btn btn-danger btn-sm" title="Delete Client"
+                                                    onclick="confirmDelete(<?php echo (int) $row['id']; ?>, '<?php echo htmlspecialchars(addslashes($row['clientname'])); ?>')">
+                                                    <i class="fas fa-trash"></i> <span>Delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <div class="empty-state">
+                        <i class="fas fa-check-double"></i>
+                        <p>No finished clients yet</p>
+                        <p style="font-size:13px;">Clients will appear here once all their stages are completed.</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
-        <!-- Modal for viewing details -->
-        <div id="detailModal" class="modal">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>
-                        <i class="fas fa-info-circle" style="color: #3b82f6;"></i> Quotation Details
-                    </h2>
-                    <button onclick="closeModal()" class="modal-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div id="modalContent"></div>
+    </div><!-- /app-wrap -->
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <div id="deleteModal" class="modal-bg">
+        <div class="modal-box">
+            <i class="fas fa-exclamation-triangle delete-warning-icon"></i>
+            <h3 style="display:block;">Delete Client?</h3>
+            <p id="deleteModalText">
+                This will permanently delete the client and <strong>all related data</strong>
+                including quotations, files, payments, site visits, and more.<br><br>
+                <strong>This action cannot be undone.</strong>
+            </p>
+            <input type="text" id="deleteConfirmInput" placeholder="Type DELETE here"
+                oninput="document.getElementById('btnConfirmDelete').disabled = this.value !== 'DELETE';"
+                onkeyup="if(event.key==='Enter' && this.value==='DELETE') executeDelete();" />
+            <div class="delete-modal-actions">
+                <button class="btn btn-outline" onclick="closeDeleteModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button class="btn btn-danger" id="btnConfirmDelete" onclick="executeDelete()" disabled>
+                    <i class="fas fa-trash"></i> Yes, Delete
+                </button>
             </div>
         </div>
+    </div>
 
-        <script>
-            function setTab(tab) {
-                const activeTable = document.getElementById('activeTable');
-                const finishedTable = document.getElementById('finishedTable');
-                const tabActive = document.getElementById('tabActive');
-                const tabFinished = document.getElementById('tabFinished');
+    <!-- DETAIL MODAL -->
+    <div id="detailModal" class="modal-bg">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3><i class="fas fa-info-circle" style="color:var(--info);"></i> Quotation Details</h3>
+                <button onclick="closeModal()" class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
 
-                if (tab === 'active') {
-                    activeTable.style.display = '';
-                    finishedTable.style.display = 'none';
-                    tabActive.style.background = 'linear-gradient(135deg,#3b1f0f,#8a5a44)';
-                    tabActive.style.color = 'white';
-                    tabActive.style.borderColor = '#3b1f0f';
-                    tabFinished.style.background = 'white';
-                    tabFinished.style.color = '#555';
-                    tabFinished.style.borderColor = '#e9ecef';
-                } else {
-                    activeTable.style.display = 'none';
-                    finishedTable.style.display = '';
-                    tabFinished.style.background = 'linear-gradient(135deg,#065f46,#10b981)';
-                    tabFinished.style.color = 'white';
-                    tabFinished.style.borderColor = '#065f46';
-                    tabActive.style.background = 'white';
-                    tabActive.style.color = '#555';
-                    tabActive.style.borderColor = '#e9ecef';
-                }
+    <script>
+        function setTab(tab) {
+            const activeTable = document.getElementById('activeTable');
+            const finishedTable = document.getElementById('finishedTable');
+            const tabActive = document.getElementById('tabActive');
+            const tabFinished = document.getElementById('tabFinished');
+
+            if (tab === 'active') {
+                activeTable.style.display = '';
+                finishedTable.style.display = 'none';
+                tabActive.classList.add('active');
+                tabFinished.classList.remove('active');
+            } else {
+                activeTable.style.display = 'none';
+                finishedTable.style.display = '';
+                tabFinished.classList.add('active');
+                tabActive.classList.remove('active');
             }
+        }
 
-            function viewDetails(quotation) {
-                const modal = document.getElementById('detailModal');
-                const content = document.getElementById('modalContent');
+        function viewDetails(quotation) {
+            const modal = document.getElementById('detailModal');
+            const content = document.getElementById('modalContent');
 
-                content.innerHTML = `
+            content.innerHTML = `
                 <div>
                     <div class="detail-row">
-    <div class="detail-label">Business Type:</div>
-    <div class="detail-value">${quotation.business_type === 'Non-Project' ? 'Individual' : (quotation.business_type || 'N/A')}</div>
-</div>
-
+                        <div class="detail-label">Business Type:</div>
+                        <div class="detail-value">${quotation.business_type === 'Non-Project' ? 'Individual' : (quotation.business_type || 'N/A')}</div>
+                    </div>
                     <div class="detail-row">
                         <div class="detail-label">Reference Number:</div>
-                        <div class="detail-value" style="font-family: monospace; color: #3b82f6;">${quotation.reference_number}</div>
+                        <div class="detail-value"><span class="ref-mono">${quotation.reference_number}</span></div>
                     </div>
                     <div class="detail-row">
                         <div class="detail-label">Client Name:</div>
@@ -1084,95 +1124,85 @@ $finished_count = count($finishedRows);
                         <div class="detail-value">${quotation.update_time ? new Date(quotation.update_time).toLocaleString() : 'N/A'}</div>
                     </div>
                 </div>
-                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e9ecef;">
+                <div style="margin-top: 20px; padding-top: 18px; border-top: 1.5px solid var(--border);">
                     <a href="quotation-items?prefill=1&id=${quotation.id}&name=${encodeURIComponent(quotation.clientname)}&contact=${encodeURIComponent(quotation.contact)}&email=${encodeURIComponent(quotation.email)}&address=${encodeURIComponent(quotation.address)}"
-                       class="btn btn-quotation" style="width: 100%; justify-content: center; padding: 12px;">
+                       class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
                         <i class="fas fa-file-invoice"></i>
                         <span>Open Quotation Form</span>
                     </a>
                 </div>
             `;
 
-                modal.classList.add('active');
-            }
+            modal.classList.add('open');
+        }
 
-            function closeModal() {
-                const modal = document.getElementById('detailModal');
-                modal.classList.remove('active');
-            }
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('open');
+        }
 
-            // Close modal when clicking outside
-            document.getElementById('detailModal').addEventListener('click', function (e) {
-                if (e.target === this) { closeModal(); }
-            });
-            document.getElementById('deleteModal').addEventListener('click', function (e) {
-                if (e.target === this) { closeDeleteModal(); }
-            });
+        document.getElementById('detailModal').addEventListener('click', function (e) {
+            if (e.target === this) { closeModal(); }
+        });
+        document.getElementById('deleteModal').addEventListener('click', function (e) {
+            if (e.target === this) { closeDeleteModal(); }
+        });
 
-            // ── Delete helpers ────────────────────────────────────────────
-            let _deleteClientId = null;
-            let _deleteClientName = null;
+        // ── Delete helpers ────────────────────────────────────────────
+        let _deleteClientId = null;
+        let _deleteClientName = null;
 
-            function confirmDelete(clientId, clientName) {
-                _deleteClientId = clientId;
-                _deleteClientName = clientName;
-                document.getElementById('deleteModalText').innerHTML =
-                    'You are about to permanently delete <strong>' + clientName + '</strong> and ' +
-                    '<strong>all related data</strong> including quotations, files, payments, ' +
-                    'site visits, and more.<br><br>' +
-                    'Type <strong>DELETE</strong> below to confirm:';
-                document.getElementById('deleteConfirmInput').value = '';
-                document.getElementById('btnConfirmDelete').disabled = true;
-                document.getElementById('btnConfirmDelete').innerHTML = '<i class="fas fa-trash"></i> Yes, Delete';
-                document.getElementById('deleteModal').classList.add('active');
-                setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 100);
-            }
+        function confirmDelete(clientId, clientName) {
+            _deleteClientId = clientId;
+            _deleteClientName = clientName;
+            document.getElementById('deleteModalText').innerHTML =
+                'You are about to permanently delete <strong>' + clientName + '</strong> and ' +
+                '<strong>all related data</strong> including quotations, files, payments, ' +
+                'site visits, and more.<br><br>' +
+                'Type <strong>DELETE</strong> below to confirm:';
+            document.getElementById('deleteConfirmInput').value = '';
+            document.getElementById('btnConfirmDelete').disabled = true;
+            document.getElementById('btnConfirmDelete').innerHTML = '<i class="fas fa-trash"></i> Yes, Delete';
+            document.getElementById('deleteModal').classList.add('open');
+            setTimeout(() => document.getElementById('deleteConfirmInput').focus(), 100);
+        }
 
-            function closeDeleteModal() {
-                document.getElementById('deleteModal').classList.remove('active');
-                document.getElementById('deleteConfirmInput').value = '';
-                document.getElementById('btnConfirmDelete').disabled = true;
-                _deleteClientId = null;
-                _deleteClientName = null;
-            }
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('open');
+            document.getElementById('deleteConfirmInput').value = '';
+            document.getElementById('btnConfirmDelete').disabled = true;
+            _deleteClientId = null;
+            _deleteClientName = null;
+        }
 
-            function executeDelete() {
-                if (!_deleteClientId) return;
+        function executeDelete() {
+            if (!_deleteClientId) return;
 
-                const btn = document.getElementById('btnConfirmDelete');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting…';
+            const btn = document.getElementById('btnConfirmDelete');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting…';
 
-                const fd = new FormData();
-                fd.append('client_id', _deleteClientId);
+            const fd = new FormData();
+            fd.append('client_id', _deleteClientId);
 
-                fetch('delete-client', { method: 'POST', body: fd })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            closeDeleteModal();
-                            // Remove the row from both tables without a full reload
-                            document.querySelectorAll('tr').forEach(tr => {
-                                if (tr.innerHTML.includes('data-client-id-' + _deleteClientId) ||
-                                    tr.dataset.clientId == _deleteClientId) {
-                                    tr.remove();
-                                }
-                            });
-                            // Safest: just reload the page so counts update
-                            window.location.reload();
-                        } else {
-                            btn.disabled = false;
-                            btn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete';
-                            alert('Error: ' + (data.error || 'Delete failed'));
-                        }
-                    })
-                    .catch(() => {
+            fetch('delete-client', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        closeDeleteModal();
+                        window.location.reload();
+                    } else {
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete';
-                        alert('Network error — please try again.');
-                    });
-            }
-        </script>
+                        alert('Error: ' + (data.error || 'Delete failed'));
+                    }
+                })
+                .catch(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-trash"></i> Yes, Delete';
+                    alert('Network error — please try again.');
+                });
+        }
+    </script>
 </body>
 
 </html>

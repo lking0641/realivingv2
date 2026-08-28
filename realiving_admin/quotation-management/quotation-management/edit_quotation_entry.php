@@ -435,8 +435,8 @@ $existingAreasList = array_column($existingAreas, 'area');
     .hide-scrollbar::-webkit-scrollbar { display:none; }
     .hide-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
     .category-tab.active {
-      border-color:#4f46e5;
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+      border-color:#0B0B0B;
+      background:#0B0B0B;
       color:white;
     }
     .category-tab.active i,
@@ -444,20 +444,35 @@ $existingAreasList = array_column($existingAreas, 'area');
     .addon-card { cursor:pointer; transition:all 0.2s; }
     .addon-card:hover { transform:translateY(-2px); }
     .size-select-btn.active {
-      background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
-      color:white; border-color:#667eea;
+      background:#0B0B0B;
+      color:white; border-color:#0B0B0B;
     }
     .save-btn {
-      background:linear-gradient(135deg,#10b981 0%,#059669 100%);
+      background:#0B0B0B;
       transition:all 0.2s;
     }
     .save-btn:hover { opacity:0.9; transform:translateY(-1px); }
     .category-tab:not(.bg-indigo-600):hover i {
-  color: #4f46e5 !important;
+  color: #0B0B0B !important;
 }
 .category-tab:not(.bg-indigo-600):hover span.font-semibold {
-  color: #4338ca !important;
+  color: #0B0B0B !important;
 }
+
+/* ── Recolor remaining indigo/purple utility classes to match adm design ── */
+.text-indigo-700, .text-indigo-600, .text-indigo-500, .text-indigo-400,
+.hover\:text-indigo-800:hover, .focus\:ring-indigo-500:focus, .focus\:ring-indigo-400:focus {
+  color: #0B0B0B !important;
+}
+.bg-indigo-50, .hover\:bg-indigo-50:hover { background: #F5F5F5 !important; }
+.bg-indigo-500, .bg-indigo-600 { background: #0B0B0B !important; color: #fff !important; }
+.border-indigo-500, .border-indigo-600, .border-indigo-400,
+.focus\:border-indigo-500:focus, .focus\:ring-indigo-500:focus {
+  border-color: #0B0B0B !important;
+}
+.ring-indigo-500 { --tw-ring-color: #0B0B0B !important; }
+.from-indigo-50, .to-purple-50 { --tw-gradient-from: #F5F5F5 !important; --tw-gradient-to: #F5F5F5 !important; }
+.bg-indigo-600.text-white { background: #0B0B0B !important; }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -466,7 +481,7 @@ $existingAreasList = array_column($existingAreas, 'area');
 <div class="bg-white shadow-sm border-b">
   <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
     <a href="computation-list?client_id=<?= $client_id ?>&client_name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>"
-       class="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 font-semibold transition">
+       class="flex items-center gap-2 text-gray-900 hover:text-black font-semibold transition">
       <i class="fas fa-arrow-left"></i>
       <span>Back to Computation List</span>
     </a>
@@ -481,7 +496,7 @@ $existingAreasList = array_column($existingAreas, 'area');
 
   <!-- Page Title -->
   <div class="flex items-center gap-3 mb-6">
-    <div style="background:<?= $is_fixed ? '#8b5cf6' : '#3b82f6' ?>; width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+    <div style="background:#0B0B0B; width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
       <i class="fas fa-edit" style="color:white; font-size:18px;"></i>
     </div>
     <div>
@@ -496,9 +511,9 @@ $existingAreasList = array_column($existingAreas, 'area');
       </p>
     </div>
     <?php if ($is_fixed): ?>
-      <span class="ml-auto px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold">Fixed Size</span>
+      <span class="ml-auto px-3 py-1 bg-gray-100 text-gray-800 border border-gray-300 rounded-full text-xs font-bold">Fixed Size</span>
     <?php else: ?>
-      <span class="ml-auto px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold">Customized</span>
+      <span class="ml-auto px-3 py-1 bg-gray-100 text-gray-800 border border-gray-300 rounded-full text-xs font-bold">Customized</span>
     <?php endif; ?>
   </div>
 

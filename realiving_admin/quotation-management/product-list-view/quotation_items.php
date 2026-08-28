@@ -505,29 +505,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Quotation List</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    :root {
+  --bg: #F5F5F5;
+  --surface: #FFFFFF;
+  --surface2: #FAFAFA;
+  --border: #E2E2E2;
+  --text: #0B0B0B;
+  --text-muted: #6B6B6B;
+  --text-mute2: #9A9A9A;
+  --brand: #0B0B0B;
+  --brand-mid: #262626;
+  --brand-light: #9A9A9A;
+  --accent: #E8E8E8;
+  --hover-bg: #F2F2F2;
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #f5f5f5;
-    }
+  --success: #1F6F43;
+  --success-bg: #E8F3EC;
+  --success-border: #BFE0CC;
+
+  --warning: #8A6100;
+  --warning-bg: #FBF1D8;
+  --warning-border: #EAD9A6;
+
+  --danger: #9B1C1C;
+  --danger-bg: #FBEAEA;
+  --danger-border: #E3B7B7;
+
+  --info: #33475B;
+  --info-bg: #EDF0F3;
+  --info-border: #C7D0DA;
+
+  --purple: #46424F;
+  --purple-bg: #F0EFF1;
+  --purple-border: #D8D6DA;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(11, 11, 11, .06);
+  --shadow-md: 0 10px 26px -16px rgba(11, 11, 11, .25);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
 
     /* Client Header */
     .client-header {
-      background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-      color: white;
-      padding: 40px;
-      border-radius: 12px;
-      margin: 30px auto;
-      max-width: 1400px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
+  background: var(--brand);
+  color: white;
+  padding: 32px 40px;
+  border-radius: var(--radius);
+  margin: 30px auto;
+  max-width: 1400px;
+  box-shadow: var(--shadow-md);
+}
 
     .client-header h1 {
       font-size: 32px;
@@ -609,37 +651,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .badge-new {
-      background: #fef3c7;
-      color: #92400e;
-    }
+  background: var(--warning-bg);
+  color: var(--warning);
+}
 
-    .badge-old {
-      background: #dbeafe;
-      color: #1e40af;
-    }
+.badge-old {
+  background: var(--info-bg);
+  color: var(--info);
+}
 
     /* View Details Button */
     .btn-view-details {
-      background: white;
-      color: #3b1f0f;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s;
-      margin-top: 15px;
-    }
+  background: white;
+  color: var(--brand);
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+  margin-top: 15px;
+}
 
-    .btn-view-details:hover {
-      background: #f5f5f5;
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+.btn-view-details:hover {
+  background: var(--hover-bg);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
 
     /* Modal */
     .modal {
@@ -661,15 +703,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .modal-content {
-      background-color: #fefefe;
-      padding: 30px;
-      border-radius: 12px;
-      max-width: 600px;
-      width: 90%;
-      max-height: 90vh;
-      overflow-y: auto;
-      margin: 20px;
-    }
+  background-color: var(--surface);
+  padding: 30px;
+  border-radius: var(--radius);
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  margin: 20px;
+  box-shadow: var(--shadow-md);
+}
 
     .modal-header {
       display: flex;
@@ -724,11 +767,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .search-card {
-      background: white;
-      border-radius: 12px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+}
 
     .search-form {
       display: flex;
@@ -746,22 +790,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .search-input {
-      flex: 1;
-      padding: 12px 16px;
-      padding-right: 50px;
-      /* Make room for loading spinner */
-      border: 2px solid #e9ecef;
-      border-radius: 8px;
-      font-size: 14px;
-      transition: all 0.2s;
-    }
+  flex: 1;
+  padding: 12px 16px;
+  padding-right: 50px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  transition: border-color .18s;
+  font-family: inherit;
+}
 
-    .search-input:focus {
-      outline: none;
-      border-color: #3b1f0f;
-      border-radius: 8px 8px 0 0;
-      /* Round only top when suggestions are shown */
-    }
+.search-input:focus {
+  outline: none;
+  border-color: var(--brand);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
 
     .btn {
       padding: 12px 20px;
@@ -777,14 +820,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .btn-search {
-      background: #3b1f0f;
-      color: white;
-    }
+  background: var(--brand);
+  color: white;
+  border-radius: var(--radius-sm);
+}
 
-    .btn-search:hover {
-      background: #2a1609;
-      transform: translateY(-1px);
-    }
+.btn-search:hover {
+  background: var(--brand-mid);
+  transform: translateY(-1px);
+}
 
     .btn-computation {
       background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
@@ -1020,14 +1064,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .product-card-quotation {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  border: 1.5px solid var(--border);
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
 
     .product-card-quotation:hover {
       transform: translateY(-5px);
@@ -1094,13 +1139,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .product-name-quotation {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      font-size: 18px;
-      font-weight: 600;
-      color: #3b1f0f;
-      margin: 0 0 10px 0;
-      line-height: 1.3;
-    }
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+}
 
     .product-family-quotation {
       display: flex;
@@ -1162,30 +1207,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
     }
 
     .view-details-btn-quotation {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: 100%;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-      color: white;
-      text-decoration: none;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 8px;
-      transition: all 0.3s ease;
-      border: none;
-      cursor: pointer;
-      margin-top: auto;
-    }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  background: var(--brand);
+  color: white;
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  margin-top: auto;
+}
 
-    .view-details-btn-quotation:hover {
-      background: linear-gradient(135deg, #2a1609 0%, #5a3520 100%);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(59, 31, 15, 0.3);
-    }
+.view-details-btn-quotation:hover {
+  background: var(--brand-mid);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
 
     @media (max-width: 768px) {
       .products-grid-quotation {
@@ -1426,7 +1471,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
           ?>
           <a href="computation-list?client_id=<?= urlencode($client_id) ?>&client_name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>"
             class="btn btn-computation"
-            style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 20px; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            style="background: var(--warning-bg); color: var(--warning); border: 1.5px solid var(--warning-border); padding: 12px 20px; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <i class="fas fa-calculator"></i>
             View All Computations
           </a>
@@ -1446,7 +1491,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_quotation'])) 
           ?>
           <a href="computation-list?client_id=<?= urlencode($client_id) ?>&client_name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>"
             class="btn btn-computation"
-            style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; padding: 12px 20px; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            style="background: var(--purple-bg); color: var(--purple); border: 1.5px solid var(--purple-border); padding: 12px 20px; border: none; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
             <i class="fas fa-ruler-combined"></i>
             Fixed Size Computation
           </a>

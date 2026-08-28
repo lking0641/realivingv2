@@ -329,8 +329,10 @@ include $includes['header'];
                       <div class="video-loading-spinner pointer-events-none absolute left-1/2 top-1/2 z-[5] -translate-x-1/2 -translate-y-1/2 text-3xl text-white">
                         <i class="ri-loader-4-line animate-spin"></i>
                       </div>
-                      <video class="service-detail-video block h-[260px] w-full object-cover sm:h-[320px] md:h-[380px] lg:h-[400px]"
-                        autoplay muted loop playsinline preload="metadata">
+                      <video class="service-detail-video block h-[260px] w-full object-cover pointer-events-none sm:h-[320px] md:h-[380px] lg:h-[400px]"
+                        autoplay muted loop playsinline preload="metadata"
+                        disablepictureinpicture
+                        controlsList="nodownload noplaybackrate nofullscreen">
                         <source src="<?= CLIENT_ASSET ?>/<?= htmlspecialchars($it['media']) ?>"
                           type="video/<?= pathinfo($it['media'], PATHINFO_EXTENSION) ?>">
                         Your browser does not support the video tag.

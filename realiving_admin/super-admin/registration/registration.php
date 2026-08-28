@@ -3,7 +3,7 @@
 include $includes ['connection'];
 include $includes ['checkrole'];
 
-require_role(['superadmin', 'general_manager', 'sales', 'designer']);
+require_role(['super_admin', 'general_manager', 'sales', 'designer']);
 
 $result = $conn->query("SELECT COUNT(*) AS count FROM account");
 $row = $result->fetch_assoc();

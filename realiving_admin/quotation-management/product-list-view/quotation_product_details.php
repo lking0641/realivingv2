@@ -336,9 +336,92 @@ exit();
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Product Details</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    :root {
+      --adm-bg: #F5F5F5;
+      --adm-surface: #FFFFFF;
+      --adm-ink: #0B0B0B;
+      --adm-soft: #6B6B6B;
+      --adm-muted: #9A9A9A;
+      --adm-line: #E2E2E2;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--adm-bg);
+      color: var(--adm-ink);
+    }
+
+    .adm-header {
+      background: var(--adm-surface);
+      border-bottom: 1px solid var(--adm-line);
+    }
+
+    .adm-eyebrow {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--adm-soft);
+    }
+
+    .adm-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--adm-ink);
+    }
+
+    .adm-subtitle {
+      font-size: 13px;
+      color: var(--adm-soft);
+    }
+
+    .adm-badge {
+      display: inline-block;
+      margin-top: 4px;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .adm-back-link {
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--adm-soft);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: color .2s ease;
+    }
+
+    .adm-back-link:hover {
+      color: var(--adm-ink);
+    }
+
+    .adm-empty-card {
+      background: var(--adm-surface);
+      border: 1px solid var(--adm-line);
+      border-radius: 10px;
+    }
+
+    @keyframes adm-fade {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .adm-fade {
+      animation: adm-fade .4s ease both;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .adm-fade { animation: none; }
+    }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .category-tab.active {
@@ -351,43 +434,38 @@ exit();
     .category-tab.active .bg-gray-100 { background: rgba(255, 255, 255, 0.3); color: white; }
   </style>
 </head>
-<body class="bg-gray-50">
+<body>
   <!-- Header with Back Button -->
-  <div class="bg-white shadow-sm border-b">
+  <div class="adm-header">
     <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
       <a href="quotation-items?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=all&family=all"
-         class="flex items-center gap-2 text-gray-700 hover:text-gray-900 font-semibold transition">
+         class="adm-back-link">
         <i class="fas fa-arrow-left"></i>
         <span>Back to Products</span>
       </a>
       <div class="text-right">
-  <h1 class="text-xl font-bold text-gray-800"><?= htmlspecialchars($client_name) ?></h1>
-  <p class="text-sm text-gray-600"><?= htmlspecialchars($project_name) ?></p>
-  <?php if ($business_type): ?>
-    <span style="
-      display: inline-block;
-      margin-top: 4px;
-      padding: 2px 10px;
-      border-radius: 10px;
-      font-size: 11px;
-      font-weight: 600;
-      background: <?= $business_type === 'Project' ? '#d1fae5' : '#ede9fe' ?>;
-      color: <?= $business_type === 'Project' ? '#065f46' : '#4c1d95' ?>;
-    ">
-      <?= htmlspecialchars($business_type_label) ?>
-    </span>
-  <?php endif; ?>
-</div>
+        <div class="adm-eyebrow mb-1">Quotation</div>
+        <h1 class="adm-title"><?= htmlspecialchars($client_name) ?></h1>
+        <p class="adm-subtitle"><?= htmlspecialchars($project_name) ?></p>
+        <?php if ($business_type): ?>
+          <span class="adm-badge" style="
+            background: <?= $business_type === 'Project' ? '#d1fae5' : '#ede9fe' ?>;
+            color: <?= $business_type === 'Project' ? '#065f46' : '#4c1d95' ?>;
+          ">
+            <?= htmlspecialchars($business_type_label) ?>
+          </span>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 
   <!-- Main Content -->
-  <div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="max-w-7xl mx-auto px-4 py-8 adm-fade">
     <?php if (empty($items)): ?>
-      <div class="bg-white rounded-lg shadow-md p-12 text-center">
-        <i class="fas fa-search text-6xl text-gray-300 mb-4"></i>
-        <h3 class="text-xl font-semibold text-gray-700 mb-2">Product Not Found</h3>
-        <p class="text-gray-500">The product you're looking for doesn't exist.</p>
+      <div class="adm-empty-card p-12 text-center">
+        <i class="fas fa-search text-6xl mb-4" style="color: var(--adm-muted);"></i>
+        <h3 class="text-xl font-semibold mb-2" style="color: var(--adm-ink);">Product Not Found</h3>
+        <p style="color: var(--adm-soft);">The product you're looking for doesn't exist.</p>
       </div>
     <?php else: ?>
       <?php include $includes ['quotation-modal-content']; ?>

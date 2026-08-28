@@ -39,6 +39,12 @@ while ($row = $recent_result->fetch_assoc()) {
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     :root {
       --adm-bg: #F5F5F5;
       --adm-surface: #FFFFFF;
@@ -49,12 +55,19 @@ while ($row = $recent_result->fetch_assoc()) {
       --adm-online: #16A34A;
     }
 
+    html, body {
+      width: 100%;
+      height: 100%;
+    }
+
     body {
       font-family: 'Inter', sans-serif;
       background: var(--adm-bg);
       color: var(--adm-ink);
+      overflow-x: hidden;
     }
 
+    /* ── Typography ── */
     .adm-eyebrow {
       font-size: 11px;
       font-weight: 600;
@@ -68,11 +81,13 @@ while ($row = $recent_result->fetch_assoc()) {
       font-weight: 700;
       letter-spacing: -0.01em;
       color: var(--adm-ink);
+      margin: 0;
     }
 
     .adm-subtitle {
       font-size: 13.5px;
       color: var(--adm-soft);
+      margin: 0;
     }
 
     .adm-section-label {
@@ -82,6 +97,7 @@ while ($row = $recent_result->fetch_assoc()) {
       display: flex;
       align-items: center;
       gap: 10px;
+      margin: 0 0 16px 0;
     }
 
     .adm-section-label::after {
@@ -91,13 +107,16 @@ while ($row = $recent_result->fetch_assoc()) {
       background: var(--adm-line);
     }
 
+    /* ── Card Base ── */
     .adm-card {
       display: block;
       background: var(--adm-surface);
       border: 1px solid var(--adm-line);
       border-radius: 10px;
       padding: 1.5rem;
-      transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
     }
 
     .adm-card:hover,
@@ -108,6 +127,7 @@ while ($row = $recent_result->fetch_assoc()) {
       outline: none;
     }
 
+    /* ── Icon ── */
     .adm-icon {
       width: 44px;
       height: 44px;
@@ -120,13 +140,16 @@ while ($row = $recent_result->fetch_assoc()) {
       justify-content: center;
       font-size: 17px;
       margin-bottom: 1rem;
+      flex-shrink: 0;
     }
 
+    /* ── Card Content ── */
     .adm-card-title {
       font-size: 15px;
       font-weight: 600;
       color: var(--adm-ink);
-      margin-bottom: .35rem;
+      margin-bottom: 0.5rem;
+      margin-top: 0;
     }
 
     .adm-card-desc {
@@ -134,6 +157,7 @@ while ($row = $recent_result->fetch_assoc()) {
       line-height: 1.5;
       color: var(--adm-soft);
       margin-bottom: 1.1rem;
+      margin-top: 0;
     }
 
     .adm-card-link {
@@ -143,58 +167,63 @@ while ($row = $recent_result->fetch_assoc()) {
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      transition: color 0.2s ease;
     }
 
     .adm-card-link i {
       font-size: 10px;
-      transition: transform .2s ease;
+      transition: transform 0.2s ease;
     }
 
     .adm-card:hover .adm-card-link i {
       transform: translateX(3px);
     }
 
-    /* ── Metric cards ── */
+    /* ── Metric Card ── */
     .adm-metric {
       background: var(--adm-surface);
       border: 1px solid var(--adm-line);
       border-radius: 10px;
-      padding: 1.35rem 1.4rem;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
-    .adm-metric-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: .9rem;
+    .adm-metric:hover {
+      border-color: var(--adm-ink);
+      box-shadow: 0 4px 12px rgba(11, 11, 11, 0.08);
     }
 
     .adm-metric-icon {
-      font-size: 15px;
+      font-size: 18px;
       color: var(--adm-soft);
+      margin-bottom: 1rem;
     }
 
     .adm-metric-value {
-      font-size: 26px;
+      font-size: 28px;
       font-weight: 700;
       color: var(--adm-ink);
       line-height: 1;
-      margin-bottom: .4rem;
+      margin-bottom: 0.5rem;
     }
 
     .adm-metric-label {
       font-size: 12.5px;
       color: var(--adm-soft);
+      margin: 0;
     }
 
-    /* ── Role breakdown bars ── */
+    /* ── Role Breakdown ── */
     .adm-role-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: .65rem 0;
+      padding: 0.75rem 0;
       border-bottom: 1px solid var(--adm-line);
-      font-size: 13px;
+      gap: 1rem;
     }
 
     .adm-role-row:last-child {
@@ -205,6 +234,8 @@ while ($row = $recent_result->fetch_assoc()) {
       font-weight: 600;
       color: var(--adm-ink);
       text-transform: capitalize;
+      flex: 1;
+      font-size: 13px;
     }
 
     .adm-role-count {
@@ -213,20 +244,21 @@ while ($row = $recent_result->fetch_assoc()) {
       background: var(--adm-bg);
       border: 1px solid var(--adm-line);
       border-radius: 999px;
-      min-width: 26px;
-      height: 26px;
-      display: inline-flex;
+      min-width: 32px;
+      height: 32px;
+      display: flex;
       align-items: center;
       justify-content: center;
       font-size: 12px;
+      flex-shrink: 0;
     }
 
-    /* ── Recent admins list ── */
+    /* ── Admin List ── */
     .adm-list-row {
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: .75rem 0;
+      padding: 0.75rem 0;
       border-bottom: 1px solid var(--adm-line);
     }
 
@@ -235,30 +267,37 @@ while ($row = $recent_result->fetch_assoc()) {
     }
 
     .adm-avatar {
-      width: 34px;
-      height: 34px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: var(--adm-bg);
       border: 1px solid var(--adm-line);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12.5px;
+      font-size: 13px;
       font-weight: 700;
       color: var(--adm-ink);
       flex-shrink: 0;
+    }
+
+    .adm-list-content {
+      flex: 1;
+      min-width: 0;
     }
 
     .adm-list-name {
       font-size: 13.5px;
       font-weight: 600;
       color: var(--adm-ink);
+      margin: 0 0 2px 0;
     }
 
     .adm-list-role {
       font-size: 12px;
       color: var(--adm-soft);
       text-transform: capitalize;
+      margin: 0;
     }
 
     .adm-online-dot {
@@ -267,24 +306,88 @@ while ($row = $recent_result->fetch_assoc()) {
       border-radius: 50%;
       background: var(--adm-muted);
       flex-shrink: 0;
+      transition: background-color 0.2s ease;
     }
 
     .adm-online-dot.is-online {
       background: var(--adm-online);
+      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
     }
 
+    /* ── Notification Toast ── */
     .adm-toast {
-      background: #fff;
-      border-left: 3px solid var(--adm-ink);
-      box-shadow: 0 12px 32px -14px rgba(11, 11, 11, 0.3);
+      background: var(--adm-surface);
+      border-left: 4px solid var(--adm-ink);
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(11, 11, 11, 0.15);
+      padding: 1rem 1.25rem;
     }
 
-    @keyframes adm-fade {
+    .adm-toast-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .adm-toast-icon {
+      font-size: 16px;
+      color: var(--adm-ink);
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .adm-toast-text {
+      flex: 1;
+    }
+
+    .adm-toast-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--adm-soft);
+      margin: 0 0 4px 0;
+    }
+
+    .adm-toast-message {
+      font-size: 13px;
+      color: var(--adm-ink);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .adm-toast-close {
+      background: none;
+      border: none;
+      color: var(--adm-soft);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0;
+      flex-shrink: 0;
+      transition: color 0.2s ease;
+    }
+
+    .adm-toast-close:hover {
+      color: var(--adm-ink);
+    }
+
+    /* ── Animations ── */
+    @keyframes adm-fade-in {
       from {
         opacity: 0;
         transform: translateY(8px);
       }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
 
+    @keyframes adm-slide-down {
+      from {
+        opacity: 0;
+        transform: translateY(-16px);
+      }
       to {
         opacity: 1;
         transform: translateY(0);
@@ -292,213 +395,399 @@ while ($row = $recent_result->fetch_assoc()) {
     }
 
     .adm-fade {
-      animation: adm-fade .4s ease both;
+      animation: adm-fade-in 0.4s ease both;
+    }
+
+    .adm-toast {
+      animation: adm-slide-down 0.3s ease both;
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .adm-fade {
+      .adm-fade,
+      .adm-toast {
         animation: none;
       }
+    }
+
+    /* ── Layout ── */
+    .adm-container {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--adm-bg);
+    }
+
+    .adm-main {
+      flex: 1;
+      padding: 2rem 1rem;
+    }
+
+    .adm-content {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* ── Header Section ── */
+    .adm-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 2rem;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .adm-header-left {
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .adm-header-eyebrow {
+      margin-bottom: 0.5rem;
+    }
+
+    .adm-header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .adm-btn-primary {
+      background: var(--adm-ink);
+      color: #fff;
+      padding: 0.65rem 1.2rem;
+      border-radius: 8px;
+      border: none;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .adm-btn-primary:hover {
+      background: #2a2a2a;
+      box-shadow: 0 4px 12px rgba(11, 11, 11, 0.15);
+    }
+
+    /* ── Section ── */
+    .adm-section {
+      margin-bottom: 2.5rem;
+      animation: adm-fade-in 0.4s ease both;
+    }
+
+    .adm-section:nth-child(1) {
+      animation-delay: 0.05s;
+    }
+
+    .adm-section:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .adm-section:nth-child(3) {
+      animation-delay: 0.15s;
+    }
+
+    /* ── Grid Layouts ── */
+    .adm-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .adm-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .adm-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .adm-main {
+        padding: 1.5rem 1rem;
+      }
+
+      .adm-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .adm-header-right {
+        justify-content: flex-start;
+      }
+
+      .adm-title {
+        font-size: 24px;
+      }
+
+      .adm-grid-4,
+      .adm-grid-3,
+      .adm-grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .adm-metric-value {
+        font-size: 24px;
+      }
+
+      .adm-card {
+        padding: 1.25rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .adm-main {
+        padding: 1rem;
+      }
+
+      .adm-title {
+        font-size: 20px;
+      }
+
+      .adm-card-title {
+        font-size: 14px;
+      }
+
+      .adm-card-desc {
+        font-size: 12px;
+      }
+    }
+
+    /* ── Utilities ── */
+    .adm-space-top {
+      margin-top: 1rem;
+    }
+
+    .adm-space-bottom {
+      margin-bottom: 1rem;
+    }
+
+    .adm-hidden {
+      display: none;
     }
   </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body>
+  <div class="adm-container">
 
-  <!-- Notification -->
-  <?php if (isset($_SESSION['noti'])): ?>
-    <div id="notifBox" class="adm-toast fixed top-20 right-4 rounded-lg p-4 w-80 adm-fade z-50">
-      <div class="flex items-start">
-        <i class="fa-solid fa-circle-info mt-0.5 mr-3 text-base" style="color:var(--adm-ink);"></i>
-        <div>
-          <p class="text-[10px] font-semibold uppercase tracking-[1px]" style="color:var(--adm-soft);">Notification</p>
-          <p class="text-[13px] mt-1" style="color:var(--adm-ink);"><?= $_SESSION['noti']; ?></p>
-        </div>
-        <button onclick="this.parentElement.parentElement.remove()" class="ml-auto pl-3" style="color:var(--adm-soft);">
-          <i class="fas fa-times text-xs"></i>
-        </button>
-      </div>
-    </div>
-    <script>
-      setTimeout(function () {
-        var notif = document.getElementById("notifBox");
-        if (notif) {
-          notif.classList.add('opacity-0', 'transition-opacity', 'duration-300');
-          setTimeout(() => notif.remove(), 300);
-        }
-      }, 3000);
-    </script>
-    <?php unset($_SESSION['noti']); ?>
-  <?php endif; ?>
-
-  <!-- Main Content -->
-  <div class="pt-10 pb-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
-
-    <!-- Dashboard Header -->
-    <div class="mb-10 adm-fade flex items-start justify-between flex-wrap gap-4">
-      <div>
-        <div class="adm-eyebrow mb-2">Super Admin</div>
-        <h1 class="adm-title">Admin Dashboard</h1>
-        <p class="adm-subtitle mt-1">Oversee admin and employee accounts.</p>
-      </div>
-      <a href="<?= BASE_URL ?>admin-add" class="adm-card-link" style="background: var(--adm-ink); color:#fff; padding: .65rem 1.1rem; border-radius: 8px;">
-        <i class="fas fa-plus"></i> Add Admin
-      </a>
-    </div>
-
-    <!-- Overview -->
-    <div class="mb-10 adm-fade">
-      <div class="adm-section-label mb-4">Overview</div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
-        <div class="adm-metric">
-          <div class="adm-metric-top">
-            <i class="fas fa-users adm-metric-icon"></i>
+    <!-- Notification Toast -->
+    <?php if (isset($_SESSION['noti'])): ?>
+      <div id="notifBox" class="adm-toast fixed top-6 right-4 w-full max-w-sm z-50" style="max-width: 400px;">
+        <div class="adm-toast-content">
+          <i class="fa-solid fa-circle-info adm-toast-icon"></i>
+          <div class="adm-toast-text">
+            <p class="adm-toast-label">Notification</p>
+            <p class="adm-toast-message"><?= htmlspecialchars($_SESSION['noti']); ?></p>
           </div>
-          <div class="adm-metric-value"><?= $total_admins ?></div>
-          <div class="adm-metric-label">Total Admin Accounts</div>
+          <button class="adm-toast-close" onclick="this.closest('#notifBox').remove()">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-
-        <div class="adm-metric">
-          <div class="adm-metric-top">
-            <i class="fas fa-circle-dot adm-metric-icon" style="color: var(--adm-online);"></i>
-          </div>
-          <div class="adm-metric-value" id="online-count-value"><?= $online_admins ?></div>
-          <div class="adm-metric-label">Currently Online</div>
-        </div>
-
-        <div class="adm-metric">
-          <div class="adm-metric-top">
-            <i class="fas fa-crown adm-metric-icon"></i>
-          </div>
-          <div class="adm-metric-value"><?= $head_admins ?></div>
-          <div class="adm-metric-label">Head Admins</div>
-        </div>
-
-        <div class="adm-metric">
-          <div class="adm-metric-top">
-            <i class="fas fa-shield-halved adm-metric-icon"></i>
-          </div>
-          <div class="adm-metric-value" style="font-size: 16px;">Super Admin</div>
-          <div class="adm-metric-label">Signed in as <?= htmlspecialchars($_SESSION['full_name'] ?? 'Admin') ?></div>
-        </div>
-
       </div>
-    </div>
+      <script>
+        setTimeout(function () {
+          const notif = document.getElementById("notifBox");
+          if (notif) {
+            notif.style.animation = 'adm-slide-down 0.3s ease reverse forwards';
+            setTimeout(() => notif.remove(), 300);
+          }
+        }, 4000);
+      </script>
+      <?php unset($_SESSION['noti']); ?>
+    <?php endif; ?>
 
-    <!-- Management Cards -->
-    <div class="mb-10 adm-fade">
-      <div class="adm-section-label mb-4">Management</div>
+    <!-- Main Content -->
+    <main class="adm-main">
+      <div class="adm-content">
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Header Section -->
+        <header class="adm-header adm-fade">
+          <div class="adm-header-left">
+            <div class="adm-eyebrow adm-header-eyebrow">Super Admin</div>
+            <h1 class="adm-title">Admin Dashboard</h1>
+            <p class="adm-subtitle adm-space-top">Oversee admin and employee accounts.</p>
+          </div>
+          <div class="adm-header-right">
+            <a href="<?= BASE_URL ?>registration" class="adm-btn-primary">
+              <i class="fas fa-plus"></i> Add Admin
+            </a>
+          </div>
+        </header>
 
-        <a href="<?= BASE_URL ?>admin-management" class="adm-card">
-          <div class="adm-icon"><i class="fas fa-user-shield"></i></div>
-          <h3 class="adm-card-title">All Admins</h3>
-          <p class="adm-card-desc">View, edit, suspend, or remove admin and employee accounts.</p>
-          <span class="adm-card-link">Manage Admins <i class="fas fa-arrow-right"></i></span>
-        </a>
+        <!-- Overview Metrics Section -->
+        <section class="adm-section">
+          <div class="adm-section-label">Overview</div>
+          <div class="adm-grid-4">
+            <div class="adm-metric">
+              <i class="fas fa-users adm-metric-icon"></i>
+              <div class="adm-metric-value"><?= $total_admins ?></div>
+              <p class="adm-metric-label">Total Admin Accounts</p>
+            </div>
 
-        <a href="<?= BASE_URL ?>admin-permissions" class="adm-card">
-          <div class="adm-icon"><i class="fas fa-user-tag"></i></div>
-          <h3 class="adm-card-title">Roles &amp; Permissions</h3>
-          <p class="adm-card-desc">Assign roles and control what each admin type can access.</p>
-          <span class="adm-card-link">Manage Roles <i class="fas fa-arrow-right"></i></span>
-        </a>
+            <div class="adm-metric">
+              <i class="fas fa-circle-dot adm-metric-icon" style="color: var(--adm-online);"></i>
+              <div class="adm-metric-value" id="online-count-value"><?= $online_admins ?></div>
+              <p class="adm-metric-label">Currently Online</p>
+            </div>
 
-        <a href="<?= BASE_URL ?>activity-logs" class="adm-card">
-          <div class="adm-icon"><i class="fas fa-clock-rotate-left"></i></div>
-          <h3 class="adm-card-title">Activity Logs</h3>
-          <p class="adm-card-desc">Review login history and actions taken by each admin.</p>
-          <span class="adm-card-link">View Logs <i class="fas fa-arrow-right"></i></span>
-        </a>
+            <div class="adm-metric">
+              <i class="fas fa-crown adm-metric-icon"></i>
+              <div class="adm-metric-value"><?= $head_admins ?></div>
+              <p class="adm-metric-label">Head Admins</p>
+            </div>
 
-        <a href="<?= BASE_URL ?>status-control" class="adm-card">
-          <div class="adm-icon"><i class="fas fa-diagram-project"></i></div>
-          <h3 class="adm-card-title">Client Trackers</h3>
-          <p class="adm-card-desc">View and control every client's project tracker stages and statuses.</p>
-          <span class="adm-card-link">Manage Trackers <i class="fas fa-arrow-right"></i></span>
-        </a>
+            <div class="adm-metric">
+              <i class="fas fa-shield-halved adm-metric-icon"></i>
+              <div class="adm-metric-value" style="font-size: 18px;">Super Admin</div>
+              <p class="adm-metric-label">Signed in as <?= htmlspecialchars($_SESSION['full_name'] ?? 'Admin') ?></p>
+            </div>
+          </div>
+        </section>
 
-      </div>
-    </div>
+        <!-- Management Cards Section -->
+        <section class="adm-section">
+          <div class="adm-section-label">Management</div>
+          <div class="adm-grid-3">
+            <a href="<?= BASE_URL ?>admin-management" class="adm-card">
+              <div class="adm-icon"><i class="fas fa-user-shield"></i></div>
+              <h3 class="adm-card-title">All Admins</h3>
+              <p class="adm-card-desc">View, edit, suspend, or remove admin and employee accounts.</p>
+              <span class="adm-card-link">Manage Admins <i class="fas fa-arrow-right"></i></span>
+            </a>
 
-    <!-- Role Breakdown + Recently Added -->
-    <div class="adm-fade">
-      <div class="adm-section-label mb-4">Team Breakdown</div>
+            <a href="<?= BASE_URL ?>admin-permissions" class="adm-card">
+              <div class="adm-icon"><i class="fas fa-user-tag"></i></div>
+              <h3 class="adm-card-title">Roles &amp; Permissions</h3>
+              <p class="adm-card-desc">Assign roles and control what each admin type can access.</p>
+              <span class="adm-card-link">Manage Roles <i class="fas fa-arrow-right"></i></span>
+            </a>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <a href="<?= BASE_URL ?>activity-logs" class="adm-card">
+              <div class="adm-icon"><i class="fas fa-clock-rotate-left"></i></div>
+              <h3 class="adm-card-title">Activity Logs</h3>
+              <p class="adm-card-desc">Review login history and actions taken by each admin.</p>
+              <span class="adm-card-link">View Logs <i class="fas fa-arrow-right"></i></span>
+            </a>
 
-        <!-- Role breakdown -->
-        <div class="adm-card" style="padding: 1.5rem;">
-          <h3 class="adm-card-title mb-3">Admins by Role</h3>
-          <?php if (empty($role_breakdown)): ?>
-            <p class="adm-card-desc">No admin accounts found.</p>
-          <?php else: ?>
-            <?php foreach ($role_breakdown as $r): ?>
-              <div class="adm-role-row">
-                <span class="adm-role-name"><?= htmlspecialchars($r['role']) ?></span>
-                <span class="adm-role-count"><?= $r['count'] ?></span>
-              </div>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </div>
+            <a href="<?= BASE_URL ?>status-control" class="adm-card">
+              <div class="adm-icon"><i class="fas fa-diagram-project"></i></div>
+              <h3 class="adm-card-title">Client Trackers</h3>
+              <p class="adm-card-desc">View and control every client's project tracker stages and statuses.</p>
+              <span class="adm-card-link">Manage Trackers <i class="fas fa-arrow-right"></i></span>
+            </a>
+          </div>
+        </section>
 
-        <!-- Recently added admins -->
-        <div class="adm-card" style="padding: 1.5rem;">
-          <h3 class="adm-card-title mb-3">Recently Added</h3>
-          <?php if (empty($recent_admins)): ?>
-            <p class="adm-card-desc">No admin accounts found.</p>
-          <?php else: ?>
-            <?php foreach ($recent_admins as $a): ?>
-              <div class="adm-list-row">
-                <?= renderAvatarHtml($a) ?>
-                <div class="flex-1">
-                  <div class="adm-list-name"><?= htmlspecialchars($a['full_name']) ?></div>
-                  <div class="adm-list-role"><?= htmlspecialchars($a['role']) ?></div>
+        <!-- Team Breakdown Section -->
+        <section class="adm-section">
+          <div class="adm-section-label">Team Breakdown</div>
+          <div class="adm-grid-2">
+            <!-- Admins by Role Card -->
+            <div class="adm-card">
+              <h3 class="adm-card-title">Admins by Role</h3>
+              <?php if (empty($role_breakdown)): ?>
+                <p class="adm-card-desc adm-space-top">No admin accounts found.</p>
+              <?php else: ?>
+                <div style="margin-top: 1rem;">
+                  <?php foreach ($role_breakdown as $r): ?>
+                    <div class="adm-role-row">
+                      <span class="adm-role-name"><?= htmlspecialchars($r['role']) ?></span>
+                      <span class="adm-role-count"><?= $r['count'] ?></span>
+                    </div>
+                  <?php endforeach; ?>
                 </div>
-                <span id="online-dot-<?= $a['id'] ?>" class="adm-online-dot <?= isAdminOnline($a['is_online'], $a['last_activity']) ? 'is-online' : '' ?>" title="<?= isAdminOnline($a['is_online'], $a['last_activity']) ? 'Online' : 'Offline' ?>"></span>
-              </div>
-            <?php endforeach; ?>
-          <?php endif; ?>
-        </div>
+              <?php endif; ?>
+            </div>
+
+            <!-- Recently Added Admins Card -->
+            <div class="adm-card">
+              <h3 class="adm-card-title">Recently Added</h3>
+              <?php if (empty($recent_admins)): ?>
+                <p class="adm-card-desc adm-space-top">No admin accounts found.</p>
+              <?php else: ?>
+                <div style="margin-top: 1rem;">
+                  <?php foreach ($recent_admins as $a): ?>
+                    <div class="adm-list-row">
+                      <div class="adm-avatar"><?= renderAvatarHtml($a) ?></div>
+                      <div class="adm-list-content">
+                        <p class="adm-list-name"><?= htmlspecialchars($a['full_name']) ?></p>
+                        <p class="adm-list-role"><?= htmlspecialchars($a['role']) ?></p>
+                      </div>
+                      <span 
+                        id="online-dot-<?= $a['id'] ?>" 
+                        class="adm-online-dot <?= isAdminOnline($a['is_online'], $a['last_activity']) ? 'is-online' : '' ?>" 
+                        title="<?= isAdminOnline($a['is_online'], $a['last_activity']) ? 'Online' : 'Offline' ?>"
+                      ></span>
+                    </div>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
+            </div>
+          </div>
+        </section>
 
       </div>
-    </div>
+    </main>
 
   </div>
 
-<script>
+  <!-- Online Status Polling Script -->
+  <script>
     function pollOnlineStatus() {
-      fetch('<?= BASE_URL ?>get-admin-status', { credentials: 'same-origin', cache: 'no-store' })
+      fetch('<?= BASE_URL ?>get-admin-status', { 
+        credentials: 'same-origin', 
+        cache: 'no-store' 
+      })
         .then(res => {
           if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json();
         })
         .then(data => {
-          console.log('[pollOnlineStatus]', new Date().toLocaleTimeString(), data);
           if (!data.success) {
             console.warn('get-admin-status failed:', data.error);
             return;
           }
 
           const countEl = document.getElementById('online-count-value');
-          if (countEl) countEl.textContent = data.online_count;
+          if (countEl) {
+            countEl.textContent = data.online_count;
+          }
 
-          Object.entries(data.statuses).forEach(([id, isOnline]) => {
+          Object.entries(data.statuses || {}).forEach(([id, isOnline]) => {
             const dot = document.getElementById(`online-dot-${id}`);
-            if (dot) dot.classList.toggle('is-online', isOnline);
+            if (dot) {
+              dot.classList.toggle('is-online', isOnline);
+              dot.title = isOnline ? 'Online' : 'Offline';
+            }
           });
         })
         .catch(err => console.error('pollOnlineStatus error:', err));
     }
 
+    // Initial poll
     pollOnlineStatus();
+
+    // Poll every 15 seconds
     setInterval(pollOnlineStatus, 15000);
 
+    // Poll when tab becomes visible
     document.addEventListener('visibilitychange', function () {
-      if (!document.hidden) pollOnlineStatus();
+      if (!document.hidden) {
+        pollOnlineStatus();
+      }
     });
   </script>
 

@@ -281,112 +281,309 @@ while ($row = $products_result->fetch_assoc()) {
 }
 
 $stmt_products->close();
+
+// Resolve display labels for the active-filters breadcrumb
+$active_category_label = null;
+if ($filter_category !== 'all') {
+    foreach ($categories as $c) {
+        if ($c['dimension_label_id'] == $filter_category) {
+            $active_category_label = $c['dimension_label_name'];
+            break;
+        }
+    }
+}
+$base_qs = "id=" . urlencode($client_id) . "&name=" . urlencode($client_name) . "&email=" . urlencode($client_email) . "&address=" . urlencode($client_address) . "&contact=" . urlencode($client_contact);
+$has_active_filters = ($filter_category !== 'all' || $filter_family !== 'all' || $filter_family2 !== 'all' || $filter_material !== 'all' || $filter_door_material !== 'all');
 ?>
 
 <style>
-/* Filter Section */
-.filter-section {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+/* ============ FILTER PANEL ============ */
+.pf-card {
+    background: var(--surface, #fff);
+    border-radius: var(--radius, 12px);
+    border: 1.5px solid var(--border, #E2E2E2);
+    box-shadow: var(--shadow, 0 1px 3px rgba(11,11,11,.06));
+    margin-bottom: 22px;
+    overflow: hidden;
 }
 
-.filter-header {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: #3b1f0f;
-    margin-bottom: 15px;
+.pf-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 16px 22px;
+    border-bottom: 1.5px solid var(--border, #E2E2E2);
+    background: var(--surface2, #FAFAFA);
+}
+
+.pf-card-head h3 {
+    font-size: 14.5px;
+    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 8px;
+    color: var(--text, #0B0B0B);
 }
 
-.filter-header i {
-    font-size: 18px;
-    color: #8a5a44;
+.pf-card-head h3 i {
+    color: var(--brand-light, #9A9A9A);
 }
 
-.filter-buttons {
+.pf-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.pf-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px 4px 12px;
+    border-radius: 20px;
+    background: var(--accent, #E8E8E8);
+    color: var(--text, #0B0B0B);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.pf-chip:hover {
+    background: var(--hover-bg, #F2F2F2);
+}
+
+.pf-chip i {
+    font-size: 10px;
+    opacity: .55;
+}
+
+.pf-clear-all {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--danger, #9B1C1C);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pf-clear-all:hover {
+    text-decoration: underline;
+}
+
+.pf-body {
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.pf-group-label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--text-muted, #6B6B6B);
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.pf-pills {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
+    position: relative;
+    overflow: visible;
 }
 
-.filter-btn {
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-family: 'Montserrat', sans-serif;
+.pf-pill {
+    padding: 8px 16px;
+    border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
     text-decoration: none;
-    background: #f5f5f5;
-    color: #666;
-    border: 2px solid transparent;
-    transition: all 0.2s ease;
+    background: var(--surface, #fff);
+    color: var(--text-muted, #6B6B6B);
+    border: 1.5px solid var(--border, #E2E2E2);
+    transition: all .15s;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
-.filter-btn:hover {
-    background: #e8f4f8;
-    color: #3b1f0f;
-    border-color: #8a5a44;
+.pf-pill:hover {
+    border-color: var(--brand-light, #9A9A9A);
+    color: var(--text, #0B0B0B);
+    background: var(--hover-bg, #F2F2F2);
 }
 
-.filter-btn.active {
-    background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-    color: white;
-    box-shadow: 0 4px 10px rgba(59, 31, 15, 0.3);
+.pf-pill.active {
+    background: var(--brand, #0B0B0B);
+    border-color: var(--brand, #0B0B0B);
+    color: #fff;
 }
 
-.filter-divider {
+.pf-divider {
     height: 1px;
-    background: #e0e0e0;
-    margin: 20px 0;
+    background: var(--border, #E2E2E2);
 }
 
-/* Products Grid */
+/* Variant dropdown (family_2) */
+.pf-dropdown-wrap {
+    position: relative;
+    display: inline-block;
+}
+
+.pf-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    background: var(--surface, #fff);
+    border: 1.5px solid var(--border, #E2E2E2);
+    border-radius: var(--radius-sm, 8px);
+    box-shadow: var(--shadow-md, 0 10px 26px -16px rgba(11,11,11,.25));
+    z-index: 999;
+    min-width: 190px;
+    overflow: hidden;
+    padding: 5px;
+}
+
+.pf-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm, 8px);
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--text-muted, #6B6B6B);
+    transition: background .12s;
+}
+
+.pf-dropdown-item:hover {
+    background: var(--hover-bg, #F2F2F2);
+    color: var(--text, #0B0B0B);
+}
+
+.pf-dropdown-item.selected {
+    background: var(--brand, #0B0B0B);
+    color: #fff;
+}
+
+.pf-dropdown-item i {
+    font-size: 10px;
+    width: 12px;
+    opacity: .6;
+}
+
+/* Material selects */
+.pf-selects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.pf-select-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 180px;
+}
+
+.pf-select-group label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    text-transform: uppercase;
+    color: var(--text-mute2, #9A9A9A);
+}
+
+.pf-select {
+    padding: 9px 12px;
+    border: 1.5px solid var(--border, #E2E2E2);
+    border-radius: var(--radius-sm, 8px);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text, #0B0B0B);
+    background: var(--surface, #fff);
+    cursor: pointer;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.pf-select:focus {
+    border-color: var(--brand, #0B0B0B);
+}
+
+/* ============ RESULTS HEADER ============ */
+.pf-results-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding: 0 2px;
+}
+
+.pf-results-count {
+    font-size: 13px;
+    color: var(--text-muted, #6B6B6B);
+    font-weight: 500;
+}
+
+.pf-results-count strong {
+    color: var(--text, #0B0B0B);
+}
+
+/* ============ PRODUCT GRID ============ */
 .products-grid-quotation {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 20px;
     margin-bottom: 30px;
 }
 
 .product-card-quotation {
-    background: white;
-    border-radius: 12px;
+    background: var(--surface, #fff);
+    border-radius: var(--radius, 12px);
+    border: 1.5px solid var(--border, #E2E2E2);
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    box-shadow: var(--shadow, 0 1px 3px rgba(11,11,11,.06));
+    transition: transform .18s, box-shadow .18s;
     display: flex;
     flex-direction: column;
 }
 
 .product-card-quotation:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md, 0 10px 26px -16px rgba(11,11,11,.25));
 }
 
 .product-image-quotation {
     position: relative;
     width: 100%;
-    height: 240px;
+    height: 220px;
     overflow: hidden;
-    background: #f5f5f5;
+    background: var(--surface2, #FAFAFA);
 }
 
 .product-image-quotation img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    transition: transform 0.3s ease;
+    transition: transform .3s ease;
 }
 
 .product-card-quotation:hover .product-image-quotation img {
-    transform: scale(1.05);
+    transform: scale(1.04);
 }
 
 .no-image {
@@ -395,26 +592,26 @@ $stmt_products->close();
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #ddd;
-    font-size: 48px;
+    color: var(--border, #E2E2E2);
+    font-size: 44px;
 }
 
 .product-badge-quotation {
     position: absolute;
     top: 12px;
     right: 12px;
-    background: rgba(138, 90, 68, 0.9);
-    color: white;
-    padding: 6px 12px;
+    background: rgba(11, 11, 11, .78);
+    color: #fff;
+    padding: 5px 11px;
     border-radius: 20px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 11px;
+    font-size: 10.5px;
     font-weight: 700;
-    letter-spacing: 0.5px;
+    letter-spacing: .4px;
+    text-transform: uppercase;
 }
 
 .fixed-modular-badge {
-    background: rgba(138, 90, 68, 0.9) !important; /* Same brown as other badges */
+    background: var(--warning, #8A6100) !important;
 }
 
 .fixed-modular-badge i {
@@ -422,87 +619,95 @@ $stmt_products->close();
 }
 
 .product-info-quotation {
-    padding: 20px;
+    padding: 18px;
     flex: 1;
     display: flex;
     flex-direction: column;
 }
 
 .product-code-quotation {
-    font-family: 'Montserrat', sans-serif;
+    font-family: 'Courier New', monospace;
     font-size: 11px;
-    color: #999;
+    color: var(--text-muted, #6B6B6B);
     font-weight: 600;
-    letter-spacing: 1px;
+    letter-spacing: .5px;
     margin-bottom: 6px;
 }
 
 .product-name-quotation {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 18px;
-    font-weight: 600;
-    color: #3b1f0f;
+    font-size: 16.5px;
+    font-weight: 700;
+    color: var(--text, #0B0B0B);
     margin: 0 0 10px 0;
     line-height: 1.3;
 }
 
 .product-family-quotation {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 12px;
-    color: #667eea;
+    font-size: 11.5px;
+    color: var(--info, #33475B);
+    background: var(--info-bg, #EDF0F3);
     font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 20px;
     margin-bottom: 12px;
+    width: fit-content;
 }
 
 .product-specs-quotation {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
-    border-bottom: 1px solid #f0f0f0;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border, #E2E2E2);
 }
 
 .spec-item-quotation {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-family: 'Montserrat', sans-serif;
+    gap: 7px;
     font-size: 12px;
-    color: #666;
+    color: var(--text-muted, #6B6B6B);
 }
 
 .spec-item-quotation i {
-    color: #8a5a44;
-    font-size: 14px;
-    width: 16px;
+    color: var(--brand-light, #9A9A9A);
+    font-size: 12.5px;
+    width: 14px;
+}
+
+.spec-item-quotation .spec-tag {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-mute2, #9A9A9A);
+    text-transform: uppercase;
+    margin-right: 2px;
 }
 
 .product-price-quotation {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    padding: 12px;
-    background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
-    border-radius: 8px;
+    margin-bottom: 14px;
+    padding: 11px 13px;
+    background: var(--surface2, #FAFAFA);
+    border: 1px solid var(--border, #E2E2E2);
+    border-radius: var(--radius-sm, 8px);
 }
 
 .price-label {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 12px;
-    color: #666;
+    font-size: 11.5px;
+    color: var(--text-muted, #6B6B6B);
     font-weight: 500;
 }
 
 .price-value {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    color: #28a745;
+    font-size: 17px;
+    font-weight: 800;
+    color: var(--success, #1F6F43);
 }
 
 .view-details-btn-quotation {
@@ -511,221 +716,257 @@ $stmt_products->close();
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 12px 20px;
-    background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-    color: white;
+    padding: 11px 20px;
+    background: var(--brand, #0B0B0B);
+    color: #fff;
     text-decoration: none;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
+    font-size: 13.5px;
     font-weight: 600;
-    border-radius: 8px;
-    transition: all 0.3s ease;
+    border-radius: var(--radius-sm, 8px);
+    transition: background .18s;
     border: none;
     cursor: pointer;
     margin-top: auto;
+    font-family: inherit;
 }
 
 .view-details-btn-quotation:hover {
-    background: linear-gradient(135deg, #2a1609 0%, #5a3520 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 31, 15, 0.3);
+    background: var(--brand-mid, #262626);
 }
 
 .no-products-message {
     text-align: center;
-    padding: 60px 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 56px 20px;
+    background: var(--surface, #fff);
+    border-radius: var(--radius, 12px);
+    border: 1.5px solid var(--border, #E2E2E2);
 }
 
 .no-products-message i {
-    font-size: 64px;
-    color: #ddd;
-    margin-bottom: 20px;
+    font-size: 42px;
+    color: var(--border, #E2E2E2);
+    margin-bottom: 14px;
+    display: block;
 }
 
 .no-products-message h3 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 24px;
-    color: #3b1f0f;
-    margin-bottom: 10px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text, #0B0B0B);
+    margin-bottom: 6px;
 }
 
 .no-products-message p {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 14px;
-    color: #666;
-}
-
-.relative-fam-dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-.filter-buttons {
-    overflow: visible !important;
-    position: relative;
+    font-size: 13.5px;
+    color: var(--text-muted, #6B6B6B);
 }
 
 @media (max-width: 768px) {
     .products-grid-quotation {
-        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-        gap: 15px;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 14px;
     }
 
     .product-image-quotation {
-        height: 200px;
+        height: 170px;
     }
 
-    .filter-buttons {
-        gap: 8px;
+    .pf-body {
+        padding: 16px;
     }
 
-    .filter-btn {
+    .pf-card-head {
+        padding: 14px 16px;
+    }
+
+    .pf-pill {
         font-size: 12px;
-        padding: 8px 14px;
+        padding: 7px 13px;
+    }
+
+    .pf-selects {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .pf-select-group {
+        min-width: 100%;
     }
 }
 
 @media (max-width: 480px) {
     .products-grid-quotation {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
     }
 }
 </style>
 
-<!-- Filter Section -->
-<div class="filter-section">
-    <!-- Category Filter -->
-    <div class="filter-header">
-        <i class="fas fa-th-large"></i>
-        Categories
-    </div>
-    <div class="filter-buttons">
-    <a href="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=all&family=all" 
-       class="filter-btn <?= $filter_category === 'all' ? 'active' : '' ?>">
-        All Categories
-    </a>
-    <?php foreach ($categories as $cat): ?>
-    <?php if (strtoupper($cat['dimension_label_name']) === 'FIXED FURNITURE') continue; ?>
-    <a href="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= $cat['dimension_label_id'] ?>&family=all" 
-       class="filter-btn <?= $filter_category == $cat['dimension_label_id'] ? 'active' : '' ?>">
-        <?php if ($cat['dimension_label_id'] === 'fixed_modular'): ?>
-            <i class="fas fa-lock" style="margin-right: 5px;"></i>
-        <?php endif; ?>
-        <?= htmlspecialchars($cat['dimension_label_name']) ?>
-    </a>
-<?php endforeach; ?>
-</div>
+<!-- ============ FILTER PANEL ============ -->
+<div class="pf-card">
+    <div class="pf-card-head">
+        <h3><i class="fas fa-sliders-h"></i> Refine Products</h3>
 
-    <?php if (!empty($families)): ?>
-        <div class="filter-divider"></div>
-        
-        <!-- Family Filter (Variants) -->
-        <div class="filter-header">
-            <i class="fas fa-tags"></i>
-            Variants
-        </div>
-        <div class="filter-buttons" style="overflow: visible; position: relative;">
-            <a href="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= $filter_category ?>&family=all&family2=all" 
-               class="filter-btn <?= $filter_family === 'all' ? 'active' : '' ?>">
-                All Variants
-            </a>
-            <?php foreach ($families as $fam): ?>
-                <?php
-                $this_fam_variants = $all_family_variants[$fam] ?? [];
-                $is_selected = ($filter_family === $fam);
-                $has_variants = !empty($this_fam_variants);
-                $fam_id = md5($fam);
-                ?>
-
-                <?php if ($is_selected && $has_variants): ?>
-                    <!-- Selected button with floating dropdown -->
-                    <div class="relative-fam-dropdown" id="famDropdown_<?= $fam_id ?>">
-                        <button onclick="toggleFamDropdown('<?= $fam_id ?>')"
-                            class="filter-btn active" style="display:flex; align-items:center; gap:6px;">
-                            <?= htmlspecialchars($fam) ?>
-                            <i class="fas fa-angle-down" id="famChevron_<?= $fam_id ?>" style="font-size:11px; transition: transform 0.2s;"></i>
-                        </button>
-                        <!-- Floating dropdown -->
-                        <div id="famMenu_<?= $fam_id ?>"
-                            style="display:none; position:absolute; top:calc(100% + 4px); left:0; background:white; border:1px solid #e0e0e0; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,0.12); z-index:9999; min-width:180px; overflow:hidden;">
-                            <?php foreach ($this_fam_variants as $fam2): ?>
-                                <a href="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= $filter_category ?>&family=<?= urlencode($fam) ?>&family2=<?= urlencode($fam2) ?>"
-                                    style="display:flex; align-items:center; gap:8px; padding:10px 16px; font-family:'Montserrat',sans-serif; font-size:13px; font-weight:600; text-decoration:none; transition: background 0.15s;
-                                    <?= $filter_family2 === $fam2 ? 'background: linear-gradient(135deg,#3b1f0f,#8a5a44); color:white;' : 'color:#555;' ?>"
-                                    onmouseover="if('<?= $filter_family2 ?>'!=='<?= $fam2 ?>') this.style.background='#f5ede8'; this.style.color='#3b1f0f';"
-                                    onmouseout="if('<?= $filter_family2 ?>'!=='<?= $fam2 ?>') this.style.background=''; this.style.color='#555';">
-                                    <?php if ($filter_family2 === $fam2): ?>
-                                        <i class="fas fa-check" style="font-size:11px;"></i>
-                                    <?php else: ?>
-                                        <i class="fas fa-angle-right" style="font-size:11px; opacity:0.4;"></i>
-                                    <?php endif; ?>
-                                    <?= htmlspecialchars($fam2) ?>
-                                </a>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php else: ?>
-                    <a href="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= $filter_category ?>&family=<?= urlencode($fam) ?>&family2=all" 
-                       class="filter-btn <?= $is_selected ? 'active' : '' ?>">
-                        <?= htmlspecialchars($fam) ?>
-                        <?php if ($has_variants): ?>
-                            <i class="fas fa-angle-down" style="font-size:11px; margin-left:4px; opacity:0.7;"></i>
-                        <?php endif; ?>
+        <?php if ($has_active_filters): ?>
+            <div class="pf-breadcrumb">
+                <?php if ($active_category_label): ?>
+                    <a class="pf-chip" href="?<?= $base_qs ?>&category=all&family=all&family2=all&material=all&door_material=all" title="Remove category filter">
+                        <?= htmlspecialchars($active_category_label) ?> <i class="fas fa-times"></i>
                     </a>
                 <?php endif; ?>
-            <?php endforeach; ?>
+                <?php if ($filter_family !== 'all'): ?>
+                    <a class="pf-chip" href="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=all&family2=all&material=<?= urlencode($filter_material) ?>&door_material=<?= urlencode($filter_door_material) ?>" title="Remove variant filter">
+                        <?= htmlspecialchars($filter_family) ?> <i class="fas fa-times"></i>
+                    </a>
+                <?php endif; ?>
+                <?php if ($filter_family2 !== 'all'): ?>
+                    <a class="pf-chip" href="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=all&material=<?= urlencode($filter_material) ?>&door_material=<?= urlencode($filter_door_material) ?>" title="Remove sub-variant filter">
+                        <?= htmlspecialchars($filter_family2) ?> <i class="fas fa-times"></i>
+                    </a>
+                <?php endif; ?>
+                <?php if ($filter_material !== 'all'): ?>
+                    <a class="pf-chip" href="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=all&door_material=<?= urlencode($filter_door_material) ?>" title="Remove carcass material filter">
+                        Carcass: <?= htmlspecialchars($filter_material) ?> <i class="fas fa-times"></i>
+                    </a>
+                <?php endif; ?>
+                <?php if ($filter_door_material !== 'all'): ?>
+                    <a class="pf-chip" href="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=<?= urlencode($filter_material) ?>&door_material=all" title="Remove door material filter">
+                        Door: <?= htmlspecialchars($filter_door_material) ?> <i class="fas fa-times"></i>
+                    </a>
+                <?php endif; ?>
+                <a class="pf-clear-all" href="?<?= $base_qs ?>&category=all&family=all&family2=all&material=all&door_material=all">
+                    <i class="fas fa-redo"></i> Clear all
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="pf-body">
+        <!-- Category -->
+        <div>
+            <div class="pf-group-label"><i class="fas fa-th-large"></i> Category</div>
+            <div class="pf-pills">
+                <a href="?<?= $base_qs ?>&category=all&family=all&family2=all&material=all&door_material=all"
+                   class="pf-pill <?= $filter_category === 'all' ? 'active' : '' ?>">
+                    All Categories
+                </a>
+                <?php foreach ($categories as $cat): ?>
+                    <?php if (strtoupper($cat['dimension_label_name']) === 'FIXED FURNITURE') continue; ?>
+                    <a href="?<?= $base_qs ?>&category=<?= $cat['dimension_label_id'] ?>&family=all&family2=all&material=all&door_material=all"
+                       class="pf-pill <?= $filter_category == $cat['dimension_label_id'] ? 'active' : '' ?>">
+                        <?php if ($cat['dimension_label_id'] === 'fixed_modular'): ?>
+                            <i class="fas fa-lock"></i>
+                        <?php endif; ?>
+                        <?= htmlspecialchars($cat['dimension_label_name']) ?>
+                    </a>
+                <?php endforeach; ?>
+            </div>
         </div>
-    <?php endif; ?>
-<!-- Material Filter (compact inline bar) -->
-<?php if (!empty($materials) || !empty($door_materials)): ?>
-<div class="filter-divider"></div>
-<div class="filter-section" style="padding: 12px 20px; display:flex; align-items:center; flex-wrap:wrap; gap:12px; border-left: 4px solid #8a5a44; margin-top: 0;">
-    <div style="font-family:'Montserrat',sans-serif; font-size:13px; font-weight:700; color:#8a5a44; display:flex; align-items:center; gap:6px; white-space:nowrap;">
-        <i class="fas fa-hammer"></i> Filter by Material:
-    </div>
 
-    <?php if (!empty($materials)): ?>
-    <div style="display:flex; align-items:center; gap:8px;">
-        <label style="font-family:'Montserrat',sans-serif; font-size:11px; font-weight:700; color:#999; white-space:nowrap;">CARCASS:</label>
-        <select onchange="window.location.href=this.value"
-            style="padding:6px 10px; border:2px solid #8a5a44; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:12px; font-weight:600; color:#3b1f0f; background:white; cursor:pointer; outline:none;">
-            <option value="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=all&door_material=<?= urlencode($filter_door_material) ?>"
-                <?= $filter_material === 'all' ? 'selected' : '' ?>>All</option>
-            <?php foreach ($materials as $mat): ?>
-                <option value="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=<?= urlencode($mat) ?>&door_material=<?= urlencode($filter_door_material) ?>"
-                    <?= $filter_material === $mat ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($mat) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </div>
-    <?php endif; ?>
+        <?php if (!empty($families)): ?>
+            <div class="pf-divider"></div>
 
-    <?php if (!empty($door_materials)): ?>
-    <div style="display:flex; align-items:center; gap:8px;">
-        <label style="font-family:'Montserrat',sans-serif; font-size:11px; font-weight:700; color:#999; white-space:nowrap;">DOOR:</label>
-        <select onchange="window.location.href=this.value"
-            style="padding:6px 10px; border:2px solid #8a5a44; border-radius:8px; font-family:'Montserrat',sans-serif; font-size:12px; font-weight:600; color:#3b1f0f; background:white; cursor:pointer; outline:none;">
-            <option value="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=<?= urlencode($filter_material) ?>&door_material=all"
-                <?= $filter_door_material === 'all' ? 'selected' : '' ?>>All</option>
-            <?php foreach ($door_materials as $dmat): ?>
-                <option value="?id=<?= $client_id ?>&name=<?= urlencode($client_name) ?>&email=<?= urlencode($client_email) ?>&address=<?= urlencode($client_address) ?>&contact=<?= urlencode($client_contact) ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=<?= urlencode($filter_material) ?>&door_material=<?= urlencode($dmat) ?>"
-                    <?= $filter_door_material === $dmat ? 'selected' : '' ?>>
-                    <?= htmlspecialchars($dmat) ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
+            <!-- Variant -->
+            <div>
+                <div class="pf-group-label"><i class="fas fa-tags"></i> Variant</div>
+                <div class="pf-pills">
+                    <a href="?<?= $base_qs ?>&category=<?= $filter_category ?>&family=all&family2=all"
+                       class="pf-pill <?= $filter_family === 'all' ? 'active' : '' ?>">
+                        All Variants
+                    </a>
+                    <?php foreach ($families as $fam):
+                        $this_fam_variants = $all_family_variants[$fam] ?? [];
+                        $is_selected = ($filter_family === $fam);
+                        $has_variants = !empty($this_fam_variants);
+                        $fam_id = md5($fam);
+                    ?>
+                        <?php if ($is_selected && $has_variants): ?>
+                            <div class="pf-dropdown-wrap" id="famDropdown_<?= $fam_id ?>">
+                                <button type="button" onclick="toggleFamDropdown('<?= $fam_id ?>')" class="pf-pill active">
+                                    <?= htmlspecialchars($fam) ?>
+                                    <i class="fas fa-angle-down" id="famChevron_<?= $fam_id ?>" style="font-size:10px; transition: transform .18s;"></i>
+                                </button>
+                                <div id="famMenu_<?= $fam_id ?>" class="pf-dropdown-menu">
+                                    <?php foreach ($this_fam_variants as $fam2):
+                                        $is_fam2_selected = ($filter_family2 === $fam2);
+                                    ?>
+                                        <a href="?<?= $base_qs ?>&category=<?= $filter_category ?>&family=<?= urlencode($fam) ?>&family2=<?= urlencode($fam2) ?>"
+                                           class="pf-dropdown-item <?= $is_fam2_selected ? 'selected' : '' ?>">
+                                            <i class="fas <?= $is_fam2_selected ? 'fa-check' : 'fa-angle-right' ?>"></i>
+                                            <?= htmlspecialchars($fam2) ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+                        <?php else: ?>
+                            <a href="?<?= $base_qs ?>&category=<?= $filter_category ?>&family=<?= urlencode($fam) ?>&family2=all"
+                               class="pf-pill <?= $is_selected ? 'active' : '' ?>">
+                                <?= htmlspecialchars($fam) ?>
+                                <?php if ($has_variants): ?>
+                                    <i class="fas fa-angle-down" style="font-size:10px; opacity:.65;"></i>
+                                <?php endif; ?>
+                            </a>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($materials) || !empty($door_materials)): ?>
+            <div class="pf-divider"></div>
+
+            <!-- Material -->
+            <div>
+                <div class="pf-group-label"><i class="fas fa-hammer"></i> Material</div>
+                <div class="pf-selects">
+                    <?php if (!empty($materials)): ?>
+                        <div class="pf-select-group">
+                            <label>Carcass</label>
+                            <select class="pf-select" onchange="window.location.href=this.value">
+                                <option value="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=all&door_material=<?= urlencode($filter_door_material) ?>"
+                                    <?= $filter_material === 'all' ? 'selected' : '' ?>>All Carcass Materials</option>
+                                <?php foreach ($materials as $mat): ?>
+                                    <option value="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=<?= urlencode($mat) ?>&door_material=<?= urlencode($filter_door_material) ?>"
+                                        <?= $filter_material === $mat ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($mat) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if (!empty($door_materials)): ?>
+                        <div class="pf-select-group">
+                            <label>Door</label>
+                            <select class="pf-select" onchange="window.location.href=this.value">
+                                <option value="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=<?= urlencode($filter_material) ?>&door_material=all"
+                                    <?= $filter_door_material === 'all' ? 'selected' : '' ?>>All Door Materials</option>
+                                <?php foreach ($door_materials as $dmat): ?>
+                                    <option value="?<?= $base_qs ?>&category=<?= urlencode($filter_category) ?>&family=<?= urlencode($filter_family) ?>&family2=<?= urlencode($filter_family2) ?>&material=<?= urlencode($filter_material) ?>&door_material=<?= urlencode($dmat) ?>"
+                                        <?= $filter_door_material === $dmat ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($dmat) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
 </div>
-<?php endif; ?>
+
+<!-- ============ RESULTS ============ -->
+<div class="pf-results-head">
+    <span class="pf-results-count">
+        <strong><?= count($display_items) ?></strong> product<?= count($display_items) === 1 ? '' : 's' ?> found
+    </span>
+</div>
+
 <?php if (count($display_items) > 0): ?>
     <div class="products-grid-quotation">
-        <?php foreach ($display_items as $item): 
-            $image_path = !empty($item['item_image_path']) 
+        <?php foreach ($display_items as $item):
+            $image_path = !empty($item['item_image_path'])
                 ? CLIENT_ASSET . '/images/products/' . htmlspecialchars($item['item_image_path'])
                 : '';
             $price = $business_type === 'Project' ? $item['project_price'] : $item['non_project_price'];
@@ -733,29 +974,26 @@ $stmt_products->close();
             <div class="product-card-quotation">
                 <div class="product-image-quotation">
                     <?php if (!empty($image_path)): ?>
-                        <img src="<?= $image_path ?>" 
-                             alt="<?= htmlspecialchars($item['item_name']) ?>" />
+                        <img src="<?= $image_path ?>" alt="<?= htmlspecialchars($item['item_name']) ?>" />
                     <?php else: ?>
-                        <div class="no-image">
-                            <i class="fas fa-image"></i>
-                        </div>
+                        <div class="no-image"><i class="fas fa-image"></i></div>
                     <?php endif; ?>
-                    
+
                     <?php if (!empty($item['is_fixed_modular']) && $item['is_fixed_modular'] == 1): ?>
-    <span class="product-badge-quotation fixed-modular-badge">
-        <i class="fas fa-lock"></i> Fixed Modular
-    </span>
-<?php elseif (!empty($item['dimension_label_name'])): ?>
-    <span class="product-badge-quotation">
-        <?= htmlspecialchars($item['dimension_label_name']) ?>
-    </span>
-<?php endif; ?>
+                        <span class="product-badge-quotation fixed-modular-badge">
+                            <i class="fas fa-lock"></i> Fixed Modular
+                        </span>
+                    <?php elseif (!empty($item['dimension_label_name'])): ?>
+                        <span class="product-badge-quotation">
+                            <?= htmlspecialchars($item['dimension_label_name']) ?>
+                        </span>
+                    <?php endif; ?>
                 </div>
-                
+
                 <div class="product-info-quotation">
                     <div class="product-code-quotation"><?= htmlspecialchars($item['item_code']) ?></div>
                     <h3 class="product-name-quotation"><?= htmlspecialchars($item['item_name']) ?></h3>
-                    
+
                     <?php if (!empty($item['item_family'])): ?>
                         <div class="product-family-quotation">
                             <i class="fas fa-tags"></i>
@@ -764,36 +1002,34 @@ $stmt_products->close();
                     <?php endif; ?>
 
                     <div class="product-specs-quotation">
-    <?php if (!empty($item['item_material'])): ?>
-        <span class="spec-item-quotation">
-            <i class="fas fa-hammer"></i>
-            <span style="font-size:10px; font-weight:700; color:#999; text-transform:uppercase; margin-right:3px;">Carcass:</span>
-            <?= htmlspecialchars($item['item_material']) ?>
-        </span>
-    <?php endif; ?>
+                        <?php if (!empty($item['item_material'])): ?>
+                            <span class="spec-item-quotation">
+                                <i class="fas fa-hammer"></i>
+                                <span class="spec-tag">Carcass:</span> <?= htmlspecialchars($item['item_material']) ?>
+                            </span>
+                        <?php endif; ?>
 
-    <?php if (!empty($item['door_material'])): ?>
-        <span class="spec-item-quotation">
-            <i class="fas fa-door-open"></i>
-            <span style="font-size:10px; font-weight:700; color:#999; text-transform:uppercase; margin-right:3px;">Door:</span>
-            <?= htmlspecialchars($item['door_material']) ?>
-        </span>
-    <?php endif; ?>
-    
-    <?php if (!empty($item['item_color'])): ?>
-        <span class="spec-item-quotation">
-            <i class="fas fa-palette"></i>
-            <?= htmlspecialchars($item['item_color']) ?>
-        </span>
-    <?php endif; ?>
-</div>
+                        <?php if (!empty($item['door_material'])): ?>
+                            <span class="spec-item-quotation">
+                                <i class="fas fa-door-open"></i>
+                                <span class="spec-tag">Door:</span> <?= htmlspecialchars($item['door_material']) ?>
+                            </span>
+                        <?php endif; ?>
+
+                        <?php if (!empty($item['item_color'])): ?>
+                            <span class="spec-item-quotation">
+                                <i class="fas fa-palette"></i>
+                                <?= htmlspecialchars($item['item_color']) ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
 
                     <div class="product-price-quotation">
-                        <span class="price-label">Price:</span>
+                        <span class="price-label">Price</span>
                         <span class="price-value">₱<?= number_format($price, 2) ?></span>
                     </div>
 
-                    <button onclick="viewProductDetails('<?= htmlspecialchars($item['item_code']) ?>')" 
+                    <button onclick="viewProductDetails('<?= htmlspecialchars($item['item_code']) ?>')"
                             class="view-details-btn-quotation">
                         <i class="fas fa-eye"></i>
                         <span>View Details</span>
@@ -806,9 +1042,8 @@ $stmt_products->close();
     <div class="no-products-message">
         <i class="fas fa-box-open"></i>
         <h3>No Products Found</h3>
-        <p>No products available for the selected filters.</p>
+        <p>No products match the selected filters. Try clearing a filter above.</p>
     </div>
-
 <?php endif; ?>
 
 <script>
@@ -828,8 +1063,8 @@ function toggleFamDropdown(id) {
 }
 
 // Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-    if (!e.target.closest('.relative-fam-dropdown')) {
+document.addEventListener('click', function (e) {
+    if (!e.target.closest('.pf-dropdown-wrap')) {
         document.querySelectorAll('[id^="famMenu_"]').forEach(m => m.style.display = 'none');
         document.querySelectorAll('[id^="famChevron_"]').forEach(c => c.style.transform = '');
     }

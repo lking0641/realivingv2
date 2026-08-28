@@ -189,7 +189,7 @@ function applyFilters() {
 // ── applySort: reorders area cards + item rows client-side ──
 function applySort() {
   const sortToggleBtn  = document.getElementById('sort-toggle-btn');
-  const areasContainer = document.querySelector('.area-card')?.parentElement;
+  const areasContainer = document.getElementById('areas-list') || document.querySelector('.area-card')?.parentElement;
   if (!sortToggleBtn || !areasContainer) return;
 
   const order = sortToggleBtn.dataset.order || 'asc'; // 'asc' or 'desc'

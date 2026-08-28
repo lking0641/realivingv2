@@ -69,35 +69,48 @@ $converted_clients = $conn->query($converted_query);
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Client Conversion — Realiving</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap"
-    rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --bg: #f4f1ee;
-      --surface: #fff;
-      --surface2: #faf8f6;
-      --border: #e8e2db;
-      --text: #1a1208;
-      --text-muted: #7a6f65;
-      --brand: #3b1f0f;
-      --brand-mid: #7a4030;
-      --brand-light: #c9956a;
-      --accent: #e8c49a;
-      --success: #2d6a4f;
-      --success-bg: #d8f3dc;
-      --warning: #7d5a00;
-      --warning-bg: #fff3cd;
-      --danger: #9b1c1c;
-      --danger-bg: #fee2e2;
-      --info: #1e3a8a;
-      --info-bg: #dbeafe;
-      --radius: 14px;
-      --radius-sm: 8px;
-      --shadow: 0 2px 12px rgba(59, 31, 15, 0.08);
-      --shadow-md: 0 6px 24px rgba(59, 31, 15, 0.12);
-    }
+  --bg: #F5F5F5;
+  --surface: #FFFFFF;
+  --surface2: #FAFAFA;
+  --border: #E2E2E2;
+  --text: #0B0B0B;
+  --text-muted: #6B6B6B;
+  --text-mute2: #9A9A9A;
+  --brand: #0B0B0B;
+  --brand-mid: #262626;
+  --brand-light: #9A9A9A;
+  --accent: #E8E8E8;
+  --hover-bg: #F2F2F2;
+
+  --success: #1F6F43;
+  --success-bg: #E8F3EC;
+  --success-border: #BFE0CC;
+
+  --warning: #8A6100;
+  --warning-bg: #FBF1D8;
+  --warning-border: #EAD9A6;
+
+  --danger: #9B1C1C;
+  --danger-bg: #FBEAEA;
+  --danger-border: #E3B7B7;
+
+  --info: #33475B;
+  --info-bg: #EDF0F3;
+  --info-border: #C7D0DA;
+
+  --purple: #46424F;
+  --purple-bg: #F0EFF1;
+  --purple-border: #D8D6DA;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 3px rgba(11, 11, 11, .06);
+  --shadow-md: 0 10px 26px -16px rgba(11, 11, 11, .25);
+}
 
     * {
       margin: 0;
@@ -106,7 +119,7 @@ $converted_clients = $conn->query($converted_query);
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -207,7 +220,7 @@ $converted_clients = $conn->query($converted_query);
       border-radius: 10px;
       border: none;
       background: transparent;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 14px;
       font-weight: 600;
       color: var(--text-muted);
@@ -256,7 +269,7 @@ $converted_clients = $conn->query($converted_query);
     }
 
     .section-head h2 {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 16px;
       font-weight: 700;
       display: flex;
@@ -288,7 +301,7 @@ $converted_clients = $conn->query($converted_query);
     }
 
     .apt-table tbody tr:hover {
-      background: #fdf9f5;
+      background: var(--hover-bg);
     }
 
     .apt-table td {
@@ -380,15 +393,15 @@ $converted_clients = $conn->query($converted_query);
     }
 
     .btn-convert {
-      background: linear-gradient(135deg, #3b1f0f, #7a4030);
+      background: var(--brand);
       color: #fff;
       border: none;
     }
 
     .btn-convert:hover {
-      background: linear-gradient(135deg, #5a3220, #a05040);
+      background: var(--brand-mid);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(59, 31, 15, .25);
+      box-shadow: var(--shadow-md);
     }
 
     /* MODAL */
@@ -396,7 +409,7 @@ $converted_clients = $conn->query($converted_query);
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(26, 18, 8, .55);
+      background: rgba(11, 11, 11, .55);
       z-index: 999;
       align-items: center;
       justify-content: center;
@@ -439,7 +452,7 @@ $converted_clients = $conn->query($converted_query);
     }
 
     .modal-head h3 {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 18px;
       font-weight: 700;
     }
@@ -551,14 +564,14 @@ $converted_clients = $conn->query($converted_query);
 
     /* REF NUMBER */
     .ref-mono {
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-      color: var(--brand);
-      background: #fdf9f5;
-      padding: 3px 8px;
-      border-radius: 5px;
-      border: 1px solid var(--accent);
-    }
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface2);
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+}
 
     @media(max-width:700px) {
 

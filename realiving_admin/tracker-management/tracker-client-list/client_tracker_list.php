@@ -114,8 +114,19 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Clients - Project Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --adm-bg: #F5F5F5;
+            --adm-surface: #FFFFFF;
+            --adm-ink: #0B0B0B;
+            --adm-soft: #6B6B6B;
+            --adm-muted: #9A9A9A;
+            --adm-line: #E2E2E2;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -123,8 +134,8 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         }
 
         body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--adm-bg);
+            font-family: 'Inter', sans-serif;
         }
 
         .container {
@@ -134,25 +145,13 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         }
 
         .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
+            background: var(--adm-ink);
             padding: 40px;
             border-radius: 16px;
             color: white;
             margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             position: relative;
             overflow: hidden;
-        }
-
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
         }
 
         .page-header h1 {
@@ -170,9 +169,8 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         }
 
         .user-info-badge {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             padding: 10px 20px;
             border-radius: 20px;
             display: inline-flex;
@@ -217,23 +215,22 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         }
 
         .stat-card {
-            background: white;
+            background: var(--adm-surface);
             padding: 25px;
             border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #8a5a44;
+            border: 1px solid var(--adm-line);
             transition: all 0.3s ease;
         }
 
         .stat-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 26px -16px rgba(11, 11, 11, 0.25);
         }
 
         .stat-card .stat-icon {
             width: 50px;
             height: 50px;
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
+            background: var(--adm-ink);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -254,16 +251,16 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         .stat-card .stat-value {
             font-size: 28px;
             font-weight: bold;
-            color: #3b1f0f;
+            color: var(--adm-ink);
         }
 
         /* ── Filters section (matches all_clients_tracker_list) ── */
         .filters-section {
-            background: white;
+            background: var(--adm-surface);
             padding: 20px;
             border-radius: 12px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--adm-line);
         }
 
         .filters-grid {
@@ -296,7 +293,7 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         .filter-group select {
             width: 100%;
             padding: 10px 15px;
-            border: 2px solid #e9ecef;
+            border: 2px solid var(--adm-line);
             border-radius: 8px;
             font-size: 14px;
             transition: all 0.2s;
@@ -305,24 +302,24 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         .filter-group input:focus,
         .filter-group select:focus {
             outline: none;
-            border-color: #8a5a44;
+            border-color: var(--adm-ink);
         }
 
         /* ── Toggle buttons ── */
         .toggle-btn {
-            background: white;
-            border: 2px solid #e9ecef;
+            background: var(--adm-surface);
+            border: 2px solid var(--adm-line);
             padding: 8px 14px;
             border-radius: 8px;
             cursor: pointer;
-            color: #666;
+            color: var(--adm-soft);
             font-size: 16px;
             transition: all 0.2s;
         }
 
         .toggle-btn.active {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            border-color: #3b1f0f;
+            background: var(--adm-ink);
+            border-color: var(--adm-ink);
             color: white;
         }
 
@@ -335,23 +332,22 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         }
 
         .client-card {
-            background: white;
+            background: var(--adm-surface);
             border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 2px solid var(--adm-line);
             transition: all 0.3s ease;
             cursor: pointer;
-            border: 2px solid transparent;
         }
 
         .client-card:hover {
             transform: translateY(-4px);
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-            border-color: #8a5a44;
+            box-shadow: 0 10px 26px -16px rgba(11, 11, 11, 0.3);
+            border-color: var(--adm-ink);
         }
 
         .client-card-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
+            background: var(--adm-ink);
             padding: 20px;
             color: white;
         }
@@ -380,7 +376,7 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         }
 
         .client-info-row i {
-            color: #8a5a44;
+            color: var(--adm-soft);
             width: 20px;
         }
 
@@ -424,7 +420,7 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         }
 
         .view-tracker-btn {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
+            background: var(--adm-ink);
             color: white;
             padding: 8px 16px;
             border: none;
@@ -446,9 +442,9 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
         .empty-state {
             text-align: center;
             padding: 60px 20px;
-            background: white;
+            background: var(--adm-surface);
             border-radius: 12px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--adm-line);
         }
 
         .empty-state i {
@@ -653,13 +649,13 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
             <!-- Active / Finished tabs -->
             <div style="display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap;">
                 <button id="tabActive" onclick="setTab('active')"
-                    style="padding:10px 24px; border-radius:25px; border:2px solid #3b1f0f; background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all .2s;">
+                    style="padding:10px 24px; border-radius:25px; border:2px solid #0B0B0B; background:#0B0B0B; color:white; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all .2s;">
                     <i class="fas fa-tasks"></i> Active
                     <span id="activeCount"
-                        style="background:rgba(255,255,255,.25); border-radius:12px; padding:1px 8px; font-size:11px;"><?= count($clients) ?></span>
+                        style="background:rgba(255,255,255,.2); border-radius:12px; padding:1px 8px; font-size:11px;"><?= count($clients) ?></span>
                 </button>
                 <button id="tabFinished" onclick="setTab('finished')"
-                    style="padding:10px 24px; border-radius:25px; border:2px solid #e2d9ce; background:white; color:#5c4033; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all .2s;">
+                    style="padding:10px 24px; border-radius:25px; border:2px solid #E2E2E2; background:white; color:#6B6B6B; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all .2s;">
                     <i class="fas fa-check-double"></i> Finished
                     <span id="finishedCount"
                         style="background:#e2d9ce; border-radius:12px; padding:1px 8px; font-size:11px;"><?= count($finishedClients) ?></span>
@@ -976,19 +972,19 @@ function getClientRejectedFilesForUploader($conn, $admin_id, $client_id)
 
             // Style tabs
             if (tab === 'active') {
-                tabActive.style.background = 'linear-gradient(135deg,#3b1f0f,#8a5a44)';
+                tabActive.style.background = '#0B0B0B';
                 tabActive.style.color = 'white';
-                tabActive.style.borderColor = '#3b1f0f';
+                tabActive.style.borderColor = '#0B0B0B';
                 tabFinished.style.background = 'white';
-                tabFinished.style.color = '#5c4033';
-                tabFinished.style.borderColor = '#e2d9ce';
+                tabFinished.style.color = '#6B6B6B';
+                tabFinished.style.borderColor = '#E2E2E2';
             } else {
                 tabFinished.style.background = 'linear-gradient(135deg,#065f46,#10b981)';
                 tabFinished.style.color = 'white';
                 tabFinished.style.borderColor = '#065f46';
                 tabActive.style.background = 'white';
-                tabActive.style.color = '#5c4033';
-                tabActive.style.borderColor = '#e2d9ce';
+                tabActive.style.color = '#6B6B6B';
+                tabActive.style.borderColor = '#E2E2E2';
             }
 
             // Force show ALL cards in the target grid first, then apply filters

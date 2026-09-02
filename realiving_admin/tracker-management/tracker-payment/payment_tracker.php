@@ -139,13 +139,12 @@ if ($business_type === 'Project') {
     // Items with unit distribution: count each unit
     $epStmt = $conn->prepare("
         SELECT
-            COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL THEN qe.id END)                                            AS items_no_unit,
-            COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL AND qe.installation_status='Done' THEN qe.id END)          AS items_no_unit_done,
-            COUNT(qrd.distribution_id)                                                                                       AS units_total,
-            SUM(CASE WHEN qrd.distribution_id IS NOT NULL AND qrd.installation_status='Done' THEN 1 ELSE 0 END)             AS units_done
-        FROM quotation_entries qe
-        LEFT JOIN quotation_room_distribution qrd ON qrd.quotation_entry_id = qe.id
-        WHERE qe.client_id = ?
+            COUNT(*)                                                     AS items_no_unit,
+            SUM(CASE WHEN installation_status='Done' THEN 1 ELSE 0 END)  AS items_no_unit_done,
+            0                                                            AS units_total,
+            0                                                            AS units_done
+        FROM quotation_entries
+        WHERE client_id = ?
     ");
     $epStmt->bind_param("i", $client_id);
     $epStmt->execute();
@@ -153,13 +152,12 @@ if ($business_type === 'Project') {
 
     $fpStmt = $conn->prepare("
         SELECT
-            COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL THEN qfs.id END)                                           AS items_no_unit,
-            COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL AND qfs.installation_status='Done' THEN qfs.id END)        AS items_no_unit_done,
-            COUNT(qrd.distribution_id)                                                                                       AS units_total,
-            SUM(CASE WHEN qrd.distribution_id IS NOT NULL AND qrd.installation_status='Done' THEN 1 ELSE 0 END)             AS units_done
-        FROM quotation_fixed_sizes qfs
-        LEFT JOIN quotation_room_distribution qrd ON qrd.quotation_fixed_size_id = qfs.id
-        WHERE qfs.client_id = ?
+            COUNT(*)                                                     AS items_no_unit,
+            SUM(CASE WHEN installation_status='Done' THEN 1 ELSE 0 END)  AS items_no_unit_done,
+            0                                                            AS units_total,
+            0                                                            AS units_done
+        FROM quotation_fixed_sizes
+        WHERE client_id = ?
     ");
     $fpStmt->bind_param("i", $client_id);
     $fpStmt->execute();
@@ -238,23 +236,21 @@ if ($business_type === 'Project') {
     $areaStmt = $conn->prepare("
     SELECT
         qe.area,
-        COUNT(qrd.distribution_id)                                                              AS units_total,
-        SUM(CASE WHEN qrd.installation_status = 'Done' THEN 1 ELSE 0 END)                      AS units_done,
-        COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL THEN qe.id END)                   AS items_no_unit,
-        COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL AND qe.installation_status = 'Done' THEN qe.id END) AS items_no_unit_done
+        0                                                                 AS units_total,
+        0                                                                 AS units_done,
+        COUNT(*)                                                          AS items_no_unit,
+        SUM(CASE WHEN qe.installation_status = 'Done' THEN 1 ELSE 0 END) AS items_no_unit_done
     FROM quotation_entries qe
-    LEFT JOIN quotation_room_distribution qrd ON qrd.quotation_entry_id = qe.id
     WHERE qe.client_id = ?
     GROUP BY qe.area
     UNION ALL
     SELECT
         qfs.area,
-        COUNT(qrd.distribution_id)                                                               AS units_total,
-        SUM(CASE WHEN qrd.installation_status = 'Done' THEN 1 ELSE 0 END)                       AS units_done,
-        COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL THEN qfs.id END)                   AS items_no_unit,
-        COUNT(DISTINCT CASE WHEN qrd.distribution_id IS NULL AND qfs.installation_status = 'Done' THEN qfs.id END) AS items_no_unit_done
+        0                                                                  AS units_total,
+        0                                                                  AS units_done,
+        COUNT(*)                                                           AS items_no_unit,
+        SUM(CASE WHEN qfs.installation_status = 'Done' THEN 1 ELSE 0 END) AS items_no_unit_done
     FROM quotation_fixed_sizes qfs
-    LEFT JOIN quotation_room_distribution qrd ON qrd.quotation_fixed_size_id = qfs.id
     WHERE qfs.client_id = ?
     GROUP BY qfs.area
 ");

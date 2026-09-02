@@ -32,7 +32,15 @@ $clientsStmt = $conn->prepare("
         (SELECT COUNT(*) FROM site_visit sv WHERE sv.client_id = ui.id AND (sv.designer1_id = ? OR sv.designer2_id = ? OR sv.original_designer1_id = ? OR sv.original_designer2_id = ?)) AS total_visits,
         (SELECT COUNT(*) FROM site_visit sv WHERE sv.client_id = ui.id AND (sv.designer1_id = ? OR sv.designer2_id = ? OR sv.original_designer1_id = ? OR sv.original_designer2_id = ?) AND sv.status = 'Done') AS done_visits,
         (SELECT COUNT(*) FROM site_visit sv WHERE sv.client_id = ui.id AND (sv.designer1_id = ? OR sv.designer2_id = ? OR sv.original_designer1_id = ? OR sv.original_designer2_id = ?) AND sv.status = 'Pending') AS pending_visits,
-        (SELECT COUNT(*) FROM site_visit sv WHERE sv.client_id = ui.id AND (sv.designer1_id = ? OR sv.designer2_id = ? OR sv.original_designer1_id = ? OR sv.original_designer2_id = ?) AND sv.status = 'Ongoing') AS ongoing_visits
+        (SELECT COUNT(*) FROM site_visit sv WHERE sv.client_id = ui.id AND (sv.designer1_id = ? OR sv.designer2_id = ? OR sv.original_designer1_id = ? OR sv.original_designer2_id = ?) AND sv.status = 'Ongoing') AS ongoing_visits,
+        (SELECT a.full_name FROM site_visit sv2 JOIN account a ON (
+            (sv2.original_designer1_id = ? AND a.id = sv2.designer1_id AND sv2.designer1_id != ?) OR
+            (sv2.original_designer2_id = ? AND a.id = sv2.designer2_id AND sv2.designer2_id != ?)
+        ) WHERE sv2.client_id = ui.id LIMIT 1) AS replaced_by_name,
+        (SELECT a.full_name FROM site_visit sv3 JOIN account a ON (
+            (sv3.designer1_id = ? AND a.id = sv3.original_designer1_id AND sv3.original_designer1_id IS NOT NULL AND sv3.original_designer1_id != ?) OR
+            (sv3.designer2_id = ? AND a.id = sv3.original_designer2_id AND sv3.original_designer2_id IS NOT NULL AND sv3.original_designer2_id != ?)
+        ) WHERE sv3.client_id = ui.id LIMIT 1) AS took_over_from_name
     FROM user_info ui
     JOIN site_visit sv ON sv.client_id = ui.id
     WHERE sv.designer1_id = ? OR sv.designer2_id = ?
@@ -40,7 +48,9 @@ $clientsStmt = $conn->prepare("
     ORDER BY ui.clientname ASC
 ");
 $clientsStmt->bind_param(
-    "iiiiiiiiiiiiiiiiiiii",
+    "iiiiiiiiiiiiiiiiiiiiiiiiiiii",
+    $admin_id, $admin_id, $admin_id, $admin_id,
+    $admin_id, $admin_id, $admin_id, $admin_id,
     $admin_id, $admin_id, $admin_id, $admin_id,
     $admin_id, $admin_id, $admin_id, $admin_id,
     $admin_id, $admin_id, $admin_id, $admin_id,
@@ -53,270 +63,278 @@ $clients = $clientsStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $totalClients = count($clients);
 $totalPending = array_sum(array_column($clients, 'pending_visits'));
 $totalOngoing = array_sum(array_column($clients, 'ongoing_visits'));
-$totalDone    = count(array_filter($clients, fn($c) => $c['done_visits'] == $c['total_visits'] && $c['total_visits'] > 0));
-$totalActive  = count(array_filter($clients, fn($c) => !($c['done_visits'] == $c['total_visits'] && $c['total_visits'] > 0)));
+$doneClientCount   = count(array_filter($clients, fn($c) => $c['done_visits'] == $c['total_visits'] && $c['total_visits'] > 0));
+$activeClientCount = count($clients) - $doneClientCount;
+$reassignedClientCount = count(array_filter($clients, fn($c) => !empty($c['replaced_by_name']) || !empty($c['took_over_from_name'])));
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Clients — Designer</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: #f5f1ed; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .container { max-width: 960px; margin: 30px auto; padding: 0 20px; }
-
-        .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 30px 35px; border-radius: 16px; color: white; margin-bottom: 25px;
-        }
-        .page-header h1 { font-size: 24px; margin-bottom: 5px; }
-        .page-header .sub { font-size: 13px; opacity: 0.85; margin-top: 4px; }
-
-        .header-stats {
-            display: flex; gap: 16px; margin-top: 18px; flex-wrap: wrap;
-        }
-        .h-stat {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 10px; padding: 12px 20px; text-align: center;
-        }
-        .h-stat-val { font-size: 24px; font-weight: 700; }
-        .h-stat-label { font-size: 11px; opacity: 0.8; text-transform: uppercase; letter-spacing: 0.4px; }
-
-        /* Search */
-        .search-bar {
-            display: flex; align-items: center; gap: 12px;
-            background: white; border-radius: 10px; padding: 10px 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.07); margin-bottom: 18px;
-        }
-        .search-bar i { color: #9ca3af; font-size: 15px; }
-        .search-bar input {
-            border: none; outline: none; font-size: 14px; color: #111;
-            width: 100%; font-family: inherit;
-        }
-
-        /* Client Card */
-        .client-card {
-            background: white; border-radius: 12px; margin-bottom: 14px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.07);
-            border-left: 5px solid #8a5a44;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 20px 24px; cursor: pointer;
-            transition: all 0.2s; text-decoration: none;
-        }
-        .client-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-        }
-        .client-card.has-ongoing { border-left-color: #3b82f6; }
-        .client-card.has-pending { border-left-color: #f59e0b; }
-        .client-card.all-done { border-left-color: #10b981; }
-
-        .client-name { font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 4px; }
-        .client-sub { font-size: 12px; color: #9ca3af; }
-        .client-meta { font-size: 12px; color: #6b7280; margin-top: 8px; display: flex; gap: 14px; flex-wrap: wrap; }
-        .client-meta span { display: flex; align-items: center; gap: 5px; }
-
-        .badge {
-            padding: 3px 10px; border-radius: 10px;
-            font-size: 11px; font-weight: 700;
-        }
-        .badge-pending { background: #fef3c7; color: #92400e; }
-        .badge-ongoing { background: #dbeafe; color: #1e40af; }
-        .badge-done    { background: #d1fae5; color: #065f46; }
-        .badge-new     { background: #fef3c7; color: #92400e; }
-        .badge-old     { background: #dbeafe; color: #1e40af; }
-
-        .visit-badges { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-
-        .empty-state {
-            text-align: center; padding: 60px 20px;
-            color: #9ca3af; background: white; border-radius: 12px;
-        }
-        .empty-state i { font-size: 50px; margin-bottom: 14px; display: block; }
-
-        .right-arrow { color: #d1d5db; font-size: 18px; flex-shrink: 0; }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
 </head>
-<body>
-<div class="container">
 
-    <div class="page-header">
-        <h1><i class="fas fa-users"></i> My Clients</h1>
-        <div class="sub">Welcome, <?= htmlspecialchars($me['full_name']) ?> — tap a client to view details and site visits.</div>
-        <div class="header-stats">
-            <div class="h-stat">
-                <div class="h-stat-val"><?= $totalClients ?></div>
-                <div class="h-stat-label">Total Clients</div>
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[1000px] mx-auto px-5 py-8">
+
+        <!-- ── Page Header ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                <i class="fas fa-users"></i> My Clients
             </div>
-            <div class="h-stat">
-                <div class="h-stat-val"><?= $totalPending ?></div>
-                <div class="h-stat-label">Pending Visits</div>
-            </div>
-            <div class="h-stat">
-                <div class="h-stat-val"><?= $totalOngoing ?></div>
-                <div class="h-stat-label">Ongoing Visits</div>
+            <h1 class="text-2xl font-bold tracking-[-0.01em]">Welcome, <?= htmlspecialchars($me['full_name']) ?></h1>
+            <p class="text-[13.5px] text-soft mt-1">Tap a client to view details and site visits.</p>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-5">
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3.5">
+                    <div class="text-2xl font-bold"><?= $totalClients ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mt-0.5">Total Clients</div>
+                </div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3.5">
+                    <div class="text-2xl font-bold text-amber-600"><?= $totalPending ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mt-0.5">Pending Visits</div>
+                </div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3.5">
+                    <div class="text-2xl font-bold text-blue-600"><?= $totalOngoing ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.5px] text-muted mt-0.5">Ongoing Visits</div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <?php
-    $doneClientCount   = count(array_filter($clients, fn($c) => $c['done_visits'] == $c['total_visits'] && $c['total_visits'] > 0));
-    $activeClientCount = count($clients) - $doneClientCount;
-    ?>
-    <!-- Filter Tabs -->
-    <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
-        <button type="button" id="btn-active" onclick="setFilter('active')"
-                style="padding:9px 20px; border-radius:10px; border:2px solid #3b1f0f;
-                       background:#3b1f0f; color:white; font-family:inherit;
-                       font-size:13px; font-weight:700; cursor:pointer;
-                       display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-            <i class="fas fa-spinner"></i> Active
-            <span style="background:rgba(255,255,255,0.25); padding:1px 9px; border-radius:20px; font-size:11px;">
-                <?= $activeClientCount ?>
-            </span>
-        </button>
-        <button type="button" id="btn-done" onclick="setFilter('done')"
-                style="padding:9px 20px; border-radius:10px; border:2px solid #e9ecef;
-                       background:white; color:#9ca3af; font-family:inherit;
-                       font-size:13px; font-weight:700; cursor:pointer;
-                       display:flex; align-items:center; gap:8px; transition:all 0.2s;">
-            <i class="fas fa-check-double"></i> Completed
-            <span style="background:#f3f4f6; padding:1px 9px; border-radius:20px; font-size:11px; color:#3b1f0f;">
-                <?= $doneClientCount ?>
-            </span>
-        </button>
-    </div>
-
-    <!-- Search -->
-    <div class="search-bar">
-        <i class="fas fa-search"></i>
-        <input type="text" id="searchInput" placeholder="Search client name, project, or reference..." oninput="filterClients()">
-    </div>
-
-    <!-- Client List -->
-    <div id="clientList">
-        <?php if (empty($clients)): ?>
-        <div class="empty-state">
-            <i class="fas fa-users-slash"></i>
-            <p style="font-size:16px; font-weight:600;">No clients assigned yet</p>
-            <p style="font-size:13px; margin-top:6px;">Clients will appear here once site visits are assigned to you.</p>
+        <!-- ── Filter Tabs ── -->
+        <div class="flex items-center gap-2.5 mb-5 flex-wrap">
+            <button type="button" id="btn-active" onclick="setFilter('active')"
+                class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold transition border">
+                <i class="fas fa-spinner"></i> Active
+                <span id="badge-active" class="px-2 py-0.5 rounded-full text-[11px] font-bold"><?= $activeClientCount ?></span>
+            </button>
+            <button type="button" id="btn-done" onclick="setFilter('done')"
+                class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold transition border">
+                <i class="fas fa-check-double"></i> Completed
+                <span id="badge-done" class="px-2 py-0.5 rounded-full text-[11px] font-bold"><?= $doneClientCount ?></span>
+            </button>
+            <?php if ($reassignedClientCount > 0): ?>
+                <button type="button" id="btn-reassigned" onclick="setFilter('reassigned')"
+                    class="inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-semibold transition border">
+                    <i class="fas fa-exchange-alt"></i> Reassigned
+                    <span id="badge-reassigned" class="px-2 py-0.5 rounded-full text-[11px] font-bold"><?= $reassignedClientCount ?></span>
+                </button>
+            <?php endif; ?>
         </div>
-        <?php else: ?>
-            <?php foreach ($clients as $client):
-                // Determine card color class
-                $cardClass = '';
-                if ($client['ongoing_visits'] > 0) $cardClass = 'has-ongoing';
-                elseif ($client['pending_visits'] > 0) $cardClass = 'has-pending';
-                elseif ($client['done_visits'] == $client['total_visits'] && $client['total_visits'] > 0) $cardClass = 'all-done';
-            ?>
-            <?php $isDone = ($client['done_visits'] == $client['total_visits'] && $client['total_visits'] > 0); ?>
-            <a class="client-card <?= $cardClass ?>"
-               href="designer-client-detail?client_id=<?= $client['client_id'] ?>"
-               data-name="<?= htmlspecialchars(strtolower($client['clientname']), ENT_QUOTES) ?>"
-               data-project="<?= htmlspecialchars(strtolower($client['nameproject']), ENT_QUOTES) ?>"
-               data-ref="<?= htmlspecialchars(strtolower($client['reference_number']), ENT_QUOTES) ?>"
-               data-status="<?= $isDone ? 'done' : 'active' ?>">
 
-                <div style="flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <div class="client-name"><?= htmlspecialchars($client['clientname']) ?></div>
-                        <span class="badge <?= strtolower($client['status']) === 'new client' ? 'badge-new' : 'badge-old' ?>">
-                            <?= htmlspecialchars($client['status']) ?>
-                        </span>
-                    </div>
-                    <div class="client-sub">
-                        <?= htmlspecialchars($client['nameproject']) ?>
-                        &nbsp;•&nbsp;
-                        <span style="font-family: monospace;"><?= htmlspecialchars($client['reference_number']) ?></span>
-                    </div>
-                    <div class="client-meta">
-                        <span><i class="fas fa-building"></i> <?= $client['business_type'] === 'Non-Project' ? 'Individual' : htmlspecialchars($client['business_type']) ?></span>
-                        <?php if ($client['contact']): ?>
-                        <span><i class="fas fa-phone"></i> <?= htmlspecialchars($client['contact']) ?></span>
-                        <?php endif; ?>
-                        <span><i class="fas fa-calendar-check"></i> <?= $client['total_visits'] ?> visit<?= $client['total_visits'] != 1 ? 's' : '' ?></span>
-                    </div>
-                    <div class="visit-badges">
-                        <?php if ($client['pending_visits'] > 0): ?>
-                        <span class="badge badge-pending"><i class="fas fa-clock"></i> <?= $client['pending_visits'] ?> Pending</span>
-                        <?php endif; ?>
-                        <?php if ($client['ongoing_visits'] > 0): ?>
-                        <span class="badge badge-ongoing"><i class="fas fa-spinner"></i> <?= $client['ongoing_visits'] ?> Ongoing</span>
-                        <?php endif; ?>
-                        <?php if ($client['done_visits'] > 0): ?>
-                        <span class="badge badge-done"><i class="fas fa-check"></i> <?= $client['done_visits'] ?> Done</span>
-                        <?php endif; ?>
+        <!-- ── Search ── -->
+        <div class="bg-white border border-line rounded-lg px-4 py-2.5 mb-5 flex items-center gap-2.5">
+            <i class="fas fa-search text-muted"></i>
+            <input type="text" id="searchInput" placeholder="Search client name, project, or reference..."
+                oninput="filterClients()"
+                class="w-full border-none outline-none text-sm bg-transparent">
+        </div>
+
+        <!-- ── Client List ── -->
+        <div id="clientList" class="flex flex-col gap-4">
+            <?php if (empty($clients)): ?>
+                <div class="bg-white border border-line rounded-[10px] p-6">
+                    <div class="text-center py-10 text-muted">
+                        <i class="fas fa-users-slash text-3xl mb-3 block"></i>
+                        No clients assigned yet. Clients will appear here once site visits are assigned to you.
                     </div>
                 </div>
+            <?php else: ?>
+                <?php foreach ($clients as $client):
+                    $isDone = ($client['done_visits'] == $client['total_visits'] && $client['total_visits'] > 0);
 
-                <i class="fas fa-chevron-right right-arrow"></i>
-            </a>
-            <?php endforeach; ?>
-        <?php endif; ?>
+                    $stripeClass = 'border-l-line';
+                    if ($client['ongoing_visits'] > 0) {
+                        $stripeClass = 'border-l-blue-400';
+                    } elseif ($client['pending_visits'] > 0) {
+                        $stripeClass = 'border-l-amber-400';
+                    } elseif ($isDone) {
+                        $stripeClass = 'border-l-emerald-400';
+                    }
+
+                    $statusBadgeClass = strtolower($client['status']) === 'new client'
+                        ? 'bg-amber-100 text-amber-800 border-amber-300'
+                        : 'bg-blue-100 text-blue-800 border-blue-300';
+
+                    // Reassignment detection: was this client handed to/from another designer?
+                    $tookOverFrom = $client['took_over_from_name'] ?? null;   // I am now assigned, replacing this person
+                    $replacedByOther = $client['replaced_by_name'] ?? null;   // I was replaced by this person
+                    $isReassigned = !empty($tookOverFrom) || !empty($replacedByOther);
+                    if (!empty($tookOverFrom)) {
+                        $stripeClass = 'border-l-purple-400';
+                    } elseif (!empty($replacedByOther)) {
+                        $stripeClass = 'border-l-gray-300';
+                    }
+                    ?>
+                    <a href="designer-client-detail?client_id=<?= $client['client_id'] ?>"
+                        class="client-card block bg-white border border-line <?= $stripeClass ?> border-l-4 rounded-lg p-[18px] hover:border-ink transition"
+                        data-name="<?= htmlspecialchars(strtolower($client['clientname']), ENT_QUOTES) ?>"
+                        data-project="<?= htmlspecialchars(strtolower($client['nameproject']), ENT_QUOTES) ?>"
+                        data-ref="<?= htmlspecialchars(strtolower($client['reference_number']), ENT_QUOTES) ?>"
+                        data-status="<?= $isDone ? 'done' : 'active' ?>"
+                        data-reassigned="<?= $isReassigned ? '1' : '0' ?>">
+
+                        <div class="flex justify-between items-start gap-3 flex-wrap">
+                            <div class="flex-1 min-w-[220px]">
+                                <div class="flex items-center gap-2 flex-wrap mb-1">
+                                    <span class="text-[14px] font-semibold"><?= htmlspecialchars($client['clientname']) ?></span>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase border <?= $statusBadgeClass ?>">
+                                        <?= htmlspecialchars($client['status']) ?>
+                                    </span>
+                                    <?php if (!empty($tookOverFrom)): ?>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase border bg-purple-100 text-purple-800 border-purple-300">
+                                            <i class="fas fa-exchange-alt"></i> Switched from <?= htmlspecialchars($tookOverFrom) ?>
+                                        </span>
+                                    <?php elseif (!empty($replacedByOther)): ?>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase border bg-gray-100 text-gray-600 border-gray-300">
+                                            <i class="fas fa-exchange-alt"></i> Switched to <?= htmlspecialchars($replacedByOther) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="text-[13px] text-soft">
+                                    <?= htmlspecialchars($client['nameproject']) ?>
+                                    &nbsp;•&nbsp;
+                                    <span class="font-mono text-muted"><?= htmlspecialchars($client['reference_number']) ?></span>
+                                </div>
+
+                                <div class="flex items-center gap-4 mt-2.5 flex-wrap text-[12px] text-soft">
+                                    <span class="flex items-center gap-1.5">
+                                        <i class="fas fa-building text-muted"></i>
+                                        <?= $client['business_type'] === 'Non-Project' ? 'Individual' : htmlspecialchars($client['business_type']) ?>
+                                    </span>
+                                    <?php if ($client['contact']): ?>
+                                        <span class="flex items-center gap-1.5">
+                                            <i class="fas fa-phone text-muted"></i> <?= htmlspecialchars($client['contact']) ?>
+                                        </span>
+                                    <?php endif; ?>
+                                    <span class="flex items-center gap-1.5">
+                                        <i class="fas fa-calendar-check text-muted"></i>
+                                        <?= $client['total_visits'] ?> visit<?= $client['total_visits'] != 1 ? 's' : '' ?>
+                                    </span>
+                                </div>
+
+                                <div class="flex items-center gap-2 mt-2.5 flex-wrap">
+                                    <?php if ($client['pending_visits'] > 0): ?>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase border bg-amber-100 text-amber-800 border-amber-300">
+                                            <i class="fas fa-clock"></i> <?= $client['pending_visits'] ?> Pending
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if ($client['ongoing_visits'] > 0): ?>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase border bg-blue-100 text-blue-800 border-blue-300">
+                                            <i class="fas fa-spinner"></i> <?= $client['ongoing_visits'] ?> Ongoing
+                                        </span>
+                                    <?php endif; ?>
+                                    <?php if ($client['done_visits'] > 0): ?>
+                                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase border bg-emerald-100 text-emerald-800 border-emerald-300">
+                                            <i class="fas fa-check"></i> <?= $client['done_visits'] ?> Done
+                                        </span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+
+                            <i class="fas fa-chevron-right text-line text-lg flex-shrink-0 mt-1"></i>
+                        </div>
+                    </a>
+                <?php endforeach; ?>
+            <?php endif; ?>
+
+            <!-- Empty filter/search state (JS-controlled) -->
+            <div id="emptyFilterMsg" class="hidden bg-white border border-line rounded-[10px] p-6">
+                <div class="text-center py-10 text-muted">
+                    <i class="fas fa-search text-3xl mb-3 block"></i>
+                    No clients found.
+                </div>
+            </div>
+        </div>
+
     </div>
 
-</div>
+    <script>
+        let activeFilter = 'active';
 
-<script>
-let activeFilter = 'active';
+        function styleTab(btn, active) {
+            if (active) {
+                btn.classList.add('bg-ink', 'text-white', 'border-ink');
+                btn.classList.remove('bg-white', 'border-line', 'text-soft');
+            } else {
+                btn.classList.remove('bg-ink', 'text-white', 'border-ink');
+                btn.classList.add('bg-white', 'border-line', 'text-soft');
+            }
+        }
 
-function setFilter(filter) {
-    activeFilter = filter;
+        function styleBadge(badge, active) {
+            badge.classList.remove('bg-white/20', 'text-white', 'bg-[#F5F5F5]', 'text-ink');
+            if (active) {
+                badge.classList.add('bg-white/20', 'text-white');
+            } else {
+                badge.classList.add('bg-[#F5F5F5]', 'text-ink');
+            }
+        }
 
-    const btnActive = document.getElementById('btn-active');
-    const btnDone   = document.getElementById('btn-done');
+        function setFilter(filter) {
+            activeFilter = filter;
 
-    if (filter === 'active') {
-        btnActive.style.background   = '#3b1f0f';
-        btnActive.style.borderColor  = '#3b1f0f';
-        btnActive.style.color        = 'white';
-        btnDone.style.background     = 'white';
-        btnDone.style.borderColor    = '#e9ecef';
-        btnDone.style.color          = '#9ca3af';
-    } else {
-        btnDone.style.background     = '#3b1f0f';
-        btnDone.style.borderColor    = '#3b1f0f';
-        btnDone.style.color          = 'white';
-        btnActive.style.background   = 'white';
-        btnActive.style.borderColor  = '#e9ecef';
-        btnActive.style.color        = '#9ca3af';
-    }
+            const btnActive = document.getElementById('btn-active');
+            const btnDone = document.getElementById('btn-done');
+            const btnReassigned = document.getElementById('btn-reassigned');
+            const badgeActive = document.getElementById('badge-active');
+            const badgeDone = document.getElementById('badge-done');
+            const badgeReassigned = document.getElementById('badge-reassigned');
 
-    filterClients();
-}
+            styleTab(btnActive, filter === 'active');
+            styleTab(btnDone, filter === 'done');
+            styleBadge(badgeActive, filter === 'active');
+            styleBadge(badgeDone, filter === 'done');
+            if (btnReassigned) {
+                styleTab(btnReassigned, filter === 'reassigned');
+                styleBadge(badgeReassigned, filter === 'reassigned');
+            }
 
-function filterClients() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    let visible = 0;
-    document.querySelectorAll('.client-card').forEach(card => {
-        const name    = card.dataset.name    || '';
-        const project = card.dataset.project || '';
-        const ref     = card.dataset.ref     || '';
-        const status  = card.dataset.status  || 'active';
-        const matchSearch = !q || name.includes(q) || project.includes(q) || ref.includes(q);
-        const matchFilter = status === activeFilter;
-        const show = matchSearch && matchFilter;
-        card.style.display = show ? 'flex' : 'none';
-        if (show) visible++;
-    });
+            filterClients();
+        }
 
-    // Show empty state if nothing visible
-    let emptyMsg = document.getElementById('emptyFilterMsg');
-    if (!emptyMsg) {
-        emptyMsg = document.createElement('div');
-        emptyMsg.id = 'emptyFilterMsg';
-        emptyMsg.style.cssText = 'text-align:center; padding:50px 20px; color:#9ca3af; background:white; border-radius:12px;';
-        emptyMsg.innerHTML = '<i class="fas fa-search" style="font-size:40px; display:block; margin-bottom:12px; opacity:0.4;"></i><p style="font-size:14px; font-weight:600;">No clients found</p>';
-        document.getElementById('clientList').appendChild(emptyMsg);
-    }
-    emptyMsg.style.display = visible === 0 ? 'block' : 'none';
-}
+        function filterClients() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            let visible = 0;
+            document.querySelectorAll('.client-card').forEach(card => {
+                const name = card.dataset.name || '';
+                const project = card.dataset.project || '';
+                const ref = card.dataset.ref || '';
+                const status = card.dataset.status || 'active';
+                const reassigned = card.dataset.reassigned === '1';
+                const matchSearch = !q || name.includes(q) || project.includes(q) || ref.includes(q);
+                const matchFilter = activeFilter === 'reassigned' ? reassigned : status === activeFilter;
+                const show = matchSearch && matchFilter;
+                card.style.display = show ? 'block' : 'none';
+                if (show) visible++;
+            });
 
-document.addEventListener('DOMContentLoaded', () => setFilter('active'));
-</script>
+            document.getElementById('emptyFilterMsg').classList.toggle('hidden', visible !== 0);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => setFilter('active'));
+    </script>
 </body>
+
 </html>

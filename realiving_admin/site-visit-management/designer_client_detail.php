@@ -26,10 +26,14 @@ $clientStmt = $conn->prepare("
     SELECT ui.*
     FROM user_info ui
     JOIN site_visit sv ON sv.client_id = ui.id
-    WHERE ui.id = ? AND (sv.designer1_id = ? OR sv.designer2_id = ?)
+    WHERE ui.id = ?
+    AND (
+        sv.designer1_id = ? OR sv.designer2_id = ?
+        OR sv.original_designer1_id = ? OR sv.original_designer2_id = ?
+    )
     LIMIT 1
 ");
-$clientStmt->bind_param("iii", $client_id, $admin_id, $admin_id);
+$clientStmt->bind_param("iiiii", $client_id, $admin_id, $admin_id, $admin_id, $admin_id);
 $clientStmt->execute();
 $client = $clientStmt->get_result()->fetch_assoc();
 
@@ -278,972 +282,452 @@ $pendingVisits = count(array_filter($visits, fn($v) => $v['status'] === 'Pending
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($client['clientname']) ?> — Client Detail</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .container {
-            max-width: 960px;
-            margin: 30px auto;
-            padding: 0 20px 40px;
-        }
-
-        /* ── Back button ── */
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 18px;
-            transition: background 0.2s;
-        }
-
-        .btn-back:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        /* ── Client Header ── */
-        .client-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            border-radius: 16px;
-            padding: 20px;
-            color: white;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .client-header h1 {
-            font-size: 20px;
-            margin-bottom: 4px;
-            line-height: 1.3;
-        }
-
-        .client-header .project {
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .header-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 22px;
-            gap: 12px;
-        }
-
-        .info-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-            gap: 14px;
-        }
-
-        .info-card {
-            background: rgba(255, 255, 255, 0.15);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 10px;
-            padding: 14px;
-        }
-
-        .info-card .label {
-            font-size: 10px;
-            opacity: 0.75;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-
-        .info-card .value {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .info-card .value.mono {
-            font-family: monospace;
-            font-size: 13px;
-        }
-
-        /* ── View Full Details Button ── */
-        .btn-details {
-            background: white;
-            color: #3b1f0f;
-            padding: 8px 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-            white-space: nowrap;
-            flex-shrink: 0;
-            align-self: flex-start;
-        }
-
-        .btn-details:hover {
-            background: #f5f5f5;
-            transform: translateY(-1px);
-        }
-
-        /* ── Alerts ── */
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-
-        /* ── Section Card ── */
-        .section-card {
-            background: white;
-            border-radius: 12px;
-            padding: 26px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.07);
-            margin-bottom: 22px;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 700;
-            color: #3b1f0f;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #f5f1ed;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* ── Detail Rows ── */
-        .detail-row {
-            display: grid;
-            grid-template-columns: 160px 1fr;
-            padding: 12px 0;
-            border-bottom: 1px solid #f3f4f6;
-            align-items: start;
-            font-size: 13px;
-        }
-
-        .detail-row:last-child {
-            border-bottom: none;
-        }
-
-        .detail-label {
-            font-weight: 600;
-            color: #6b7280;
-        }
-
-        .detail-value {
-            color: #111;
-        }
-
-        /* Status badge */
-        .status-pill {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .pill-new {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .pill-old {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .pill-done {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .pill-pend {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .pill-ongo {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        /* ── Visit Stats ── */
-        .visit-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 14px;
-            margin-bottom: 22px;
-        }
-
-        .v-stat {
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 14px;
-            text-align: center;
-            border: 1px solid #f3f4f6;
-        }
-
-        .v-stat-val {
-            font-size: 26px;
-            font-weight: 700;
-            color: #3b1f0f;
-        }
-
-        .v-stat-lbl {
-            font-size: 11px;
-            color: #9ca3af;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-top: 3px;
-        }
-
-        /* ── Visit Cards ── */
-        .visit-card {
-            border: 1px solid #f3f4f6;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            border-left: 4px solid #e9ecef;
-        }
-
-        .visit-card.v-pending {
-            border-left-color: #f59e0b;
-        }
-
-        .visit-card.v-ongoing {
-            border-left-color: #3b82f6;
-        }
-
-        .visit-card.v-done {
-            border-left-color: #10b981;
-        }
-
-        .visit-card-top {
-            padding: 14px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .visit-card-top:hover {
-            background: #fafafa;
-        }
-
-        .visit-date {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .visit-sub {
-            font-size: 12px;
-            color: #9ca3af;
-            margin-top: 3px;
-        }
-
-        .visit-card-body {
-            display: none;
-            padding: 0 18px 18px;
-            border-top: 1px solid #f3f4f6;
-        }
-
-        .visit-card-body.open {
-            display: block;
-            padding-top: 16px;
-        }
-
-        /* Report form / display */
-        .report-section label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            color: #374151;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 8px;
-        }
-
-        .report-textarea {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 13px;
-            resize: vertical;
-            min-height: 100px;
-            font-family: inherit;
-        }
-
-        .report-textarea:focus {
-            outline: none;
-            border-color: #8a5a44;
-        }
-
-        .btn-save {
-            background: #3b82f6;
-            color: white;
-            padding: 9px 22px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 12px;
-        }
-
-        .btn-save:hover {
-            background: #2563eb;
-        }
-
-        .finished-banner {
-            background: #d1fae5;
-            border-radius: 8px;
-            padding: 12px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            color: #065f46;
-        }
-
-        .existing-report {
-            background: #f0fdf4;
-            border-radius: 8px;
-            padding: 14px;
-            border-left: 3px solid #10b981;
-            margin-top: 12px;
-        }
-
-        .existing-report strong {
-            font-size: 12px;
-            color: #065f46;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .existing-report p {
-            font-size: 13px;
-            color: #374151;
-        }
-
-        /* ── Modal ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal-box {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #f3f4f6;
-            padding-bottom: 14px;
-        }
-
-        .modal-header h2 {
-            font-size: 18px;
-            font-weight: 700;
-            color: #3b1f0f;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .modal-close {
-            font-size: 22px;
-            color: #9ca3af;
-            background: none;
-            border: none;
-            cursor: pointer;
-            line-height: 1;
-            transition: color 0.2s;
-        }
-
-        .modal-close:hover {
-            color: #374151;
-        }
-
-        .empty-visits {
-            text-align: center;
-            padding: 40px 20px;
-            color: #9ca3af;
-        }
-
-        .empty-visits i {
-            font-size: 40px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                margin: 10px auto;
-                padding: 0 12px 30px;
-            }
-
-            .detail-row {
-                grid-template-columns: 1fr;
-                gap: 4px;
-            }
-
-            .info-cards {
-                grid-template-columns: 1fr 1fr;
-                gap: 10px;
-            }
-
-            .info-card {
-                padding: 10px;
-            }
-
-            .info-card .value {
-                font-size: 13px;
-            }
-
-            .info-card .value.mono {
-                font-size: 11px;
-                word-break: break-all;
-            }
-
-            .visit-stats {
-                grid-template-columns: 1fr 1fr 1fr;
-            }
-
-            .section-card {
-                padding: 16px;
-            }
-
-            .btn-details span {
-                display: none;
-                /* icon only on very small screens */
-            }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
 </head>
 
-<body>
-    <div class="container">
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[1000px] mx-auto px-5 py-8">
 
-        <!-- ── Back ── -->
-        <a href="designer-clients-list" class="btn-back" style="display:inline-flex; align-items:center; gap:8px; color:#3b1f0f; background:white;
-              padding:9px 18px; border-radius:8px; font-weight:600; font-size:13px;
-              text-decoration:none; box-shadow:0 1px 3px rgba(0,0,0,0.08); margin-bottom:18px;
-              border: 1px solid #e9ecef; transition: all 0.2s;">
-            <i class="fas fa-arrow-left"></i> Back to Clients
-        </a>
+        <!-- Back button -->
+        <div class="mb-5">
+            <a href="designer-clients-list"
+                class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
+                <i class="fas fa-arrow-left"></i> Back to Clients
+            </a>
+        </div>
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- CLIENT HEADER                              -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="client-header">
-            <div class="header-top">
+        <!-- ── Client Header ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="flex justify-between items-start gap-4 flex-wrap mb-5">
                 <div>
-                    <h1>📋 <?= htmlspecialchars($client['clientname']) ?></h1>
-                    <div class="project"><?= htmlspecialchars($client['nameproject']) ?></div>
+                    <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                        <i class="fas fa-clipboard-list"></i> Client Detail
+                    </div>
+                    <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($client['clientname']) ?></h1>
+                    <p class="text-[13.5px] text-soft mt-1"><?= htmlspecialchars($client['nameproject']) ?></p>
                 </div>
-                <button class="btn-details" onclick="openModal()">
+                <button onclick="openModal()"
+                    class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition whitespace-nowrap">
                     <i class="fas fa-info-circle"></i> View Full Details
                 </button>
             </div>
 
-            <div class="info-cards">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 <?php if ($client['reference_number']): ?>
-                    <div class="info-card">
-                        <div class="label"><i class="fas fa-hashtag"></i> Reference Number</div>
-                        <div class="value mono"><?= htmlspecialchars($client['reference_number']) ?></div>
+                    <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3">
+                        <div class="text-[10px] font-semibold uppercase tracking-[0.5px] text-muted mb-1"><i class="fas fa-hashtag"></i> Reference No.</div>
+                        <div class="text-[13px] font-semibold font-mono"><?= htmlspecialchars($client['reference_number']) ?></div>
                     </div>
                 <?php endif; ?>
-                <div class="info-card">
-                    <div class="label"><i class="fas fa-building"></i> Business Type</div>
-                    <div class="value"><?= htmlspecialchars($business_type_label) ?></div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3">
+                    <div class="text-[10px] font-semibold uppercase tracking-[0.5px] text-muted mb-1"><i class="fas fa-building"></i> Business Type</div>
+                    <div class="text-[13px] font-semibold"><?= htmlspecialchars($business_type_label) ?></div>
                 </div>
-                <div class="info-card">
-                    <div class="label"><i class="fas fa-peso-sign"></i> Total Project Cost</div>
-                    <div class="value">₱<?= number_format($client['total_project_cost'] ?? 0, 2) ?></div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3">
+                    <div class="text-[10px] font-semibold uppercase tracking-[0.5px] text-muted mb-1"><i class="fas fa-peso-sign"></i> Total Project Cost</div>
+                    <div class="text-[13px] font-semibold">₱<?= number_format($client['total_project_cost'] ?? 0, 2) ?></div>
                 </div>
-                <div class="info-card">
-                    <div class="label"><i class="fas fa-balance-scale"></i> Remaining Balance</div>
-                    <div class="value">₱<?= number_format($client['remaining_balance'] ?? 0, 2) ?></div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3">
+                    <div class="text-[10px] font-semibold uppercase tracking-[0.5px] text-muted mb-1"><i class="fas fa-balance-scale"></i> Remaining Balance</div>
+                    <div class="text-[13px] font-semibold">₱<?= number_format($client['remaining_balance'] ?? 0, 2) ?></div>
                 </div>
             </div>
         </div>
 
         <!-- ── Alerts ── -->
         <?php if ($success): ?>
-            <div class="alert alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?></div>
+            <div class="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?>
+            </div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?></div>
+            <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- SITE VISITS SECTION                        -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="section-card">
-            <div class="section-title">
-                <i class="fas fa-calendar-check" style="color:#8a5a44;"></i> Site Visit Reports
+        <!-- ── Site Visits Section ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6">
+            <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                <i class="fas fa-calendar-check text-soft"></i> Site Visit Reports
+                <span class="flex-1 h-px bg-line"></span>
             </div>
 
             <!-- Visit Summary Stats -->
-            <div class="visit-stats">
-                <div class="v-stat">
-                    <div class="v-stat-val"><?= $totalVisits ?></div>
-                    <div class="v-stat-lbl">Total Visits</div>
+            <div class="grid grid-cols-3 gap-3 mb-5">
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3.5 text-center">
+                    <div class="text-2xl font-bold"><?= $totalVisits ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-muted mt-0.5">Total Visits</div>
                 </div>
-                <div class="v-stat">
-                    <div class="v-stat-val" style="color:#f59e0b;"><?= $pendingVisits ?></div>
-                    <div class="v-stat-lbl">Pending</div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3.5 text-center">
+                    <div class="text-2xl font-bold text-amber-600"><?= $pendingVisits ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-muted mt-0.5">Pending</div>
                 </div>
-                <div class="v-stat">
-                    <div class="v-stat-val" style="color:#10b981;"><?= $doneVisits ?></div>
-                    <div class="v-stat-lbl">Done</div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg px-4 py-3.5 text-center">
+                    <div class="text-2xl font-bold text-emerald-600"><?= $doneVisits ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-muted mt-0.5">Done</div>
                 </div>
             </div>
 
             <?php if (empty($visits)): ?>
-                <div class="empty-visits">
-                    <i class="fas fa-calendar-times"></i>
-                    <p style="font-size:15px; font-weight:600;">No site visits yet</p>
-                    <p style="font-size:13px; margin-top:5px;">Visits for this client will appear here.</p>
+                <div class="text-center py-10 text-muted">
+                    <i class="fas fa-calendar-times text-3xl mb-3 block"></i>
+                    No site visits yet. Visits for this client will appear here.
                 </div>
             <?php else: ?>
-                <?php foreach ($visits as $idx => $visit):
-                    // Determine my role on this visit
-                    // Could be current designer1, current designer2,
-                    // or the original who was replaced (absent)
-                    if ($visit['designer1_id'] == $admin_id) {
-                        $myRole = 'designer1';
-                    } elseif ($visit['designer2_id'] == $admin_id) {
-                        $myRole = 'designer2';
-                    } elseif ($visit['original_designer1_id'] == $admin_id) {
-                        $myRole = 'designer1'; // I was the original, now replaced
-                    } elseif ($visit['original_designer2_id'] == $admin_id) {
-                        $myRole = 'designer2'; // I was the original, now replaced
-                    } else {
-                        $myRole = $visit['my_role']; // fallback
-                    }
-
-                    $myReport = $visit[$myRole . '_report'];
-                    $myFinished = (bool) $visit[$myRole . '_finished'];
-                    $myPhoto = $visit[$myRole . '_photo'] ?? null;
-
-                    // Am I truly absent?
-                    // I am absent if: the absent flag is on my slot AND I am the ORIGINAL (not the replacement)
-                    $isOriginalDesigner1 = ($visit['original_designer1_id'] == $admin_id);
-                    $isOriginalDesigner2 = ($visit['original_designer2_id'] == $admin_id);
-                    $isReplacement = false;
-
-                    if ($myRole === 'designer1') {
-                        // If there's an original saved and it's NOT me, then I'm the replacement
-                        if (!empty($visit['original_designer1_id']) && $visit['original_designer1_id'] != $admin_id) {
-                            $isReplacement = true;
+                <div class="flex flex-col gap-3">
+                    <?php foreach ($visits as $idx => $visit):
+                        // Determine my role on this visit
+                        // Could be current designer1, current designer2,
+                        // or the original who was replaced (absent)
+                        if ($visit['designer1_id'] == $admin_id) {
+                            $myRole = 'designer1';
+                        } elseif ($visit['designer2_id'] == $admin_id) {
+                            $myRole = 'designer2';
+                        } elseif ($visit['original_designer1_id'] == $admin_id) {
+                            $myRole = 'designer1'; // I was the original, now replaced
+                        } elseif ($visit['original_designer2_id'] == $admin_id) {
+                            $myRole = 'designer2'; // I was the original, now replaced
+                        } else {
+                            $myRole = $visit['my_role']; // fallback
                         }
-                        // I am absent only if the flag is set AND I am the original (not replacement)
-                        $myAbsent = (bool) $visit['designer1_absent'] && !$isReplacement;
-                    } else {
-                        if (!empty($visit['original_designer2_id']) && $visit['original_designer2_id'] != $admin_id) {
-                            $isReplacement = true;
-                        }
-                        $myAbsent = (bool) $visit['designer2_absent'] && !$isReplacement;
-                    }
 
-                    $visitStatus = strtolower($visit['status']);
-                    ?>
-                    <div class="visit-card v-<?= $visitStatus ?>">
-                        <!-- Card Top -->
-                        <div class="visit-card-top" onclick="toggleVisit(<?= $visit['id'] ?>)">
-                            <div>
-                                <div class="visit-date">
-                                    <i class="fas fa-calendar" style="color:#8a5a44; margin-right:5px;"></i>
-                                    <?= date('F d, Y', strtotime($visit['visit_date'])) ?>
-                                    <?php if (!empty($visit['visit_time'])): ?>
-                                        <span style="margin-left:8px; color:#6b7280; font-size:13px; font-weight:400;">
-                                            <i class="fas fa-clock" style="color:#8a5a44;"></i>
-                                            <?= date('g:i A', strtotime($visit['visit_time'])) ?>
+                        $myReport = $visit[$myRole . '_report'];
+                        $myFinished = (bool) $visit[$myRole . '_finished'];
+                        $myPhoto = $visit[$myRole . '_photo'] ?? null;
+
+                        // Am I truly absent?
+                        // I am absent if: the absent flag is on my slot AND I am the ORIGINAL (not the replacement)
+                        $isOriginalDesigner1 = ($visit['original_designer1_id'] == $admin_id);
+                        $isOriginalDesigner2 = ($visit['original_designer2_id'] == $admin_id);
+                        $isReplacement = false;
+
+                        if ($myRole === 'designer1') {
+                            // If there's an original saved and it's NOT me, then I'm the replacement
+                            if (!empty($visit['original_designer1_id']) && $visit['original_designer1_id'] != $admin_id) {
+                                $isReplacement = true;
+                            }
+                            // I am absent only if the flag is set AND I am the original (not replacement)
+                            $myAbsent = (bool) $visit['designer1_absent'] && !$isReplacement;
+                        } else {
+                            if (!empty($visit['original_designer2_id']) && $visit['original_designer2_id'] != $admin_id) {
+                                $isReplacement = true;
+                            }
+                            $myAbsent = (bool) $visit['designer2_absent'] && !$isReplacement;
+                        }
+
+                        $visitStatus = strtolower($visit['status']);
+                        $stripeClass = 'border-l-line';
+                        $stBadge = 'bg-[#F5F5F5] text-soft border-line';
+                        if ($visitStatus === 'pending') { $stripeClass = 'border-l-amber-400'; $stBadge = 'bg-amber-100 text-amber-800 border-amber-300'; }
+                        elseif ($visitStatus === 'ongoing') { $stripeClass = 'border-l-blue-400'; $stBadge = 'bg-blue-100 text-blue-800 border-blue-300'; }
+                        elseif ($visitStatus === 'done') { $stripeClass = 'border-l-emerald-400'; $stBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300'; }
+                        ?>
+                        <div class="border border-line <?= $stripeClass ?> border-l-4 rounded-lg overflow-hidden">
+                            <!-- Card Top (toggle) -->
+                            <div class="flex justify-between items-start gap-3 flex-wrap p-4 cursor-pointer hover:bg-[#FAFAFA] transition"
+                                onclick="toggleVisit(<?= $visit['id'] ?>)">
+                                <div>
+                                    <div class="text-[14px] font-semibold flex items-center gap-2 flex-wrap">
+                                        <i class="fas fa-calendar-day text-soft"></i>
+                                        <?= date('F d, Y', strtotime($visit['visit_date'])) ?>
+                                        <?php if (!empty($visit['visit_time'])): ?>
+                                            <span class="text-soft font-normal">
+                                                <i class="fas fa-clock ml-1"></i> <?= date('g:i A', strtotime($visit['visit_time'])) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                        <span class="bg-[#F5F5F5] border border-line text-ink px-2.5 py-0.5 rounded-full text-[11px] font-bold">
+                                            <?= $myRole === 'designer1' ? 'Lead' : 'Support' ?>
                                         </span>
-                                    <?php endif; ?>
-                                    <span
-                                        style="margin-left:8px; background:#f3f4f6; padding:2px 9px; border-radius:8px; font-size:11px; font-weight:600; color:#374151;">
-                                        <?= $myRole === 'designer1' ? 'Lead' : 'Support' ?>
-                                    </span>
+                                    </div>
+                                    <div class="text-[12px] text-muted mt-1">
+                                        <?php if ($visit['designer2_name'] && $myRole === 'designer1'): ?>
+                                            With: <?= htmlspecialchars($visit['designer2_name']) ?>
+                                        <?php elseif ($myRole === 'designer2'): ?>
+                                            With: <?= htmlspecialchars($visit['designer1_name']) ?>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                        <?php if (($visit['visit_type'] ?? 'Free') === 'Paid'): ?>
+                                            <span class="text-[11px] font-bold text-amber-600"><i class="fas fa-money-bill-wave"></i> Paid — ₱<?= number_format($visit['visit_amount'], 2) ?></span>
+                                        <?php else: ?>
+                                            <span class="text-[11px] text-muted"><i class="fas fa-gift"></i> Free</span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
-                                <div class="visit-sub">
-                                    <?php if ($visit['designer2_name'] && $myRole === 'designer1'): ?>
-                                        With: <?= htmlspecialchars($visit['designer2_name']) ?>
-                                    <?php elseif ($myRole === 'designer2'): ?>
-                                        With: <?= htmlspecialchars($visit['designer1_name']) ?>
+                                <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                    <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase border <?= $stBadge ?>"><?= $visit['status'] ?></span>
+                                    <?php if ($myFinished): ?>
+                                        <span class="text-[11px] font-semibold text-emerald-600"><i class="fas fa-check"></i> You finished</span>
                                     <?php endif; ?>
-                                </div>
-                                <div style="margin-top:5px; display:flex; align-items:center; gap:6px;">
-                                    <?php if (($visit['visit_type'] ?? 'Free') === 'Paid'): ?>
-                                        <span
-                                            style="background:#fef3c7; color:#92400e; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                                            <i class="fas fa-money-bill-wave"></i> Paid —
-                                            ₱<?= number_format($visit['visit_amount'], 2) ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span
-                                            style="background:#d1fae5; color:#065f46; padding:2px 10px; border-radius:20px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px;">
-                                            <i class="fas fa-gift"></i> Free
-                                        </span>
-                                    <?php endif; ?>
+                                    <i class="fas fa-chevron-down text-muted text-[12px] transition-transform" id="chev-<?= $visit['id'] ?>"></i>
                                 </div>
                             </div>
-                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
-                                <span
-                                    class="status-pill <?= $visitStatus === 'done' ? 'pill-done' : ($visitStatus === 'ongoing' ? 'pill-ongo' : 'pill-pend') ?>">
-                                    <?= $visit['status'] ?>
-                                </span>
-                                <?php if ($myFinished): ?>
-                                    <span style="font-size:11px; color:#10b981; font-weight:600;">
-                                        <i class="fas fa-check"></i> You finished
-                                    </span>
-                                <?php endif; ?>
-                                <i class="fas fa-chevron-down" id="chev-<?= $visit['id'] ?>"
-                                    style="color:#9ca3af; font-size:12px; transition:transform 0.2s;"></i>
-                            </div>
-                        </div>
 
-                        <!-- Card Body -->
-                        <div class="visit-card-body" id="vbody-<?= $visit['id'] ?>">
+                            <!-- Card Body -->
+                            <div class="hidden border-t border-line px-4 pt-4 pb-4" id="vbody-<?= $visit['id'] ?>">
 
-                            <?php if ($visit['notes']): ?>
-                                <div
-                                    style="background:#fffbeb; border-radius:8px; padding:12px; margin-bottom:14px; font-size:13px; color:#92400e;">
-                                    <i class="fas fa-sticky-note"></i>
-                                    <strong>Notes from head:</strong> <?= htmlspecialchars($visit['notes']) ?>
-                                </div>
-                            <?php endif; ?>
-
-                            <?php if ($myAbsent): ?>
-                                <!-- ABSENT — shown only to the original designer who was replaced -->
-                                <div
-                                    style="background:#fee2e2; border-radius:8px; padding:16px; display:flex; align-items:flex-start; gap:12px; color:#991b1b; font-weight:600; font-size:14px;">
-                                    <i class="fas fa-user-slash" style="font-size:20px; flex-shrink:0; margin-top:2px;"></i>
-                                    <div>
-                                        <div>You have been marked as absent for this visit.</div>
-                                        <?php
-                                        $absentReason = $visit[$myRole . '_absent_reason'] ?? '';
-                                        $replacementName = ($myRole === 'designer1')
-                                            ? ($visit['designer1_name'] ?? null)
-                                            : ($visit['designer2_name'] ?? null);
-                                        // Only show replacement name if there is an original (meaning someone replaced them)
-                                        $hasReplacement = !empty($visit['original_' . $myRole . '_id']);
-                                        ?>
-                                        <?php if ($absentReason): ?>
-                                            <div
-                                                style="font-size:12px; font-weight:400; margin-top:6px; background:#fca5a5; padding:6px 10px; border-radius:6px;">
-                                                <i class="fas fa-comment"></i> Reason: "<?= htmlspecialchars($absentReason) ?>"
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if ($hasReplacement && $replacementName): ?>
-                                            <div
-                                                style="font-size:12px; font-weight:600; margin-top:6px; display:flex; align-items:center; gap:5px;">
-                                                <i class="fas fa-exchange-alt"></i>
-                                                Replaced by: <span
-                                                    style="text-decoration:underline;"><?= htmlspecialchars($replacementName) ?></span>
-                                            </div>
-                                        <?php endif; ?>
-                                        <div style="font-size:12px; font-weight:400; margin-top:6px; opacity:0.8;">
-                                            Please contact your head if this is incorrect.
-                                        </div>
-                                    </div>
-                                </div>
-
-                            <?php elseif ($myFinished): ?>
-                                <!-- FINISHED -->
-                                <div class="finished-banner">
-                                    <i class="fas fa-check-circle" style="font-size:18px;"></i>
-                                    You have marked this visit as finished.
-                                    <?php if ($visit[$myRole . '_finished_at']): ?>
-                                        <span style="font-weight:400; margin-left:auto; font-size:12px;">
-                                            <?= date('M d, Y g:i A', strtotime($visit[$myRole . '_finished_at'])) ?>
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-                                <?php $myPhoto = $visit[$myRole . '_photo'] ?? null; ?>
-                                <?php if ($myPhoto): ?>
-                                    <div style="margin-top:12px; margin-bottom:10px;">
-                                        <div
-                                            style="font-size:12px; font-weight:700; color:#065f46; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                                            <i class="fas fa-camera"></i> Proof Photo
-                                        </div>
-                                        <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($myPhoto) ?>" alt="Proof"
-                                            style="max-width:100%; max-height:220px; border-radius:8px; border:2px solid #bbf7d0; object-fit:cover; display:block; cursor:pointer;"
-                                            onclick="openPhotoModal(this.src)">
-                                    </div>
-                                <?php endif; ?>
-                                <?php if ($myReport): ?>
-                                    <div class="existing-report">
-                                        <strong><i class="fas fa-file-alt"></i> Your Report</strong>
-                                        <p><?= nl2br(htmlspecialchars($myReport)) ?></p>
+                                <?php if ($visit['notes']): ?>
+                                    <div class="bg-amber-50 border border-amber-300 rounded-lg px-3.5 py-2.5 mb-3.5 text-[12.5px] text-amber-800">
+                                        <i class="fas fa-sticky-note"></i>
+                                        <strong>Notes from head:</strong> <?= htmlspecialchars($visit['notes']) ?>
                                     </div>
                                 <?php endif; ?>
 
-                            <?php else: ?>
-                                <!-- PENDING / ONGOING -->
-                                <?php if ($isReplacement): ?>
-                                    <div
-                                        style="background:#ede9fe; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:12px; font-weight:600; color:#5b21b6; display:flex; align-items:center; gap:8px;">
-                                        <i class="fas fa-exchange-alt"></i>
-                                        You are the <strong>replacement designer</strong> for this visit.
-                                        <?php
-                                        $origName = ($myRole === 'designer1')
-                                            ? ($visit['original_designer1_name'] ?? null)
-                                            : ($visit['original_designer2_name'] ?? null);
-                                        ?>
-                                        <?php if ($origName): ?>
-                                            &nbsp;Originally assigned: <span
-                                                style="text-decoration:underline;"><?= htmlspecialchars($origName) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endif; ?>
-
-                                <?php if ($visit['approval_status'] !== 'Approved'): ?>
-                                    <!-- Not yet approved -->
-                                    <div
-                                        style="background:#fef3c7; border-radius:8px; padding:16px; display:flex; align-items:center; gap:12px; color:#92400e; font-size:13px; font-weight:600;">
-                                        <i class="fas fa-hourglass-half" style="font-size:20px;"></i>
-                                        <div>
-                                            <?php if ($visit['approval_status'] === 'Rejected'): ?>
-                                                <div>This visit has been <strong>rejected</strong> by the manager.</div>
-                                                <div style="font-size:12px; font-weight:400; margin-top:4px; opacity:0.85;">
-                                                    Please wait for the head to make adjustments and resubmit.
-                                                </div>
-                                                <?php if ($visit['approval_comment']): ?>
-                                                    <div
-                                                        style="margin-top:8px; padding:8px; background:#fee2e2; border-radius:6px; color:#991b1b; font-size:12px; font-style:italic;">
-                                                        <i class="fas fa-comment-slash"></i>
-                                                        "<?= htmlspecialchars($visit['approval_comment']) ?>"
-                                                    </div>
-                                                <?php endif; ?>
-                                            <?php else: ?>
-                                                <div>This visit is <strong>awaiting approval</strong> from the manager.</div>
-                                                <div style="font-size:12px; font-weight:400; margin-top:4px; opacity:0.85;">
-                                                    You can set it as ongoing and submit your report once approved.
+                                <?php if ($myAbsent): ?>
+                                    <!-- ABSENT — shown only to the original designer who was replaced -->
+                                    <div class="bg-red-50 border border-red-300 rounded-lg px-4 py-3.5 flex items-start gap-3">
+                                        <i class="fas fa-user-slash text-red-800 text-lg flex-shrink-0 mt-0.5"></i>
+                                        <div class="text-red-900">
+                                            <div class="text-[13.5px] font-bold">You have been marked as absent for this visit.</div>
+                                            <?php
+                                            $absentReason = $visit[$myRole . '_absent_reason'] ?? '';
+                                            $replacementName = ($myRole === 'designer1')
+                                                ? ($visit['designer1_name'] ?? null)
+                                                : ($visit['designer2_name'] ?? null);
+                                            // Only show replacement name if there is an original (meaning someone replaced them)
+                                            $hasReplacement = !empty($visit['original_' . $myRole . '_id']);
+                                            ?>
+                                            <?php if ($absentReason): ?>
+                                                <div class="text-[12px] mt-1.5 bg-white/70 rounded-md px-2.5 py-1.5 italic">
+                                                    <i class="fas fa-comment"></i> Reason: "<?= htmlspecialchars($absentReason) ?>"
                                                 </div>
                                             <?php endif; ?>
+                                            <?php if ($hasReplacement && $replacementName): ?>
+                                                <div class="text-[12px] font-semibold mt-1.5 flex items-center gap-1.5">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                    Replaced by: <span class="underline"><?= htmlspecialchars($replacementName) ?></span>
+                                                </div>
+                                            <?php endif; ?>
+                                            <div class="text-[11px] font-normal mt-1.5 text-red-700">
+                                                Please contact your head if this is incorrect.
+                                            </div>
                                         </div>
                                     </div>
 
-                                <?php else: ?>
-                                    <!-- Approved -->
-                                    <div
-                                        style="background:#d1fae5; border-radius:8px; padding:8px 14px; margin-bottom:14px; font-size:12px; font-weight:600; color:#065f46; display:flex; align-items:center; gap:6px;">
-                                        <i class="fas fa-check-circle"></i> Approved — you can now submit your report.
-                                    </div>
-
-                                    <!-- Status Toggle -->
-                                    <div style="display:flex; gap:10px; margin-bottom:16px; align-items:center; flex-wrap:wrap;">
-                                        <span
-                                            style="font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.4px;">
-                                            <i class="fas fa-toggle-on"></i> My Status:
-                                        </span>
-                                        <?php if ($visitStatus === 'pending' || ($visitStatus === 'done' && !$myFinished)): ?>
-                                            <form method="POST" style="display:inline;">
-                                                <input type="hidden" name="action" value="update_my_status">
-                                                <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
-                                                <input type="hidden" name="new_status" value="ongoing">
-                                                <input type="hidden" name="which" value="<?= $myRole ?>">
-                                                <button type="submit"
-                                                    style="padding:7px 16px; background:#3b82f6; color:white; border:none; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                                                    <i class="fas fa-play"></i> Set as Ongoing
-                                                </button>
-                                            </form>
-                                        <?php elseif ($visitStatus === 'ongoing'): ?>
-                                            <span
-                                                style="background:#dbeafe; color:#1e40af; padding:5px 14px; border-radius:20px; font-size:12px; font-weight:700;">
-                                                <i class="fas fa-spinner fa-spin" style="font-size:10px;"></i> Ongoing
+                                <?php elseif ($myFinished): ?>
+                                    <!-- FINISHED -->
+                                    <div class="bg-emerald-50 border border-emerald-300 rounded-lg px-3.5 py-2.5 text-[12.5px] font-semibold text-emerald-800 flex items-center gap-2 flex-wrap">
+                                        <i class="fas fa-check-circle"></i> You have marked this visit as finished.
+                                        <?php if ($visit[$myRole . '_finished_at']): ?>
+                                            <span class="font-normal ml-auto text-[11px]">
+                                                <?= date('M d, Y g:i A', strtotime($visit[$myRole . '_finished_at'])) ?>
                                             </span>
-                                            <form method="POST" style="display:inline;">
-                                                <input type="hidden" name="action" value="update_my_status">
-                                                <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
-                                                <input type="hidden" name="new_status" value="pending">
-                                                <input type="hidden" name="which" value="<?= $myRole ?>">
-                                                <button type="submit"
-                                                    style="padding:7px 16px; background:#f9f9f9; color:#6b7280; border:2px solid #e9ecef; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
-                                                    <i class="fas fa-undo"></i> Set Back to Pending
-                                                </button>
-                                            </form>
                                         <?php endif; ?>
                                     </div>
+                                    <?php $myPhoto = $visit[$myRole . '_photo'] ?? null; ?>
+                                    <?php if ($myPhoto): ?>
+                                        <div class="mt-3">
+                                            <div class="text-[11px] font-bold text-emerald-800 mb-1"><i class="fas fa-camera"></i> Proof Photo</div>
+                                            <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($myPhoto) ?>" alt="Proof"
+                                                class="max-w-full max-h-[220px] rounded-md border border-emerald-200 object-cover cursor-pointer"
+                                                onclick="openPhotoModal(this.src)">
+                                        </div>
+                                    <?php endif; ?>
+                                    <?php if ($myReport): ?>
+                                        <div class="bg-emerald-50 border-l-2 border-emerald-400 rounded-md p-3 mt-3">
+                                            <strong class="text-[12px] text-emerald-800 block mb-1"><i class="fas fa-file-alt"></i> Your Report</strong>
+                                            <p class="text-[13px]"><?= nl2br(htmlspecialchars($myReport)) ?></p>
+                                        </div>
+                                    <?php endif; ?>
 
-                                    <?php if ($visitStatus === 'ongoing' || ($visitStatus === 'done' && !$myFinished)): ?>
+                                <?php else: ?>
+                                    <!-- PENDING / ONGOING -->
+                                    <?php if ($isReplacement): ?>
+                                        <div class="bg-purple-50 border border-purple-300 rounded-lg px-3.5 py-2.5 mb-3.5 text-[12px] font-semibold text-purple-800 flex items-center gap-2 flex-wrap">
+                                            <i class="fas fa-exchange-alt"></i>
+                                            You are the <strong>replacement designer</strong> for this visit.
+                                            <?php
+                                            $origName = ($myRole === 'designer1')
+                                                ? ($visit['original_designer1_name'] ?? null)
+                                                : ($visit['original_designer2_name'] ?? null);
+                                            ?>
+                                            <?php if ($origName): ?>
+                                                &nbsp;Originally assigned: <span class="underline"><?= htmlspecialchars($origName) ?></span>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
 
-                                        <?php
-                                        $myPhoto = $visit[$myRole . '_photo'] ?? null;
-                                        ?>
-
-                                        <?php if (empty($myPhoto)): ?>
-                                            <!-- STEP 1: Upload Photo First -->
-                                            <div
-                                                style="background:#fffbeb; border:2px dashed #f59e0b; border-radius:10px; padding:20px; margin-bottom:16px;">
-                                                <div
-                                                    style="font-size:13px; font-weight:700; color:#92400e; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                                                    <i class="fas fa-camera" style="font-size:16px;"></i>
-                                                    Step 1 of 2 — Upload Proof Photo
-                                                    <span style="font-size:11px; font-weight:400; color:#b45309;">(Required before writing your
-                                                        report)</span>
-                                                </div>
-                                                <form method="POST" enctype="multipart/form-data">
-                                                    <input type="hidden" name="action" value="upload_proof_photo">
-                                                    <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
-                                                    <input type="hidden" name="which" value="<?= $myRole ?>">
-                                                    <input type="file" name="proof_photo" accept="image/*" required
-                                                        id="photoInput-<?= $visit['id'] ?>"
-                                                        style="width:100%; padding:9px; border:2px solid #f59e0b; border-radius:8px; font-size:13px; background:white; cursor:pointer; margin-bottom:10px;"
-                                                        onchange="previewPhoto(this, <?= $visit['id'] ?>)">
-                                                    <div id="photoPreview-<?= $visit['id'] ?>" style="display:none; margin-bottom:10px;">
-                                                        <img id="previewImg-<?= $visit['id'] ?>" src="" alt="Preview"
-                                                            style="max-width:100%; max-height:200px; border-radius:8px; border:2px solid #fcd34d; object-fit:cover; display:block;">
+                                    <?php if ($visit['approval_status'] !== 'Approved'): ?>
+                                        <!-- Not yet approved -->
+                                        <div class="bg-amber-50 border border-amber-300 rounded-lg px-4 py-3.5 flex items-center gap-3">
+                                            <i class="fas fa-hourglass-half text-amber-800 text-lg"></i>
+                                            <div class="text-[13px] font-semibold text-amber-800">
+                                                <?php if ($visit['approval_status'] === 'Rejected'): ?>
+                                                    <div>This visit has been <strong>rejected</strong> by the manager.</div>
+                                                    <div class="text-[12px] font-normal mt-1 opacity-85">
+                                                        Please wait for the head to make adjustments and resubmit.
                                                     </div>
+                                                    <?php if ($visit['approval_comment']): ?>
+                                                        <div class="mt-2 px-2.5 py-1.5 bg-red-100 rounded-md text-red-800 text-[12px] italic">
+                                                            <i class="fas fa-comment-slash"></i>
+                                                            "<?= htmlspecialchars($visit['approval_comment']) ?>"
+                                                        </div>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <div>This visit is <strong>awaiting approval</strong> from the manager.</div>
+                                                    <div class="text-[12px] font-normal mt-1 opacity-85">
+                                                        You can set it as ongoing and submit your report once approved.
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+
+                                    <?php else: ?>
+                                        <!-- Approved -->
+                                        <div class="bg-emerald-50 border border-emerald-300 rounded-lg px-3.5 py-2 mb-3.5 text-[12px] font-semibold text-emerald-800 flex items-center gap-2">
+                                            <i class="fas fa-check-circle"></i> Approved — you can now submit your report.
+                                        </div>
+
+                                        <!-- Status Toggle -->
+                                        <div class="flex gap-2.5 mb-4 items-center flex-wrap">
+                                            <span class="text-[12px] font-bold text-soft uppercase tracking-[0.4px]">
+                                                <i class="fas fa-toggle-on"></i> My Status:
+                                            </span>
+                                            <?php if ($visitStatus === 'pending' || ($visitStatus === 'done' && !$myFinished)): ?>
+                                                <form method="POST" class="inline">
+                                                    <input type="hidden" name="action" value="update_my_status">
+                                                    <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
+                                                    <input type="hidden" name="new_status" value="ongoing">
+                                                    <input type="hidden" name="which" value="<?= $myRole ?>">
                                                     <button type="submit"
-                                                        style="background:#f59e0b; color:white; padding:9px 22px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:600; display:inline-flex; align-items:center; gap:6px;">
-                                                        <i class="fas fa-upload"></i> Upload Photo
+                                                        class="inline-flex items-center gap-2 bg-blue-600 text-white rounded-lg px-3.5 py-2 text-[13px] font-semibold hover:opacity-90 transition">
+                                                        <i class="fas fa-play"></i> Set as Ongoing
                                                     </button>
                                                 </form>
-                                            </div>
-                                            <!-- Step 2 locked -->
-                                            <div
-                                                style="background:#f9f9f9; border-radius:8px; padding:16px; text-align:center; color:#9ca3af; font-size:13px; border:2px dashed #e9ecef;">
-                                                <i class="fas fa-lock" style="font-size:20px; display:block; margin-bottom:8px;"></i>
-                                                <strong style="color:#374151;">Step 2</strong> — Write your report will unlock after photo is
-                                                uploaded.
-                                            </div>
+                                            <?php elseif ($visitStatus === 'ongoing'): ?>
+                                                <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-[12px] font-bold">
+                                                    <i class="fas fa-spinner fa-spin text-[10px]"></i> Ongoing
+                                                </span>
+                                                <form method="POST" class="inline">
+                                                    <input type="hidden" name="action" value="update_my_status">
+                                                    <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
+                                                    <input type="hidden" name="new_status" value="pending">
+                                                    <input type="hidden" name="which" value="<?= $myRole ?>">
+                                                    <button type="submit"
+                                                        class="inline-flex items-center gap-2 bg-white border border-line text-soft rounded-lg px-3.5 py-2 text-[13px] font-semibold hover:border-ink transition">
+                                                        <i class="fas fa-undo"></i> Set Back to Pending
+                                                    </button>
+                                                </form>
+                                            <?php endif; ?>
+                                        </div>
 
-                                        <?php else: ?>
-                                            <!-- STEP 1 DONE: Show uploaded photo -->
-                                            <div
-                                                style="background:#d1fae5; border-radius:10px; padding:14px; margin-bottom:16px; display:flex; align-items:flex-start; gap:12px;">
-                                                <div style="flex-shrink:0;">
-                                                    <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($myPhoto) ?>" alt="Proof"
-                                                        style="width:80px; height:80px; object-fit:cover; border-radius:8px; border:2px solid #6ee7b7; cursor:pointer;"
-                                                        onclick="openPhotoModal(this.src)">
-                                                </div>
-                                                <div style="flex:1;">
-                                                    <div
-                                                        style="font-size:12px; font-weight:700; color:#065f46; display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                                                        <i class="fas fa-check-circle"></i> Step 1 Complete — Proof Photo Uploaded
+                                        <?php if ($visitStatus === 'ongoing' || ($visitStatus === 'done' && !$myFinished)): ?>
+
+                                            <?php
+                                            $myPhoto = $visit[$myRole . '_photo'] ?? null;
+                                            ?>
+
+                                            <?php if (empty($myPhoto)): ?>
+                                                <!-- STEP 1: Upload Photo First -->
+                                                <div class="bg-amber-50 border-2 border-dashed border-amber-400 rounded-lg p-5 mb-4">
+                                                    <div class="text-[13px] font-bold text-amber-800 mb-3 flex items-center gap-2 flex-wrap">
+                                                        <i class="fas fa-camera"></i>
+                                                        Step 1 of 2 — Upload Proof Photo
+                                                        <span class="text-[11px] font-normal text-amber-700">(Required before writing your report)</span>
                                                     </div>
-                                                    <div style="font-size:11px; color:#059669;">Photo converted and saved as WebP.</div>
-                                                    <!-- Allow re-upload -->
-                                                    <form method="POST" enctype="multipart/form-data"
-                                                        style="margin-top:8px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                                    <form method="POST" enctype="multipart/form-data">
                                                         <input type="hidden" name="action" value="upload_proof_photo">
                                                         <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
                                                         <input type="hidden" name="which" value="<?= $myRole ?>">
-                                                        <input type="file" name="proof_photo" accept="image/*"
-                                                            id="reuploadInput-<?= $visit['id'] ?>" style="font-size:11px; color:#374151;">
+                                                        <input type="file" name="proof_photo" accept="image/*" required
+                                                            id="photoInput-<?= $visit['id'] ?>"
+                                                            class="w-full border-2 border-amber-400 rounded-lg px-3 py-2 text-[13px] bg-white cursor-pointer mb-2.5"
+                                                            onchange="previewPhoto(this, <?= $visit['id'] ?>)">
+                                                        <div id="photoPreview-<?= $visit['id'] ?>" class="hidden mb-2.5">
+                                                            <img id="previewImg-<?= $visit['id'] ?>" src="" alt="Preview"
+                                                                class="max-w-full max-h-[200px] rounded-md border-2 border-amber-300 object-cover block">
+                                                        </div>
                                                         <button type="submit"
-                                                            style="background:white; color:#065f46; padding:5px 12px; border:1px solid #6ee7b7; border-radius:6px; cursor:pointer; font-size:11px; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
-                                                            <i class="fas fa-redo"></i> Replace Photo
+                                                            class="inline-flex items-center gap-2 bg-amber-500 text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 transition">
+                                                            <i class="fas fa-upload"></i> Upload Photo
                                                         </button>
                                                     </form>
                                                 </div>
-                                            </div>
-
-                                            <!-- STEP 2: Write Report -->
-                                            <div
-                                                style="background:#f0f9ff; border:2px solid #bae6fd; border-radius:10px; padding:16px; margin-bottom:4px;">
-                                                <div
-                                                    style="font-size:13px; font-weight:700; color:#0369a1; margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                                                    <i class="fas fa-file-alt"></i> Step 2 of 2 — Write Your Report
+                                                <!-- Step 2 locked -->
+                                                <div class="bg-[#F5F5F5] border-2 border-dashed border-line rounded-lg p-4 text-center text-muted text-[13px]">
+                                                    <i class="fas fa-lock text-lg block mb-2"></i>
+                                                    <strong class="text-ink">Step 2</strong> — Write your report will unlock after photo is uploaded.
                                                 </div>
-                                                <form method="POST" class="report-section">
-                                                    <input type="hidden" name="action" value="submit_report">
-                                                    <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
-                                                    <input type="hidden" name="which" value="<?= $myRole ?>">
-                                                    <textarea name="report" class="report-textarea"
-                                                        placeholder="Describe what was observed during the site visit..."><?= htmlspecialchars($myReport ?? '') ?></textarea>
-                                                    <button type="submit" class="btn-save">
-                                                        <i class="fas fa-save"></i> Save & Mark as Finished
-                                                    </button>
-                                                </form>
+
+                                            <?php else: ?>
+                                                <!-- STEP 1 DONE: Show uploaded photo -->
+                                                <div class="bg-emerald-50 border border-emerald-300 rounded-lg p-3.5 mb-4 flex items-start gap-3">
+                                                    <div class="flex-shrink-0">
+                                                        <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($myPhoto) ?>" alt="Proof"
+                                                            class="w-20 h-20 object-cover rounded-md border-2 border-emerald-300 cursor-pointer"
+                                                            onclick="openPhotoModal(this.src)">
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <div class="text-[12px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1">
+                                                            <i class="fas fa-check-circle"></i> Step 1 Complete — Proof Photo Uploaded
+                                                        </div>
+                                                        <div class="text-[11px] text-emerald-700">Photo converted and saved as WebP.</div>
+                                                        <!-- Allow re-upload -->
+                                                        <form method="POST" enctype="multipart/form-data" class="mt-2 flex items-center gap-2 flex-wrap">
+                                                            <input type="hidden" name="action" value="upload_proof_photo">
+                                                            <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
+                                                            <input type="hidden" name="which" value="<?= $myRole ?>">
+                                                            <input type="file" name="proof_photo" accept="image/*"
+                                                                id="reuploadInput-<?= $visit['id'] ?>" class="text-[11px] text-soft">
+                                                            <button type="submit"
+                                                                class="inline-flex items-center gap-1.5 bg-white text-emerald-800 border border-emerald-300 rounded-md px-3 py-1.5 text-[11px] font-semibold hover:bg-emerald-100 transition">
+                                                                <i class="fas fa-redo"></i> Replace Photo
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+
+                                                <!-- STEP 2: Write Report -->
+                                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                                    <div class="text-[13px] font-bold text-blue-800 mb-3 flex items-center gap-2">
+                                                        <i class="fas fa-file-alt"></i> Step 2 of 2 — Write Your Report
+                                                    </div>
+                                                    <form method="POST">
+                                                        <input type="hidden" name="action" value="submit_report">
+                                                        <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
+                                                        <input type="hidden" name="which" value="<?= $myRole ?>">
+                                                        <textarea name="report" rows="4"
+                                                            class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink resize-y"
+                                                            placeholder="Describe what was observed during the site visit..."><?= htmlspecialchars($myReport ?? '') ?></textarea>
+                                                        <button type="submit"
+                                                            class="mt-3 inline-flex items-center gap-2 bg-ink text-white rounded-lg px-5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
+                                                            <i class="fas fa-save"></i> Save & Mark as Finished
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            <?php endif; ?>
+
+                                        <?php else: ?>
+                                            <div class="bg-[#F5F5F5] border border-line rounded-lg p-4 text-center text-muted text-[13px]">
+                                                <i class="fas fa-lock text-lg block mb-2"></i>
+                                                Set your status to <strong class="text-ink">Ongoing</strong> first before submitting a report.
                                             </div>
                                         <?php endif; ?>
 
-                                    <?php else: ?>
-                                        <div
-                                            style="background:#f9f9f9; border-radius:8px; padding:16px; text-align:center; color:#9ca3af; font-size:13px;">
-                                            <i class="fas fa-lock" style="font-size:20px; display:block; margin-bottom:8px;"></i>
-                                            Set your status to <strong style="color:#374151;">Ongoing</strong> first before submitting a
-                                            report.
-                                        </div>
-                                    <?php endif; ?>
+                                    <?php endif; ?> <!-- end approval check -->
+                                <?php endif; ?> <!-- end absent/finished/pending check -->
 
-                                <?php endif; ?> <!-- end approval check -->
-                            <?php endif; ?> <!-- end absent/finished/pending check -->
-
+                            </div>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
+                </div>
             <?php endif; ?>
         </div>
 
@@ -1252,134 +736,136 @@ $pendingVisits = count(array_filter($visits, fn($v) => $v['status'] === 'Pending
     <!-- ══════════════════════════════════════════ -->
     <!-- FULL DETAILS MODAL                         -->
     <!-- ══════════════════════════════════════════ -->
-    <div class="modal-overlay" id="detailModal" onclick="handleOverlayClick(event)">
-        <div class="modal-box">
-            <div class="modal-header">
-                <h2><i class="fas fa-user-circle" style="color:#8a5a44;"></i> Client Details</h2>
-                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+    <div id="detailModal" class="hidden fixed inset-0 z-[9999] bg-black/50 items-center justify-center" onclick="handleOverlayClick(event)">
+        <div class="bg-white p-7 rounded-[14px] max-w-xl w-[90%] max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-5 border-b border-line pb-3.5">
+                <h2 class="text-lg font-bold flex items-center gap-2"><i class="fas fa-user-circle text-soft"></i> Client Details</h2>
+                <button onclick="closeModal()" class="text-soft hover:text-ink text-lg">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
 
             <!-- Reference Number -->
-            <div class="detail-row">
-                <div class="detail-label">Reference Number:</div>
-                <div class="detail-value" style="color:#3b82f6; font-family:monospace; font-weight:600;">
-                    <?= htmlspecialchars($client['reference_number'] ?? '') ?>
-                </div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Reference Number:</div>
+                <div class="text-blue-700 font-mono text-[13px] font-semibold"><?= htmlspecialchars($client['reference_number'] ?? '') ?></div>
             </div>
 
             <!-- Client Name -->
-            <div class="detail-row">
-                <div class="detail-label">Client Name:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['clientname']) ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Client Name:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['clientname']) ?></div>
             </div>
 
             <!-- Project Name -->
-            <div class="detail-row">
-                <div class="detail-label">Project Name:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['nameproject']) ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Project Name:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['nameproject']) ?></div>
             </div>
 
             <!-- Status -->
-            <div class="detail-row">
-                <div class="detail-label">Status:</div>
-                <div class="detail-value">
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Status:</div>
+                <div>
                     <?php $st = $client['status'] ?? ''; ?>
-                    <span class="status-pill <?= strtolower($st) === 'new client' ? 'pill-new' : 'pill-old' ?>">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase <?= strtolower($st) === 'new client' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800' ?>">
                         <?= htmlspecialchars($st) ?>
                     </span>
                 </div>
             </div>
 
             <!-- Business Type -->
-            <div class="detail-row">
-                <div class="detail-label">Business Type:</div>
-                <div class="detail-value"><?= htmlspecialchars($business_type_label) ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Business Type:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($business_type_label) ?></div>
             </div>
 
             <!-- Phone -->
-            <div class="detail-row">
-                <div class="detail-label">Phone:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['contact'] ?? '') ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Phone:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['contact'] ?? '') ?></div>
             </div>
 
             <!-- Email -->
-            <div class="detail-row">
-                <div class="detail-label">Email:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['email'] ?? '') ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Email:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['email'] ?? '') ?></div>
             </div>
 
             <!-- Address -->
-            <div class="detail-row">
-                <div class="detail-label">Address:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['address'] ?? '') ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Address:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['address'] ?? '') ?></div>
             </div>
 
             <!-- Gender -->
-            <div class="detail-row">
-                <div class="detail-label">Gender:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['gender'] ?? '—') ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Gender:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['gender'] ?? '—') ?></div>
             </div>
 
             <!-- Classification -->
-            <div class="detail-row">
-                <div class="detail-label">Classification:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['client_class'] ?? '—') ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Classification:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['client_class'] ?? '—') ?></div>
             </div>
 
             <!-- Client Type -->
-            <div class="detail-row">
-                <div class="detail-label">Client Type:</div>
-                <div class="detail-value"><?= htmlspecialchars($client['client_type'] ?? '—') ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Client Type:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['client_type'] ?? '—') ?></div>
             </div>
 
             <!-- Project Scope -->
             <?php if (!empty($client['project_scope'])): ?>
-                <div class="detail-row">
-                    <div class="detail-label">Project Scope:</div>
-                    <div class="detail-value"><?= nl2br(htmlspecialchars($client['project_scope'])) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Project Scope:</div>
+                    <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($client['project_scope'])) ?></div>
                 </div>
             <?php endif; ?>
 
             <!-- Scope of Work -->
             <?php if (!empty($client['scope_of_work'])): ?>
-                <div class="detail-row">
-                    <div class="detail-label">Scope of Work:</div>
-                    <div class="detail-value"><?= nl2br(htmlspecialchars($client['scope_of_work'])) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Scope of Work:</div>
+                    <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($client['scope_of_work'])) ?></div>
                 </div>
             <?php endif; ?>
 
             <!-- Total Project Cost -->
-            <div class="detail-row">
-                <div class="detail-label">Total Project Cost:</div>
-                <div class="detail-value" style="font-weight:700; color:#065f46;">
-                    ₱<?= number_format($client['total_project_cost'] ?? 0, 2) ?>
-                </div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Total Project Cost:</div>
+                <div class="text-[13px] font-bold text-emerald-700">₱<?= number_format($client['total_project_cost'] ?? 0, 2) ?></div>
             </div>
 
             <!-- Remaining Balance -->
-            <div class="detail-row">
-                <div class="detail-label">Remaining Balance:</div>
-                <div class="detail-value" style="font-weight:700; color:#1e40af;">
-                    ₱<?= number_format($client['remaining_balance'] ?? 0, 2) ?>
-                </div>
+            <div class="grid grid-cols-[160px_1fr] py-3 items-start">
+                <div class="font-semibold text-soft text-[13px]">Remaining Balance:</div>
+                <div class="text-[13px] font-bold text-blue-700">₱<?= number_format($client['remaining_balance'] ?? 0, 2) ?></div>
             </div>
 
         </div>
+    </div>
+
+    <!-- Photo Lightbox -->
+    <div id="photoModal" onclick="closePhotoModal()"
+        class="hidden fixed inset-0 z-[99999] bg-black/90 items-center justify-center cursor-zoom-out">
+        <img id="photoModalImg" src="" alt="Proof Photo" class="max-w-[92vw] max-h-[92vh] rounded-lg object-contain">
     </div>
 
     <script>
         function toggleVisit(id) {
             const body = document.getElementById('vbody-' + id);
             const chev = document.getElementById('chev-' + id);
-            body.classList.toggle('open');
-            chev.style.transform = body.classList.contains('open') ? 'rotate(180deg)' : '';
+            body.classList.toggle('hidden');
+            chev.style.transform = !body.classList.contains('hidden') ? 'rotate(180deg)' : '';
         }
 
         function openModal() {
-            document.getElementById('detailModal').classList.add('open');
+            document.getElementById('detailModal').style.display = 'flex';
         }
         function closeModal() {
-            document.getElementById('detailModal').classList.remove('open');
+            document.getElementById('detailModal').style.display = 'none';
         }
         function handleOverlayClick(e) {
             if (e.target === document.getElementById('detailModal')) closeModal();
@@ -1389,7 +875,7 @@ $pendingVisits = count(array_filter($visits, fn($v) => $v['status'] === 'Pending
             const img = document.getElementById('previewImg-' + visitId);
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => { img.src = e.target.result; preview.style.display = 'block'; };
+                reader.onload = e => { img.src = e.target.result; preview.classList.remove('hidden'); };
                 reader.readAsDataURL(input.files[0]);
             }
         }
@@ -1401,12 +887,6 @@ $pendingVisits = count(array_filter($visits, fn($v) => $v['status'] === 'Pending
             document.getElementById('photoModal').style.display = 'none';
         }
     </script>
-    <!-- Photo Lightbox -->
-    <div id="photoModal" onclick="closePhotoModal()" style="display:none; position:fixed; z-index:99999; left:0; top:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.88); align-items:center; justify-content:center; cursor:zoom-out;">
-        <img id="photoModalImg" src="" alt="Proof Photo" style="max-width:92vw; max-height:92vh; border-radius:10px; object-fit:contain;
-                box-shadow:0 10px 40px rgba(0,0,0,0.5);">
-    </div>
 </body>
 
 </html>

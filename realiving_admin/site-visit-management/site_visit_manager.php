@@ -432,509 +432,172 @@ $autoUpdateDueStmt->execute();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Site Visit Manager</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 35px 40px;
-            border-radius: 16px;
-            color: white;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .page-header h1 {
-            font-size: 26px;
-            margin-bottom: 5px;
-        }
-
-        .page-header .subtitle {
-            opacity: 0.85;
-            font-size: 14px;
-        }
-
-        .btn-back {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 9px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            transition: all 0.2s;
-            margin-bottom: 18px;
-        }
-
-        .btn-back:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 25px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            margin-bottom: 20px;
-        }
-
-        .card h2 {
-            font-size: 17px;
-            color: #3b1f0f;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #f5f1ed;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .stage-status-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f9f9f9;
-            border-radius: 10px;
-            padding: 16px 20px;
-            margin-bottom: 20px;
-            border: 2px solid #e9ecef;
-        }
-
-        .stage-status-label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .status-badge {
-            padding: 5px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-badge.pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-badge.ongoing {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .status-badge.done {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .btn-done-stage {
-            background: #10b981;
-            color: white;
-            padding: 9px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-done-stage:hover {
-            opacity: 0.85;
-        }
-
-        /* Visit Cards */
-        .visit-card {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 14px;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .visit-card.v-pending {
-            border-left: 4px solid #f59e0b;
-            background: #fffbeb;
-        }
-
-        .visit-card.v-ongoing {
-            border-left: 4px solid #3b82f6;
-            background: #eff6ff;
-        }
-
-        .visit-card.v-done {
-            border-left: 4px solid #10b981;
-            background: #f0fdf4;
-        }
-
-        .visit-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .visit-number {
-            font-size: 13px;
-            font-weight: 700;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .visit-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .visit-info {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 14px;
-            font-size: 13px;
-            color: #374151;
-        }
-
-        .visit-info span {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .visit-info i {
-            color: #8a5a44;
-        }
-
-        .visit-notes {
-            margin-top: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.03);
-            border-radius: 6px;
-            font-size: 12px;
-            color: #666;
-            font-style: italic;
-        }
-
-        .designer-report {
-            margin-top: 10px;
-            padding: 10px 14px;
-            background: #f0fdf4;
-            border-radius: 6px;
-            border-left: 3px solid #10b981;
-            font-size: 12px;
-            color: #374151;
-        }
-
-        .designer-report strong {
-            color: #065f46;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .btn-sm {
-            padding: 5px 12px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-danger {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .btn-danger:hover {
-            background: #fecaca;
-        }
-
-        /* Form */
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 700;
-            color: #374151;
-            margin-bottom: 6px;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
-        .required-star {
-            color: #ef4444;
-            margin-left: 2px;
-        }
-
-        .optional-tag {
-            font-size: 10px;
-            color: #9ca3af;
-            font-weight: 400;
-            text-transform: none;
-            margin-left: 4px;
-        }
-
-        .form-control {
-            width: 100%;
-            padding: 9px 13px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            color: #111;
-            transition: border-color 0.2s;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #8a5a44;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 11px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: opacity 0.2s;
-        }
-
-        .btn-submit:hover {
-            opacity: 0.9;
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 18px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-
-        /* Workload */
-        .designer-card {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 12px 14px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-left: 4px solid #e9ecef;
-        }
-
-        .designer-card-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1f2937;
-        }
-
-        .designer-card-sub {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 2px;
-        }
-
-        .workload-badges {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            align-items: flex-end;
-        }
-
-        .wb {
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            white-space: nowrap;
-        }
-
-        .wb-clients {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .wb-visits {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .wb-free {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #9ca3af;
-        }
-
-        .empty-state i {
-            font-size: 40px;
-            margin-bottom: 12px;
-            display: block;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
 </head>
 
-<body>
-    <div class="container">
-        <a href="unified-project-tracker?client_id=<?= $client_id ?>" class="btn-back"
-            style="background: #3b1f0f; color: white; border: 1px solid #3b1f0f;">
-            <i class="fas fa-arrow-left"></i> Back to Tracker
-        </a>
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[1200px] mx-auto px-5 py-8">
 
-        <div class="page-header">
-            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px;">
-                <div>
-                    <h1><i class="fas fa-map-marker-alt"></i> Site Visit Manager</h1>
-                    <div class="subtitle">
-                        <?= htmlspecialchars($client['clientname']) ?> — <?= htmlspecialchars($client['nameproject']) ?>
-                        &nbsp;•&nbsp; Ref: <?= htmlspecialchars($client['reference_number']) ?>
-                        &nbsp;•&nbsp; Client Status: <strong><?= htmlspecialchars($client['status']) ?></strong>
-                    </div>
+        <!-- Back button -->
+        <div class="mb-5">
+            <a href="unified-project-tracker?client_id=<?= $client_id ?>"
+                class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
+                <i class="fas fa-arrow-left"></i> Back to Tracker
+            </a>
+        </div>
+
+        <!-- ── Page Header ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5 flex justify-between items-start gap-4 flex-wrap">
+            <div>
+                <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                    <i class="fas fa-map-marker-alt"></i> Site Visit Manager
                 </div>
-                <button onclick="document.getElementById('clientDetailModal').style.display='flex'" style="background:white; color:#3b1f0f; padding:10px 20px; border:none; border-radius:8px;
-                       cursor:pointer; font-weight:600; font-size:14px; display:inline-flex;
-                       align-items:center; gap:8px; transition:all 0.2s; white-space:nowrap;">
-                    <i class="fas fa-info-circle"></i> View Full Details
-                </button>
+                <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($client['clientname']) ?></h1>
+                <p class="text-[13.5px] text-soft mt-1"><?= htmlspecialchars($client['nameproject']) ?></p>
+                <p class="text-[13px] text-muted mt-1">
+                    Ref: <?= htmlspecialchars($client['reference_number']) ?>
+                    &nbsp;•&nbsp; Client Status: <strong class="text-ink"><?= htmlspecialchars($client['status']) ?></strong>
+                </p>
             </div>
+            <button onclick="document.getElementById('clientDetailModal').style.display='flex'"
+                class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition whitespace-nowrap">
+                <i class="fas fa-info-circle"></i> View Full Details
+            </button>
         </div>
 
         <?php if ($success): ?>
-            <div class="alert alert-success"><i class="fas fa-check-circle"></i><?= $success ?></div>
+            <div class="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?>
+            </div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?= $error ?></div>
+            <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
 
-        <div class="grid-layout">
+        <!-- ── Stage Status Bar (own strip, always visible) ── -->
+        <?php
+        $allVisitsDone = !empty($allVisits) && count(array_filter($allVisits, fn($v) => $v['status'] !== 'Done')) === 0;
+        $stageBadgeClass = 'bg-[#F5F5F5] text-soft border-line';
+        if (strtolower($stageStatus) === 'pending') $stageBadgeClass = 'bg-amber-100 text-amber-800 border-amber-300';
+        elseif (strtolower($stageStatus) === 'ongoing') $stageBadgeClass = 'bg-blue-100 text-blue-800 border-blue-300';
+        elseif (strtolower($stageStatus) === 'done') $stageBadgeClass = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        ?>
+        <div class="bg-white border border-line rounded-[10px] p-5 mb-5 flex items-center justify-between gap-4 flex-wrap">
+            <div class="flex items-center gap-3.5">
+                <div>
+                    <div class="text-[13px] font-bold">Site Visit Stage Status</div>
+                    <div class="text-[12px] text-muted mt-0.5"><?= count($allVisits) ?> visit(s) scheduled</div>
+                </div>
+                <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide border <?= $stageBadgeClass ?>">
+                    <?= $stageStatus ?>
+                </span>
+            </div>
+            <?php if ($stageStatus !== 'Done' && $allVisitsDone): ?>
+                <form method="POST" onsubmit="return confirm('Mark the entire Site Visit stage as Done?')">
+                    <input type="hidden" name="action" value="mark_stage_done">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 bg-emerald-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-check-double"></i> Mark Stage Done
+                    </button>
+                </form>
+            <?php elseif ($stageStatus === 'Done'): ?>
+                <form method="POST" onsubmit="return confirm('Revert Site Visit stage back to Ongoing? You can then add more visits.')">
+                    <input type="hidden" name="action" value="revert_stage_ongoing">
+                    <button type="submit"
+                        class="inline-flex items-center gap-2 bg-blue-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-undo"></i> Revert to Ongoing
+                    </button>
+                </form>
+            <?php elseif ($stageStatus !== 'Done' && !empty($allVisits) && !$allVisitsDone): ?>
+                <div class="text-[12px] text-muted flex items-center gap-1.5">
+                    <i class="fas fa-info-circle"></i> All visits must be Done before marking stage complete.
+                </div>
+            <?php endif; ?>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-5 items-start">
             <!-- LEFT COLUMN -->
-            <div>
-                <!-- Stage Status Bar -->
-                <div class="card">
-                    <div class="stage-status-bar">
-                        <div>
-                            <div class="stage-status-label">Site Visit Stage Status</div>
-                            <div style="font-size: 12px; color: #9ca3af; margin-top: 3px;">
-                                <?= count($allVisits) ?> visit(s) scheduled
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <span class="status-badge <?= strtolower($stageStatus) ?>"><?= $stageStatus ?></span>
-                            <?php
-                            $allVisitsDone = !empty($allVisits) && count(array_filter($allVisits, fn($v) => $v['status'] !== 'Done')) === 0;
-                            ?>
-                            <?php if ($stageStatus !== 'Done' && $allVisitsDone): ?>
-                                <form method="POST" onsubmit="return confirm('Mark the entire Site Visit stage as Done?')">
-                                    <input type="hidden" name="action" value="mark_stage_done">
-                                    <button type="submit" class="btn-done-stage">
-                                        <i class="fas fa-check-double"></i> Mark Stage Done
-                                    </button>
-                                </form>
-                            <?php elseif ($stageStatus === 'Done'): ?>
-                                <form method="POST"
-                                    onsubmit="return confirm('Revert Site Visit stage back to Ongoing? You can then add more visits.')">
-                                    <input type="hidden" name="action" value="revert_stage_ongoing">
-                                    <button type="submit" style="background:#3b82f6; color:white; padding:9px 20px; border:none;
-            border-radius:8px; cursor:pointer; font-weight:600; font-size:13px;
-            display:inline-flex; align-items:center; gap:6px;">
-                                        <i class="fas fa-undo"></i> Revert to Ongoing
-                                    </button>
-                                </form>
-                            <?php elseif ($stageStatus !== 'Done' && !empty($allVisits) && !$allVisitsDone): ?>
-                                <div style="font-size:12px; color:#9ca3af; display:flex; align-items:center; gap:6px;">
-                                    <i class="fas fa-info-circle"></i> All visits must be Done before marking stage
-                                    complete.
-                                </div>
-                            <?php endif; ?>
-                        </div>
+            <div class="flex flex-col gap-5">
+
+                <!-- Scheduled Visits -->
+                <div class="bg-white border border-line rounded-[10px] p-6">
+                    <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                        <i class="fas fa-calendar-check text-soft"></i> Scheduled Visits
+                        <span class="flex-1 h-px bg-line"></span>
                     </div>
 
-                    <h2><i class="fas fa-calendar-check"></i> Scheduled Visits</h2>
-
                     <?php if (empty($allVisits)): ?>
-                        <div class="empty-state">
-                            <i class="fas fa-calendar-times"></i>
-                            No site visits scheduled yet. Add one using the form.
+                        <div class="text-center py-10 text-muted">
+                            <i class="fas fa-calendar-times text-3xl mb-3 block"></i>
+                            No site visits scheduled yet. Add one using the form below.
                         </div>
                     <?php else: ?>
-                        <?php foreach ($allVisits as $vi => $visit): ?>
-                            <div class="visit-card v-<?= strtolower($visit['status']) ?>">
-                                <div class="visit-card-header">
-                                    <span class="visit-number">Visit #<?= $vi + 1 ?></span>
-                                    <div class="visit-actions">
-                                        <span
-                                            class="status-badge <?= strtolower($visit['status']) ?>"><?= $visit['status'] ?></span>
-                                        <?php if ($visit['status'] !== 'Done'): ?>
-                                            <?php if ($visit['approval_status'] === 'Rejected'): ?>
-                                                <button type="button" class="btn-sm" style="background:#dbeafe; color:#1e40af;" onclick="openEditModal(<?= $visit['id'] ?>, 
+                        <div class="flex flex-col gap-4">
+                            <?php foreach ($allVisits as $vi => $visit): ?>
+                                <?php
+                                $statusL = strtolower($visit['status']);
+                                $stripeClass = 'border-line';
+                                $stBadge = 'bg-[#F5F5F5] text-soft border-line';
+                                if ($statusL === 'pending') { $stripeClass = 'border-l-amber-400'; $stBadge = 'bg-amber-100 text-amber-800 border-amber-300'; }
+                                elseif ($statusL === 'ongoing') { $stripeClass = 'border-l-blue-400'; $stBadge = 'bg-blue-100 text-blue-800 border-blue-300'; }
+                                elseif ($statusL === 'done') { $stripeClass = 'border-l-emerald-400'; $stBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300'; }
+                                $visitDeadline = date('Y-m-d', strtotime($visit['visit_date'] . ' +2 days'));
+                                ?>
+                                <div class="border border-line <?= $stripeClass ?> border-l-4 rounded-lg p-4.5 p-[18px]">
+
+                                    <!-- Top row: visit #, date/time, status, actions -->
+                                    <div class="flex justify-between items-start gap-3 flex-wrap mb-3">
+                                        <div>
+                                            <div class="text-[11px] font-bold uppercase tracking-[0.5px] text-muted mb-1">
+                                                Visit #<?= $vi + 1 ?>
+                                            </div>
+                                            <div class="text-[14px] font-semibold flex items-center gap-2 flex-wrap">
+                                                <i class="fas fa-calendar-day text-soft"></i>
+                                                <?= date('F d, Y', strtotime($visit['visit_date'])) ?>
+                                                <?php if (!empty($visit['visit_time'])): ?>
+                                                    <span class="text-soft font-normal">
+                                                        <i class="fas fa-clock ml-1"></i> <?= date('g:i A', strtotime($visit['visit_time'])) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="flex items-center gap-2 mt-1.5 flex-wrap">
+                                                <?php if ($visit['is_due']): ?>
+                                                    <span class="text-[11px] font-bold text-red-600"><i class="fas fa-exclamation-circle"></i> Due</span>
+                                                <?php else: ?>
+                                                    <span class="text-[11px] font-semibold text-emerald-600"><i class="fas fa-check-circle"></i> Not Due</span>
+                                                <?php endif; ?>
+                                                <?php if ($visit['visit_type'] === 'Paid'): ?>
+                                                    <span class="text-[11px] font-bold text-amber-600"><i class="fas fa-money-bill-wave"></i> Paid — ₱<?= number_format($visit['visit_amount'], 2) ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-[11px] text-muted"><i class="fas fa-gift"></i> Free</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 flex-shrink-0">
+                                            <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase border <?= $stBadge ?>"><?= $visit['status'] ?></span>
+                                            <?php if ($visit['status'] !== 'Done'): ?>
+                                                <?php if ($visit['approval_status'] === 'Rejected'): ?>
+                                                    <button type="button"
+                                                        class="bg-blue-50 text-blue-800 border border-blue-200 rounded-lg px-2.5 py-1.5 text-[11px] font-bold hover:bg-blue-100 transition"
+                                                        onclick="openEditModal(<?= $visit['id'] ?>, 
                 '<?= $visit['designer1_id'] ?>', 
                 '<?= $visit['designer2_id'] ?? '' ?>', 
                 '<?= $visit['visit_date'] ?>', 
@@ -942,418 +605,345 @@ $autoUpdateDueStmt->execute();
                 '<?= addslashes(htmlspecialchars($visit['notes'] ?? '')) ?>',
                 '<?= $visit['visit_type'] ?>',
                 '<?= $visit['visit_amount'] ?? '' ?>')">
-                                                    <i class="fas fa-edit"></i> Edit & Resubmit
-                                                </button>
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                <?php endif; ?>
+                                                <form method="POST" onsubmit="return confirm('Remove this visit?')">
+                                                    <input type="hidden" name="action" value="delete_visit">
+                                                    <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
+                                                    <button type="submit"
+                                                        class="bg-red-50 text-red-600 border border-red-200 rounded-lg px-2.5 py-1.5 text-[11px] font-bold hover:bg-red-100 transition">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
                                             <?php endif; ?>
-                                            <form method="POST" style="display:inline;"
-                                                onsubmit="return confirm('Remove this visit?')">
-                                                <input type="hidden" name="action" value="delete_visit">
-                                                <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
-                                                <button type="submit" class="btn-sm btn-danger">
-                                                    <i class="fas fa-trash"></i> Remove
-                                                </button>
-                                            </form>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-
-                                <!-- Approval Status Banner -->
-                                <?php if ($visit['approval_status'] === 'Pending'): ?>
-                                    <div style="background:#fef3c7; border-radius:8px; padding:10px 14px; margin-bottom:12px;
-            display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:#92400e;">
-                                        <i class="fas fa-clock"></i> Awaiting approval from General/Operational Manager
-                                    </div>
-                                <?php elseif ($visit['approval_status'] === 'Rejected'): ?>
-                                    <div
-                                        style="background:#fee2e2; border-radius:8px; padding:10px 14px; margin-bottom:12px; color:#991b1b;">
-                                        <div style="font-size:13px; font-weight:700; display:flex; align-items:center; gap:8px;">
-                                            <i class="fas fa-times-circle"></i> Rejected by
-                                            <?= htmlspecialchars($visit['approved_by_name'] ?? 'Manager') ?>
                                         </div>
-                                        <?php if ($visit['approval_comment']): ?>
-                                            <div
-                                                style="font-size:12px; margin-top:6px; padding:8px; background:#fff5f5; border-radius:6px; font-style:italic;">
-                                                "<?= htmlspecialchars($visit['approval_comment']) ?>"
+                                    </div>
+
+                                    <!-- Approval Status Banner -->
+                                    <?php if ($visit['approval_status'] === 'Pending'): ?>
+                                        <div class="bg-amber-50 border border-amber-300 rounded-lg px-3.5 py-2.5 mb-3 text-[12.5px] font-semibold text-amber-800 flex items-center gap-2">
+                                            <i class="fas fa-clock"></i> Awaiting approval from General/Operational Manager
+                                        </div>
+                                    <?php elseif ($visit['approval_status'] === 'Rejected'): ?>
+                                        <div class="bg-red-50 border border-red-300 rounded-lg px-3.5 py-2.5 mb-3 text-red-900">
+                                            <div class="text-[12.5px] font-bold flex items-center gap-2">
+                                                <i class="fas fa-times-circle"></i> Rejected by <?= htmlspecialchars($visit['approved_by_name'] ?? 'Manager') ?>
                                             </div>
-                                        <?php endif; ?>
-                                        <div style="font-size:11px; margin-top:6px; color:#dc2626;">
-                                            Please make adjustments and resubmit for approval.
-                                        </div>
-                                    </div>
-                                <?php elseif ($visit['approval_status'] === 'Approved'): ?>
-                                    <div style="background:#d1fae5; border-radius:8px; padding:10px 14px; margin-bottom:12px;
-            display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:#065f46;">
-                                        <i class="fas fa-check-circle"></i> Approved by
-                                        <?= htmlspecialchars($visit['approved_by_name'] ?? 'Manager') ?>
-                                        <?php if ($visit['approved_at']): ?>
-                                            <span
-                                                style="font-weight:400; margin-left:auto; font-size:11px;"><?= date('M d, Y g:i A', strtotime($visit['approved_at'])) ?></span>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endif; ?>
-
-                                <div class="visit-info">
-                                    <span>
-                                        <i class="fas fa-calendar-day"></i>
-                                        <?= date('F d, Y', strtotime($visit['visit_date'])) ?>
-                                        <?php if (!empty($visit['visit_time'])): ?>
-                                            &nbsp;<i class="fas fa-clock" style="margin-left:6px;"></i>
-                                            <?= date('g:i A', strtotime($visit['visit_time'])) ?>
-                                        <?php endif; ?>
-                                    </span>
-
-                                    <?php if ($visit['is_due']): ?>
-                                        <span style="color:#ef4444; font-weight:700;">
-                                            <i class="fas fa-exclamation-circle"></i> DUE
-                                        </span>
-                                    <?php else: ?>
-                                        <span style="color:#10b981; font-weight:600;">
-                                            <i class="fas fa-check-circle"></i> Not Due
-                                        </span>
-                                    <?php endif; ?>
-
-                                    <?php if ($visit['visit_type'] === 'Paid'): ?>
-                                        <span style="color:#f59e0b; font-weight:700;">
-                                            <i class="fas fa-money-bill-wave"></i> Paid —
-                                            ₱<?= number_format($visit['visit_amount'], 2) ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span style="color:#6b7280;">
-                                            <i class="fas fa-gift"></i> Free
-                                        </span>
-                                    <?php endif; ?>
-                                </div>
-
-                                <!-- Designer 1 Row -->
-                                <div
-                                    style="display:flex; align-items:center; gap:12px; margin-top:10px; padding:10px; background:#f9f9f9; border-radius:8px;">
-                                    <i class="fas fa-user-tie" style="color:#8a5a44;"></i>
-                                    <span
-                                        style="font-size:13px; font-weight:600;"><?= htmlspecialchars($visit['designer1_name']) ?></span>
-                                    <em style="font-size:11px; color:#9ca3af;">(Designer 1)</em>
-                                    <?php if ($visit['designer1_absent']): ?>
-                                        <div style="margin-left:auto; text-align:right;">
-                                            <span
-                                                style="background:#fee2e2; color:#991b1b; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700;">
-                                                <i class="fas fa-user-slash"></i> Absent
-                                            </span>
-                                            <?php if ($visit['original_designer1_name']): ?>
-                                                <div
-                                                    style="font-size:11px; color:#991b1b; margin-top:4px; display:flex; align-items:center; gap:4px; justify-content:flex-end;">
-                                                    <i class="fas fa-user"></i>
-                                                    Originally:
-                                                    <strong><?= htmlspecialchars($visit['original_designer1_name']) ?></strong>
+                                            <?php if ($visit['approval_comment']): ?>
+                                                <div class="text-[12px] mt-1.5 bg-white/70 rounded-md px-2.5 py-1.5 italic">
+                                                    "<?= htmlspecialchars($visit['approval_comment']) ?>"
                                                 </div>
                                             <?php endif; ?>
-                                            <?php if ($visit['designer1_absent_reason']): ?>
-                                                <div style="font-size:11px; color:#991b1b; margin-top:3px; font-style:italic;">
-                                                    "<?= htmlspecialchars($visit['designer1_absent_reason']) ?>"
-                                                </div>
+                                            <div class="text-[11px] mt-1.5 text-red-700">Please make adjustments and resubmit for approval.</div>
+                                        </div>
+                                    <?php elseif ($visit['approval_status'] === 'Approved'): ?>
+                                        <div class="bg-emerald-50 border border-emerald-300 rounded-lg px-3.5 py-2.5 mb-3 text-[12.5px] font-semibold text-emerald-800 flex items-center gap-2 flex-wrap">
+                                            <i class="fas fa-check-circle"></i> Approved by <?= htmlspecialchars($visit['approved_by_name'] ?? 'Manager') ?>
+                                            <?php if ($visit['approved_at']): ?>
+                                                <span class="font-normal ml-auto text-[11px]"><?= date('M d, Y g:i A', strtotime($visit['approved_at'])) ?></span>
                                             <?php endif; ?>
                                         </div>
-                                        <?php if ($visit['status'] !== 'Done'): ?>
-                                            <form method="POST" style="display:inline; margin-left:6px;">
-                                                <input type="hidden" name="action" value="toggle_absent">
-                                                <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
-                                                <input type="hidden" name="which" value="designer1">
-                                                <input type="hidden" name="absent_val" value="0">
-                                                <button type="submit" class="btn-sm" style="background:#d1fae5; color:#065f46;"
-                                                    title="Remove Absent">
-                                                    <i class="fas fa-undo"></i> Undo
-                                                </button>
-                                            </form>
-                                        <?php endif; ?>
-                                    <?php else: ?>
-                                        <?php if ($visit['status'] !== 'Done'): ?>
-                                            <button type="button" class="btn-sm btn-danger" style="margin-left:auto;" onclick="openAbsentModal(
+                                    <?php endif; ?>
+
+                                    <!-- Designer slots: side by side -->
+                                    <div class="grid grid-cols-1 <?= $visit['designer2_name'] ? 'md:grid-cols-2' : '' ?> gap-2.5 mb-3">
+                                        <!-- Designer 1 -->
+                                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fas fa-user-tie text-soft"></i>
+                                                <span class="text-[13px] font-semibold"><?= htmlspecialchars($visit['designer1_name']) ?></span>
+                                                <em class="text-[11px] text-muted font-normal not-italic">(D1)</em>
+                                            </div>
+                                            <?php if ($visit['designer1_absent']): ?>
+                                                <div class="mt-2 flex items-start justify-between gap-2 flex-wrap">
+                                                    <div>
+                                                        <span class="bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                                                            <i class="fas fa-user-slash"></i> Absent
+                                                        </span>
+                                                        <?php if ($visit['original_designer1_name']): ?>
+                                                            <div class="text-[11px] text-red-700 mt-1">
+                                                                <i class="fas fa-user"></i> Originally: <strong><?= htmlspecialchars($visit['original_designer1_name']) ?></strong>
+                                                            </div>
+                                                        <?php endif; ?>
+                                                        <?php if ($visit['designer1_absent_reason']): ?>
+                                                            <div class="text-[11px] text-red-700 mt-1 italic">"<?= htmlspecialchars($visit['designer1_absent_reason']) ?>"</div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <?php if ($visit['status'] !== 'Done'): ?>
+                                                        <form method="POST">
+                                                            <input type="hidden" name="action" value="toggle_absent">
+                                                            <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
+                                                            <input type="hidden" name="which" value="designer1">
+                                                            <input type="hidden" name="absent_val" value="0">
+                                                            <button type="submit" class="bg-emerald-100 text-emerald-800 rounded-md px-2 py-1 text-[10px] font-bold" title="Remove Absent">
+                                                                <i class="fas fa-undo"></i> Undo
+                                                            </button>
+                                                        </form>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php elseif ($visit['status'] !== 'Done'): ?>
+                                                <button type="button"
+                                                    class="mt-2 bg-red-50 text-red-600 border border-red-200 rounded-md px-2.5 py-1 text-[10px] font-bold hover:bg-red-100 transition"
+                                                    onclick="openAbsentModal(
                     <?= $visit['id'] ?>,
                     'designer1',
                     '<?= addslashes(htmlspecialchars($visit['designer1_name'])) ?>',
                     <?= intval($visit['designer1_id']) ?>,
                     <?= intval($visit['designer2_id'] ?? 0) ?>
                 )">
-                                                <i class="fas fa-user-slash"></i> Mark Absent
-                                            </button>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-                                </div>
-
-                                <!-- Designer 2 Row (if assigned) -->
-                                <?php if ($visit['designer2_name']): ?>
-                                    <div
-                                        style="display:flex; align-items:center; gap:12px; margin-top:8px; padding:10px; background:#f9f9f9; border-radius:8px;">
-                                        <i class="fas fa-user-tie" style="color:#8a5a44;"></i>
-                                        <span
-                                            style="font-size:13px; font-weight:600;"><?= htmlspecialchars($visit['designer2_name']) ?></span>
-                                        <em style="font-size:11px; color:#9ca3af;">(Designer 2)</em>
-                                        <?php if ($visit['designer2_absent']): ?>
-                                            <div style="margin-left:auto; text-align:right;">
-                                                <span
-                                                    style="background:#fee2e2; color:#991b1b; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700;">
-                                                    <i class="fas fa-user-slash"></i> Absent
-                                                </span>
-                                                <?php if ($visit['original_designer2_name']): ?>
-                                                    <div
-                                                        style="font-size:11px; color:#991b1b; margin-top:4px; display:flex; align-items:center; gap:4px; justify-content:flex-end;">
-                                                        <i class="fas fa-user"></i>
-                                                        Originally:
-                                                        <strong><?= htmlspecialchars($visit['original_designer2_name']) ?></strong>
-                                                    </div>
-                                                <?php endif; ?>
-                                                <?php if ($visit['designer2_absent_reason']): ?>
-                                                    <div style="font-size:11px; color:#991b1b; margin-top:3px; font-style:italic;">
-                                                        "<?= htmlspecialchars($visit['designer2_absent_reason']) ?>"
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-
-                                            <?php if ($visit['status'] !== 'Done'): ?>
-                                                <form method="POST" style="display:inline; margin-left:6px;">
-                                                    <input type="hidden" name="action" value="toggle_absent">
-                                                    <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
-                                                    <input type="hidden" name="which" value="designer2">
-                                                    <input type="hidden" name="absent_val" value="0">
-                                                    <button type="submit" class="btn-sm" style="background:#d1fae5; color:#065f46;">
-                                                        <i class="fas fa-undo"></i> Undo
-                                                    </button>
-                                                </form>
+                                                    <i class="fas fa-user-slash"></i> Mark Absent
+                                                </button>
                                             <?php endif; ?>
-                                        <?php else: ?>
-                                            <?php if ($visit['status'] !== 'Done'): ?>
-                                                <button type="button" class="btn-sm btn-danger" style="margin-left:auto;" onclick="openAbsentModal(
+                                        </div>
+
+                                        <!-- Designer 2 -->
+                                        <?php if ($visit['designer2_name']): ?>
+                                            <div class="bg-[#F5F5F5] border border-line rounded-lg p-3">
+                                                <div class="flex items-center gap-2">
+                                                    <i class="fas fa-user-tie text-soft"></i>
+                                                    <span class="text-[13px] font-semibold"><?= htmlspecialchars($visit['designer2_name']) ?></span>
+                                                    <em class="text-[11px] text-muted font-normal not-italic">(D2)</em>
+                                                </div>
+                                                <?php if ($visit['designer2_absent']): ?>
+                                                    <div class="mt-2 flex items-start justify-between gap-2 flex-wrap">
+                                                        <div>
+                                                            <span class="bg-red-100 text-red-800 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
+                                                                <i class="fas fa-user-slash"></i> Absent
+                                                            </span>
+                                                            <?php if ($visit['original_designer2_name']): ?>
+                                                                <div class="text-[11px] text-red-700 mt-1">
+                                                                    <i class="fas fa-user"></i> Originally: <strong><?= htmlspecialchars($visit['original_designer2_name']) ?></strong>
+                                                                </div>
+                                                            <?php endif; ?>
+                                                            <?php if ($visit['designer2_absent_reason']): ?>
+                                                                <div class="text-[11px] text-red-700 mt-1 italic">"<?= htmlspecialchars($visit['designer2_absent_reason']) ?>"</div>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <?php if ($visit['status'] !== 'Done'): ?>
+                                                            <form method="POST">
+                                                                <input type="hidden" name="action" value="toggle_absent">
+                                                                <input type="hidden" name="visit_id" value="<?= $visit['id'] ?>">
+                                                                <input type="hidden" name="which" value="designer2">
+                                                                <input type="hidden" name="absent_val" value="0">
+                                                                <button type="submit" class="bg-emerald-100 text-emerald-800 rounded-md px-2 py-1 text-[10px] font-bold">
+                                                                    <i class="fas fa-undo"></i> Undo
+                                                                </button>
+                                                            </form>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php elseif ($visit['status'] !== 'Done'): ?>
+                                                    <button type="button"
+                                                        class="mt-2 bg-red-50 text-red-600 border border-red-200 rounded-md px-2.5 py-1 text-[10px] font-bold hover:bg-red-100 transition"
+                                                        onclick="openAbsentModal(
                     <?= $visit['id'] ?>,
                     'designer2',
                     '<?= addslashes(htmlspecialchars($visit['designer2_name'])) ?>',
                     <?= intval($visit['designer2_id'] ?? 0) ?>,
                     <?= intval($visit['designer1_id']) ?>
                 )">
-                                                    <i class="fas fa-user-slash"></i> Mark Absent
-                                                </button>
-                                            <?php endif; ?>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endif; ?>
-
-                                <?php if ($visit['notes']): ?>
-                                    <div class="visit-notes" style="margin-top:8px;"><i class="fas fa-sticky-note"></i>
-                                        <?= htmlspecialchars($visit['notes']) ?></div>
-                                <?php endif; ?>
-
-                                <!-- Designer Reports -->
-                                <?php if ($visit['designer1_report'] || $visit['designer1_finished'] || !empty($visit['designer1_photo'])): ?>
-                                    <div class="designer-report">
-                                        <strong>
-                                            <i class="fas fa-file-alt"></i> <?= htmlspecialchars($visit['designer1_name']) ?>'s
-                                            Report
-                                            <?php if ($visit['designer1_finished']): ?>
-                                                <span class="status-badge done" style="float:right;">Finished</span>
-                                            <?php elseif (!empty($visit['designer1_photo'])): ?>
-                                                <span
-                                                    style="background:#fef3c7; color:#92400e; padding:2px 10px; border-radius:20px; font-size:10px; font-weight:700; float:right;">
-                                                    <i class="fas fa-camera"></i> Photo Uploaded
-                                                </span>
-                                            <?php endif; ?>
-                                        </strong>
-                                        <?php if ($visit['designer1_finished'] && $visit['designer1_finished_at']): ?>
-                                            <div
-                                                style="font-size:11px; color:#6b7280; margin:5px 0 8px 0; display:flex; align-items:center; gap:5px;">
-                                                <i class="fas fa-clock" style="color:#8a5a44;"></i>
-                                                Submitted: <?= date('F d, Y g:i A', strtotime($visit['designer1_finished_at'])) ?>
-                                                <?php
-                                                $d1Date = date('Y-m-d', strtotime($visit['designer1_finished_at']));
-                                                $visitDate = $visit['visit_date'];
-                                                $visitDeadline = date('Y-m-d', strtotime($visitDate . ' +2 days'));
-                                                if ($d1Date > $visitDeadline): ?>
-                                                    <span
-                                                        style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700;">
-                                                        <i class="fas fa-exclamation-circle"></i> Late
-                                                    </span>
-                                                <?php elseif ($d1Date <= $visitDate): ?>
-                                                    <span
-                                                        style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700;">
-                                                        <i class="fas fa-star"></i> Early
-                                                    </span>
-                                                <?php else: ?>
-                                                    <span
-                                                        style="background:#d1fae5; color:#065f46; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700;">
-                                                        <i class="fas fa-check"></i> On Time
-                                                    </span>
+                                                        <i class="fas fa-user-slash"></i> Mark Absent
+                                                    </button>
                                                 <?php endif; ?>
                                             </div>
                                         <?php endif; ?>
-                                        <?php if (!empty($visit['designer1_photo'])): ?>
-                                            <div style="margin-bottom:10px; margin-top:8px;">
-                                                <div
-                                                    style="font-size:11px; font-weight:700; color:#065f46; margin-bottom:5px; display:flex; align-items:center; gap:5px;">
-                                                    <i class="fas fa-camera"></i> Proof Photo
-                                                </div>
-                                                <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($visit['designer1_photo']) ?>"
-                                                    alt="Proof"
-                                                    style="max-width:100%; max-height:220px; border-radius:8px; border:2px solid #bbf7d0; object-fit:cover; display:block; cursor:pointer;"
-                                                    onclick="openPhotoModal(this.src)">
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if ($visit['designer1_report']): ?>
-                                            <?= nl2br(htmlspecialchars($visit['designer1_report'])) ?>
-                                        <?php elseif (!$visit['designer1_finished']): ?>
-                                            <em style="color:#9ca3af; font-size:12px;">
-                                                <i class="fas fa-hourglass-half"></i> Report not submitted yet.
-                                            </em>
-                                        <?php endif; ?>
                                     </div>
-                                <?php endif; ?>
 
-                                <?php if ($visit['designer2_name'] && ($visit['designer2_report'] || $visit['designer2_finished'] || !empty($visit['designer2_photo']))): ?>
-                                    <div class="designer-report">
-                                        <strong>
-                                            <i class="fas fa-file-alt"></i> <?= htmlspecialchars($visit['designer2_name']) ?>'s
-                                            Report
-                                            <?php if ($visit['designer2_finished']): ?>
-                                                <span class="status-badge done" style="float:right;">Finished</span>
-                                            <?php elseif (!empty($visit['designer2_photo'])): ?>
-                                                <span
-                                                    style="background:#fef3c7; color:#92400e; padding:2px 10px; border-radius:20px; font-size:10px; font-weight:700; float:right;">
-                                                    <i class="fas fa-camera"></i> Photo Uploaded
-                                                </span>
-                                            <?php endif; ?>
-                                        </strong>
-                                        <?php if ($visit['designer2_finished'] && $visit['designer2_finished_at']): ?>
-                                            <div
-                                                style="font-size:11px; color:#6b7280; margin:5px 0 8px 0; display:flex; align-items:center; gap:5px;">
-                                                <i class="fas fa-clock" style="color:#8a5a44;"></i>
-                                                Submitted: <?= date('F d, Y g:i A', strtotime($visit['designer2_finished_at'])) ?>
-                                                <?php
-                                                $d2Date = date('Y-m-d', strtotime($visit['designer2_finished_at']));
-                                                if ($d2Date > $visitDeadline): ?>
-    <span style="background:#fee2e2; color:#991b1b; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700;">
-        <i class="fas fa-exclamation-circle"></i> Late
-    </span>
-<?php elseif ($d2Date <= $visitDate): ?>
-    <span style="background:#dbeafe; color:#1e40af; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700;">
-        <i class="fas fa-star"></i> Early
-    </span>
-<?php else: ?>
-    <span style="background:#d1fae5; color:#065f46; padding:2px 8px; border-radius:8px; font-size:10px; font-weight:700;">
-        <i class="fas fa-check"></i> On Time
-    </span>
-<?php endif; ?>
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if (!empty($visit['designer2_photo'])): ?>
-                                            <div style="margin-bottom:10px; margin-top:8px;">
-                                                <div
-                                                    style="font-size:11px; font-weight:700; color:#065f46; margin-bottom:5px; display:flex; align-items:center; gap:5px;">
-                                                    <i class="fas fa-camera"></i> Proof Photo
+                                    <?php if ($visit['notes']): ?>
+                                        <div class="text-[12px] text-soft bg-[#F5F5F5] border border-line rounded-md px-3 py-2 italic mb-3">
+                                            <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($visit['notes']) ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <!-- Designer Reports: side by side -->
+                                    <?php
+                                    $hasR1 = $visit['designer1_report'] || $visit['designer1_finished'] || !empty($visit['designer1_photo']);
+                                    $hasR2 = $visit['designer2_name'] && ($visit['designer2_report'] || $visit['designer2_finished'] || !empty($visit['designer2_photo']));
+                                    ?>
+                                    <?php if ($hasR1 || $hasR2): ?>
+                                        <div class="grid grid-cols-1 <?= ($hasR1 && $hasR2) ? 'md:grid-cols-2' : '' ?> gap-2.5">
+                                            <?php if ($hasR1): ?>
+                                                <div class="bg-emerald-50 border-l-2 border-emerald-400 rounded-md p-3">
+                                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                                        <strong class="text-[12px] text-emerald-800"><i class="fas fa-file-alt"></i> <?= htmlspecialchars($visit['designer1_name']) ?>'s Report</strong>
+                                                        <?php if ($visit['designer1_finished']): ?>
+                                                            <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold">Finished</span>
+                                                        <?php elseif (!empty($visit['designer1_photo'])): ?>
+                                                            <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold"><i class="fas fa-camera"></i> Photo</span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <?php if ($visit['designer1_finished'] && $visit['designer1_finished_at']): ?>
+                                                        <div class="text-[11px] text-soft mb-2 flex items-center gap-1.5 flex-wrap">
+                                                            <i class="fas fa-clock"></i> Submitted: <?= date('M d, Y g:i A', strtotime($visit['designer1_finished_at'])) ?>
+                                                            <?php
+                                                            $d1Date = date('Y-m-d', strtotime($visit['designer1_finished_at']));
+                                                            if ($d1Date > $visitDeadline): ?>
+                                                                <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px] font-bold"><i class="fas fa-exclamation-circle"></i> Late</span>
+                                                            <?php elseif ($d1Date <= $visit['visit_date']): ?>
+                                                                <span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-bold"><i class="fas fa-star"></i> Early</span>
+                                                            <?php else: ?>
+                                                                <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold"><i class="fas fa-check"></i> On Time</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($visit['designer1_photo'])): ?>
+                                                        <div class="mb-2">
+                                                            <div class="text-[10px] font-bold text-emerald-800 mb-1"><i class="fas fa-camera"></i> Proof Photo</div>
+                                                            <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($visit['designer1_photo']) ?>"
+                                                                alt="Proof" class="max-w-full max-h-[180px] rounded-md border border-emerald-200 object-cover cursor-pointer"
+                                                                onclick="openPhotoModal(this.src)">
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if ($visit['designer1_report']): ?>
+                                                        <div class="text-[12px]"><?= nl2br(htmlspecialchars($visit['designer1_report'])) ?></div>
+                                                    <?php elseif (!$visit['designer1_finished']): ?>
+                                                        <em class="text-muted text-[11px]"><i class="fas fa-hourglass-half"></i> Report not submitted yet.</em>
+                                                    <?php endif; ?>
                                                 </div>
-                                                <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($visit['designer2_photo']) ?>"
-                                                    alt="Proof"
-                                                    style="max-width:100%; max-height:220px; border-radius:8px; border:2px solid #bbf7d0; object-fit:cover; display:block; cursor:pointer;"
-                                                    onclick="openPhotoModal(this.src)">
-                                            </div>
-                                        <?php endif; ?>
-                                        <?php if ($visit['designer2_report']): ?>
-                                            <?= nl2br(htmlspecialchars($visit['designer2_report'])) ?>
-                                        <?php elseif (!$visit['designer2_finished']): ?>
-                                            <em style="color:#9ca3af; font-size:12px;">
-                                                <i class="fas fa-hourglass-half"></i> Report not submitted yet.
-                                            </em>
-                                        <?php endif; ?>
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
+                                            <?php endif; ?>
+
+                                            <?php if ($hasR2): ?>
+                                                <div class="bg-emerald-50 border-l-2 border-emerald-400 rounded-md p-3">
+                                                    <div class="flex items-center justify-between gap-2 mb-1">
+                                                        <strong class="text-[12px] text-emerald-800"><i class="fas fa-file-alt"></i> <?= htmlspecialchars($visit['designer2_name']) ?>'s Report</strong>
+                                                        <?php if ($visit['designer2_finished']): ?>
+                                                            <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold">Finished</span>
+                                                        <?php elseif (!empty($visit['designer2_photo'])): ?>
+                                                            <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold"><i class="fas fa-camera"></i> Photo</span>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                    <?php if ($visit['designer2_finished'] && $visit['designer2_finished_at']): ?>
+                                                        <div class="text-[11px] text-soft mb-2 flex items-center gap-1.5 flex-wrap">
+                                                            <i class="fas fa-clock"></i> Submitted: <?= date('M d, Y g:i A', strtotime($visit['designer2_finished_at'])) ?>
+                                                            <?php
+                                                            $d2Date = date('Y-m-d', strtotime($visit['designer2_finished_at']));
+                                                            if ($d2Date > $visitDeadline): ?>
+                                                                <span class="bg-red-100 text-red-800 px-1.5 py-0.5 rounded text-[10px] font-bold"><i class="fas fa-exclamation-circle"></i> Late</span>
+                                                            <?php elseif ($d2Date <= $visit['visit_date']): ?>
+                                                                <span class="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded text-[10px] font-bold"><i class="fas fa-star"></i> Early</span>
+                                                            <?php else: ?>
+                                                                <span class="bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded text-[10px] font-bold"><i class="fas fa-check"></i> On Time</span>
+                                                            <?php endif; ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($visit['designer2_photo'])): ?>
+                                                        <div class="mb-2">
+                                                            <div class="text-[10px] font-bold text-emerald-800 mb-1"><i class="fas fa-camera"></i> Proof Photo</div>
+                                                            <img src="<?= BASE_URL ?>uploads/site_visit_photos/<?= htmlspecialchars($visit['designer2_photo']) ?>"
+                                                                alt="Proof" class="max-w-full max-h-[180px] rounded-md border border-emerald-200 object-cover cursor-pointer"
+                                                                onclick="openPhotoModal(this.src)">
+                                                        </div>
+                                                    <?php endif; ?>
+                                                    <?php if ($visit['designer2_report']): ?>
+                                                        <div class="text-[12px]"><?= nl2br(htmlspecialchars($visit['designer2_report'])) ?></div>
+                                                    <?php elseif (!$visit['designer2_finished']): ?>
+                                                        <em class="text-muted text-[11px]"><i class="fas fa-hourglass-half"></i> Report not submitted yet.</em>
+                                                    <?php endif; ?>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
                 </div>
 
                 <!-- Add New Visit Form -->
                 <?php if ($stageStatus !== 'Done'): ?>
-                    <div class="card">
-                        <h2><i class="fas fa-calendar-plus"></i> Add New Site Visit</h2>
+                    <div class="bg-white border border-line rounded-[10px] p-6">
+                        <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                            <i class="fas fa-calendar-plus text-soft"></i> Add New Site Visit
+                            <span class="flex-1 h-px bg-line"></span>
+                        </div>
                         <form method="POST">
                             <input type="hidden" name="action" value="add_visit">
-                            <div class="form-group">
-                                <label class="form-label">Designer 1 <span class="required-star">*</span></label>
-                                <select name="designer1_id" class="form-control" required onchange="filterD2(this.value)">
-                                    <option value="">— Select Designer —</option>
-                                    <?php foreach ($designers as $d): ?>
-                                        <option value="<?= $d['id'] ?>" <?= ($hasAssignedDesigners && $assignedDesigners['designer1_id'] == $d['id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($d['full_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <?php if ($hasAssignedDesigners): ?>
-                                    <div
-                                        style="font-size: 11px; color: #10b981; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
-                                        <i class="fas fa-info-circle"></i> Auto-filled from client's assigned designer
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Designer 2 <span class="optional-tag">(Optional)</span></label>
-                                <select name="designer2_id" id="d2Select" class="form-control">
-                                    <option value="">— No 2nd Designer —</option>
-                                    <?php foreach ($designers as $d): ?>
-                                        <option value="<?= $d['id'] ?>" <?= ($hasAssignedDesigners && $assignedDesigners['designer2_id'] == $d['id']) ? 'selected' : '' ?>>
-                                            <?= htmlspecialchars($d['full_name']) ?>
-                                        </option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <?php if ($hasAssignedDesigners && $assignedDesigners['designer2_id']): ?>
-                                    <div
-                                        style="font-size: 11px; color: #10b981; margin-top: 5px; display: flex; align-items: center; gap: 5px;">
-                                        <i class="fas fa-info-circle"></i> Auto-filled from client's assigned designer
-                                    </div>
-                                <?php endif; ?>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Visit Date <span class="required-star">*</span></label>
-                                <input type="date" name="visit_date" class="form-control" required
-                                    min="<?= date('Y-m-d') ?>">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Visit Time <span class="optional-tag">(Optional)</span></label>
-                                <input type="time" name="visit_time" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Notes <span class="optional-tag">(Optional)</span></label>
-                                <textarea name="notes" class="form-control" rows="3"
-                                    placeholder="Additional instructions..."></textarea>
+
+                            <!-- Designers group -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Designer 1 <span class="text-red-500">*</span></label>
+                                    <select name="designer1_id" required onchange="filterD2(this.value)"
+                                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
+                                        <option value="">— Select Designer —</option>
+                                        <?php foreach ($designers as $d): ?>
+                                            <option value="<?= $d['id'] ?>" <?= ($hasAssignedDesigners && $assignedDesigners['designer1_id'] == $d['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($d['full_name']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <?php if ($hasAssignedDesigners): ?>
+                                        <div class="text-[11px] text-emerald-600 mt-1.5 flex items-center gap-1.5">
+                                            <i class="fas fa-info-circle"></i> Auto-filled from client's assigned designer
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Designer 2 <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                    <select name="designer2_id" id="d2Select"
+                                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
+                                        <option value="">— No 2nd Designer —</option>
+                                        <?php foreach ($designers as $d): ?>
+                                            <option value="<?= $d['id'] ?>" <?= ($hasAssignedDesigners && $assignedDesigners['designer2_id'] == $d['id']) ? 'selected' : '' ?>>
+                                                <?= htmlspecialchars($d['full_name']) ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                    <?php if ($hasAssignedDesigners && $assignedDesigners['designer2_id']): ?>
+                                        <div class="text-[11px] text-emerald-600 mt-1.5 flex items-center gap-1.5">
+                                            <i class="fas fa-info-circle"></i> Auto-filled from client's assigned designer
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
                             </div>
 
-                            <!-- Visit Type -->
-                            <div class="form-group">
-                                <label class="form-label">Visit Type <span class="required-star">*</span></label>
-                                <div style="display:flex; gap:12px;">
-                                    <label
-                                        style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 18px; border:2px solid #e9ecef; border-radius:8px; font-size:14px; font-weight:600;">
-                                        <input type="radio" name="visit_type" value="Free" checked
-                                            onchange="toggleAmount(this.value)">
-                                        <i class="fas fa-gift" style="color:#10b981;"></i> Free
+                            <!-- Schedule group -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Date <span class="text-red-500">*</span></label>
+                                    <input type="date" name="visit_date" required min="<?= date('Y-m-d') ?>"
+                                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
+                                </div>
+                                <div>
+                                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Time <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                    <input type="time" name="visit_time"
+                                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
+                                </div>
+                            </div>
+
+                            <!-- Type group -->
+                            <div class="mb-4">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Type <span class="text-red-500">*</span></label>
+                                <div class="flex gap-3 mb-3">
+                                    <label class="flex items-center gap-2 cursor-pointer border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold transition has-[:checked]:border-ink has-[:checked]:bg-[#F5F5F5]">
+                                        <input type="radio" name="visit_type" value="Free" checked onchange="toggleAmount(this.value)">
+                                        <i class="fas fa-gift text-emerald-600"></i> Free
                                     </label>
-                                    <label
-                                        style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 18px; border:2px solid #e9ecef; border-radius:8px; font-size:14px; font-weight:600;">
-                                        <input type="radio" name="visit_type" value="Paid"
-                                            onchange="toggleAmount(this.value)">
-                                        <i class="fas fa-money-bill-wave" style="color:#f59e0b;"></i> Paid (Out of NCR)
+                                    <label class="flex items-center gap-2 cursor-pointer border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold transition has-[:checked]:border-ink has-[:checked]:bg-[#F5F5F5]">
+                                        <input type="radio" name="visit_type" value="Paid" onchange="toggleAmount(this.value)">
+                                        <i class="fas fa-money-bill-wave text-amber-600"></i> Paid (Out of NCR)
                                     </label>
                                 </div>
-                            </div>
-
-                            <!-- Amount (shown only if Paid) -->
-                            <div class="form-group" id="amountGroup" style="display:none;">
-                                <label class="form-label">Visit Amount <span class="required-star">*</span></label>
-                                <div style="position:relative;">
-                                    <span
-                                        style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-weight:700; color:#374151;">₱</span>
-                                    <input type="number" name="visit_amount" class="form-control" style="padding-left:28px;"
-                                        placeholder="0.00" step="0.01" min="0">
-                                </div>
-                                <div style="font-size:11px; color:#9ca3af; margin-top:5px;">
-                                    <i class="fas fa-info-circle"></i> Set by the lead designer
+                                <div id="amountGroup" style="display:none;">
+                                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Amount <span class="text-red-500">*</span></label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-soft">₱</span>
+                                        <input type="number" name="visit_amount" step="0.01" min="0" placeholder="0.00"
+                                            class="w-full border border-line rounded-lg pl-7 pr-3 py-2.5 text-sm focus:outline-none focus:border-ink">
+                                    </div>
+                                    <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-info-circle"></i> Set by the lead designer</div>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn-submit">
+                            <!-- Notes -->
+                            <div class="mb-4">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Notes <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <textarea name="notes" rows="3" placeholder="Additional instructions..."
+                                    class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"></textarea>
+                            </div>
+
+                            <button type="submit"
+                                class="w-full inline-flex items-center justify-center gap-2 bg-ink text-white rounded-lg px-6 py-3 text-sm font-semibold hover:opacity-90 transition">
                                 <i class="fas fa-plus-circle"></i> Add Site Visit
                             </button>
                         </form>
@@ -1362,29 +952,28 @@ $autoUpdateDueStmt->execute();
             </div>
 
             <!-- RIGHT COLUMN: Designer Workload -->
-            <div>
-                <div class="card">
-                    <h2><i class="fas fa-users"></i> Designer Workload</h2>
+            <div class="bg-white border border-line rounded-[10px] p-6">
+                <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                    <i class="fas fa-users text-soft"></i> Designer Workload
+                    <span class="flex-1 h-px bg-line"></span>
+                </div>
+                <div class="flex flex-col gap-2">
                     <?php foreach ($designerWorkloads as $dw): ?>
-                        <div class="designer-card">
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg px-3.5 py-2.5 flex items-center justify-between gap-2">
                             <div>
-                                <div class="designer-card-name"><?= htmlspecialchars($dw['full_name']) ?></div>
-                                <div class="designer-card-sub">Designer</div>
+                                <div class="text-[13px] font-semibold"><?= htmlspecialchars($dw['full_name']) ?></div>
+                                <div class="text-[11px] text-muted">Designer</div>
                             </div>
-                            <div class="workload-badges">
-                                <span class="wb wb-clients" title="Clients assigned to this designer">
-                                    <i class="fas fa-users" style="font-size:10px;"></i>
-                                    <?= $dw['assigned_as_designer'] ?>
-                                    client<?= $dw['assigned_as_designer'] != 1 ? 's' : '' ?>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="bg-blue-100 text-blue-800 px-2.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap" title="Clients assigned to this designer">
+                                    <i class="fas fa-users text-[10px]"></i> <?= $dw['assigned_as_designer'] ?> client<?= $dw['assigned_as_designer'] != 1 ? 's' : '' ?>
                                 </span>
                                 <?php if ($dw['site_visit_assignments'] > 0): ?>
-                                    <span class="wb wb-visits" title="Active site visit assignments">
-                                        <i class="fas fa-map-marker-alt" style="font-size:10px;"></i>
-                                        <?= $dw['site_visit_assignments'] ?>
-                                        visit<?= $dw['site_visit_assignments'] != 1 ? 's' : '' ?>
+                                    <span class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-[11px] font-bold whitespace-nowrap" title="Active site visit assignments">
+                                        <i class="fas fa-map-marker-alt text-[10px]"></i> <?= $dw['site_visit_assignments'] ?> visit<?= $dw['site_visit_assignments'] != 1 ? 's' : '' ?>
                                     </span>
                                 <?php else: ?>
-                                    <span class="wb wb-free">Free</span>
+                                    <span class="bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full text-[11px] font-bold">Free</span>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -1395,86 +984,57 @@ $autoUpdateDueStmt->execute();
     </div>
 
     <!-- Absent Reason Modal -->
-    <div id="absentModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%;
-     background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:14px; padding:30px; max-width:480px; width:90%;
-                box-shadow:0 10px 40px rgba(0,0,0,0.25);">
-            <h3 style="color:#991b1b; margin-bottom:6px; font-size:18px;">
-                <i class="fas fa-user-slash"></i> Mark as Absent
-            </h3>
-            <p style="font-size:13px; color:#6b7280; margin-bottom:20px;">
-                Provide a reason for the absence. You may also assign a replacement designer.
-            </p>
+    <div id="absentModal" class="hidden fixed inset-0 z-[9999] bg-black/50 items-center justify-center">
+        <div class="bg-white rounded-[14px] p-7 max-w-[480px] w-[90%]">
+            <h3 class="text-red-800 mb-1.5 text-[18px] font-bold"><i class="fas fa-user-slash"></i> Mark as Absent</h3>
+            <p class="text-[13px] text-soft mb-5">Provide a reason for the absence. You may also assign a replacement designer.</p>
             <form method="POST" id="absentForm">
                 <input type="hidden" name="action" value="toggle_absent">
                 <input type="hidden" name="absent_val" value="1">
                 <input type="hidden" name="visit_id" id="absentVisitId">
                 <input type="hidden" name="which" id="absentWhich">
 
-                <!-- Absent Designer (read-only display) -->
-                <div
-                    style="margin-bottom:16px; background:#fff5f5; border:1px solid #fca5a5; border-radius:8px; padding:12px 14px; display:flex; align-items:center; gap:10px;">
-                    <i class="fas fa-user-tie" style="color:#991b1b;"></i>
+                <div class="mb-4 bg-red-50 border border-red-300 rounded-lg px-3.5 py-3 flex items-center gap-2.5">
+                    <i class="fas fa-user-tie text-red-800"></i>
                     <div>
-                        <div
-                            style="font-size:11px; color:#9ca3af; text-transform:uppercase; font-weight:600; letter-spacing:0.4px;">
-                            Absent Designer</div>
-                        <div style="font-size:14px; font-weight:700; color:#991b1b;" id="absentDesignerName">—</div>
+                        <div class="text-[11px] text-muted uppercase font-semibold tracking-[0.4px]">Absent Designer</div>
+                        <div class="text-[14px] font-bold text-red-800" id="absentDesignerName">—</div>
                     </div>
                 </div>
 
-                <!-- Reason -->
-                <div style="margin-bottom:16px;">
-                    <label style="display:block; font-size:12px; font-weight:700; color:#374151;
-                              text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px;">
-                        Reason for Absence <span style="color:#ef4444;">*</span>
-                    </label>
-                    <textarea name="absent_reason" id="absentReason" required style="width:100%; padding:10px; border:2px solid #e9ecef; border-radius:8px;
-                                 font-size:13px; resize:vertical; min-height:80px; font-family:inherit;"
-                        placeholder="e.g. Sick, Emergency, No show..."></textarea>
+                <div class="mb-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Reason for Absence <span class="text-red-500">*</span></label>
+                    <textarea name="absent_reason" id="absentReason" required rows="3" placeholder="e.g. Sick, Emergency, No show..."
+                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink resize-y"></textarea>
                 </div>
 
-                <!-- Replacement Designer -->
-                <div style="margin-bottom:20px;">
-                    <label style="display:block; font-size:12px; font-weight:700; color:#374151;
-                              text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px;">
-                        Assign Replacement Designer
-                        <span
-                            style="font-size:10px; color:#9ca3af; font-weight:400; text-transform:none; margin-left:6px;">(Optional)</span>
+                <div class="mb-5">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">
+                        Assign Replacement Designer <span class="text-muted font-normal normal-case">(Optional)</span>
                     </label>
-                    <select name="replacement_designer_id" id="replacementDesignerSelect" style="width:100%; padding:10px 13px; border:2px solid #e9ecef; border-radius:8px;
-                               font-size:13px; color:#111; font-family:inherit;">
+                    <select name="replacement_designer_id" id="replacementDesignerSelect"
+                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                         <option value="">— No Replacement (keep absent) —</option>
                         <?php foreach ($designers as $d): ?>
-                            <option value="<?= $d['id'] ?>"
-                                data-name="<?= htmlspecialchars($d['full_name'], ENT_QUOTES) ?>">
+                            <option value="<?= $d['id'] ?>" data-name="<?= htmlspecialchars($d['full_name'], ENT_QUOTES) ?>">
                                 <?= htmlspecialchars($d['full_name']) ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <div
-                        style="font-size:11px; color:#6b7280; margin-top:6px; display:flex; align-items:center; gap:5px;">
-                        <i class="fas fa-info-circle"></i>
-                        If selected, this designer will replace the absent one on this visit.
+                    <div class="text-[11px] text-soft mt-1.5 flex items-center gap-1.5">
+                        <i class="fas fa-info-circle"></i> If selected, this designer will replace the absent one on this visit.
                     </div>
                 </div>
 
-                <!-- Replacement Preview -->
-                <div id="replacementPreview" style="display:none; background:#dbeafe; border:1px solid #93c5fd;
-                 border-radius:8px; padding:10px 14px; margin-bottom:16px; font-size:13px;
-                 color:#1e40af; display:none; align-items:center; gap:8px;">
-                    <i class="fas fa-exchange-alt"></i>
-                    <span>Replacing with: <strong id="replacementName"></strong></span>
+                <div id="replacementPreview" style="display:none;" class="bg-blue-50 border border-blue-300 rounded-lg px-3.5 py-2.5 mb-4 text-[13px] text-blue-800 items-center gap-2">
+                    <i class="fas fa-exchange-alt"></i> <span>Replacing with: <strong id="replacementName"></strong></span>
                 </div>
 
-                <div style="display:flex; gap:10px; justify-content:flex-end;">
-                    <button type="button" onclick="closeAbsentModal()" style="padding:9px 20px; border:2px solid #e9ecef; border-radius:8px;
-                               background:white; font-weight:600; cursor:pointer; font-size:13px; color:#374151;">
-                        Cancel
-                    </button>
-                    <button type="submit" style="padding:9px 20px; background:#ef4444; color:white; border:none;
-                               border-radius:8px; font-weight:600; cursor:pointer; font-size:13px;
-                               display:inline-flex; align-items:center; gap:6px;">
+                <div class="flex gap-2.5 justify-end">
+                    <button type="button" onclick="closeAbsentModal()"
+                        class="bg-white border border-line rounded-lg px-5 py-2.5 font-semibold text-[13px] hover:border-ink transition">Cancel</button>
+                    <button type="submit"
+                        class="bg-red-600 text-white rounded-lg px-5 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 hover:opacity-90 transition">
                         <i class="fas fa-user-slash"></i> Confirm Absent
                     </button>
                 </div>
@@ -1483,25 +1043,18 @@ $autoUpdateDueStmt->execute();
     </div>
 
     <!-- Edit & Resubmit Modal -->
-    <div id="editResubmitModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%;
-     background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:14px; padding:30px; max-width:520px; width:90%;
-                box-shadow:0 10px 40px rgba(0,0,0,0.25); max-height:90vh; overflow-y:auto;">
-            <h3 style="color:#1e40af; margin-bottom:6px; font-size:18px;">
-                <i class="fas fa-edit"></i> Edit & Resubmit Visit
-            </h3>
-            <p style="font-size:13px; color:#6b7280; margin-bottom:20px;">
-                Make your adjustments below, then resubmit for approval.
-            </p>
+    <div id="editResubmitModal" class="hidden fixed inset-0 z-[9999] bg-black/50 items-center justify-center">
+        <div class="bg-white rounded-[14px] p-7 max-w-[520px] w-[90%] max-h-[90vh] overflow-y-auto">
+            <h3 class="text-blue-800 mb-1.5 text-[18px] font-bold"><i class="fas fa-edit"></i> Edit & Resubmit Visit</h3>
+            <p class="text-[13px] text-soft mb-5">Make your adjustments below, then resubmit for approval.</p>
             <form method="POST" id="editResubmitForm">
                 <input type="hidden" name="action" value="resubmit_visit">
                 <input type="hidden" name="visit_id" id="editVisitId">
 
-                <!-- Designer 1 -->
-                <div class="form-group">
-                    <label class="form-label">Designer 1 <span class="required-star">*</span></label>
-                    <select name="designer1_id" id="editD1" class="form-control" required
-                        onchange="filterEditD2(this.value)">
+                <div class="mb-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Designer 1 <span class="text-red-500">*</span></label>
+                    <select name="designer1_id" id="editD1" required onchange="filterEditD2(this.value)"
+                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                         <option value="">— Select Designer —</option>
                         <?php foreach ($designers as $d): ?>
                             <option value="<?= $d['id'] ?>"><?= htmlspecialchars($d['full_name']) ?></option>
@@ -1509,10 +1062,10 @@ $autoUpdateDueStmt->execute();
                     </select>
                 </div>
 
-                <!-- Designer 2 -->
-                <div class="form-group">
-                    <label class="form-label">Designer 2 <span class="optional-tag">(Optional)</span></label>
-                    <select name="designer2_id" id="editD2" class="form-control">
+                <div class="mb-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Designer 2 <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                    <select name="designer2_id" id="editD2"
+                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                         <option value="">— No 2nd Designer —</option>
                         <?php foreach ($designers as $d): ?>
                             <option value="<?= $d['id'] ?>"><?= htmlspecialchars($d['full_name']) ?></option>
@@ -1520,64 +1073,52 @@ $autoUpdateDueStmt->execute();
                     </select>
                 </div>
 
-                <!-- Date -->
-                <div class="form-group">
-                    <label class="form-label">Visit Date <span class="required-star">*</span></label>
-                    <input type="date" name="visit_date" id="editDate" class="form-control" required>
+                <div class="mb-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Date <span class="text-red-500">*</span></label>
+                    <input type="date" name="visit_date" id="editDate" required
+                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                 </div>
 
-                <!-- Time -->
-                <div class="form-group">
-                    <label class="form-label">Visit Time <span class="optional-tag">(Optional)</span></label>
-                    <input type="time" name="visit_time" id="editTime" class="form-control">
+                <div class="mb-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Time <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                    <input type="time" name="visit_time" id="editTime"
+                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                 </div>
 
-                <!-- Notes -->
-                <div class="form-group">
-                    <label class="form-label">Notes <span class="optional-tag">(Optional)</span></label>
-                    <textarea name="notes" id="editNotes" class="form-control" rows="3"
-                        placeholder="Additional instructions..."></textarea>
+                <div class="mb-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Notes <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                    <textarea name="notes" id="editNotes" rows="3" placeholder="Additional instructions..."
+                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"></textarea>
                 </div>
 
-                <!-- Visit Type -->
-                <div class="form-group">
-                    <label class="form-label">Visit Type <span class="required-star">*</span></label>
-                    <div style="display:flex; gap:12px;">
-                        <label
-                            style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 18px; border:2px solid #e9ecef; border-radius:8px; font-size:14px; font-weight:600;">
-                            <input type="radio" name="visit_type" value="Free" id="editTypeFree"
-                                onchange="toggleEditAmount(this.value)">
-                            <i class="fas fa-gift" style="color:#10b981;"></i> Free
+                <div class="mb-4">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Type <span class="text-red-500">*</span></label>
+                    <div class="flex gap-3">
+                        <label class="flex items-center gap-2 cursor-pointer border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold transition has-[:checked]:border-ink has-[:checked]:bg-[#F5F5F5]">
+                            <input type="radio" name="visit_type" value="Free" id="editTypeFree" onchange="toggleEditAmount(this.value)">
+                            <i class="fas fa-gift text-emerald-600"></i> Free
                         </label>
-                        <label
-                            style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 18px; border:2px solid #e9ecef; border-radius:8px; font-size:14px; font-weight:600;">
-                            <input type="radio" name="visit_type" value="Paid" id="editTypePaid"
-                                onchange="toggleEditAmount(this.value)">
-                            <i class="fas fa-money-bill-wave" style="color:#f59e0b;"></i> Paid
+                        <label class="flex items-center gap-2 cursor-pointer border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold transition has-[:checked]:border-ink has-[:checked]:bg-[#F5F5F5]">
+                            <input type="radio" name="visit_type" value="Paid" id="editTypePaid" onchange="toggleEditAmount(this.value)">
+                            <i class="fas fa-money-bill-wave text-amber-600"></i> Paid
                         </label>
                     </div>
                 </div>
 
-                <!-- Amount -->
-                <div class="form-group" id="editAmountGroup" style="display:none;">
-                    <label class="form-label">Visit Amount <span class="required-star">*</span></label>
-                    <div style="position:relative;">
-                        <span
-                            style="position:absolute; left:12px; top:50%; transform:translateY(-50%); font-weight:700; color:#374151;">₱</span>
-                        <input type="number" name="visit_amount" id="editAmount" class="form-control"
-                            style="padding-left:28px;" placeholder="0.00" step="0.01" min="0">
+                <div class="mb-4" id="editAmountGroup" style="display:none;">
+                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">Visit Amount <span class="text-red-500">*</span></label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 font-bold text-soft">₱</span>
+                        <input type="number" name="visit_amount" id="editAmount" step="0.01" min="0" placeholder="0.00"
+                            class="w-full border border-line rounded-lg pl-7 pr-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                     </div>
                 </div>
 
-                <!-- Buttons -->
-                <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:10px;">
-                    <button type="button" onclick="closeEditModal()" style="padding:9px 20px; border:2px solid #e9ecef; border-radius:8px;
-                               background:white; font-weight:600; cursor:pointer; font-size:13px; color:#374151;">
-                        Cancel
-                    </button>
-                    <button type="submit" style="padding:9px 22px; background:#1e40af; color:white; border:none;
-                               border-radius:8px; font-weight:600; cursor:pointer; font-size:13px;
-                               display:inline-flex; align-items:center; gap:6px;">
+                <div class="flex gap-2.5 justify-end mt-2">
+                    <button type="button" onclick="closeEditModal()"
+                        class="bg-white border border-line rounded-lg px-5 py-2.5 font-semibold text-[13px] hover:border-ink transition">Cancel</button>
+                    <button type="submit"
+                        class="bg-blue-700 text-white rounded-lg px-5.5 py-2.5 font-semibold text-[13px] inline-flex items-center gap-2 hover:opacity-90 transition">
                         <i class="fas fa-paper-plane"></i> Save & Resubmit
                     </button>
                 </div>
@@ -1594,7 +1135,6 @@ $autoUpdateDueStmt->execute();
             });
         }
 
-        // Auto-run filter on page load if designers are pre-selected
         document.addEventListener('DOMContentLoaded', () => {
             const d1 = document.querySelector('select[name="designer1_id"]');
             if (d1 && d1.value) filterD2(d1.value);
@@ -1611,16 +1151,12 @@ $autoUpdateDueStmt->execute();
             document.getElementById('absentReason').value = '';
             document.getElementById('absentDesignerName').textContent = designerName || '—';
 
-            // Reset replacement dropdown
             const repSelect = document.getElementById('replacementDesignerSelect');
             repSelect.value = '';
             document.getElementById('replacementPreview').style.display = 'none';
 
-            // Hide the absent designer AND the other already-assigned designer from options
-            // so you can't pick someone already on the visit
             Array.from(repSelect.options).forEach(opt => {
                 if (!opt.value) {
-                    // Keep the "No Replacement" blank option
                     opt.style.display = 'block';
                     return;
                 }
@@ -1634,15 +1170,13 @@ $autoUpdateDueStmt->execute();
                 }
             });
 
-            const modal = document.getElementById('absentModal');
-            modal.style.display = 'flex';
+            document.getElementById('absentModal').style.display = 'flex';
         }
 
         function closeAbsentModal() {
             document.getElementById('absentModal').style.display = 'none';
         }
 
-        // Show replacement preview when a designer is selected
         document.getElementById('replacementDesignerSelect').addEventListener('change', function () {
             const preview = document.getElementById('replacementPreview');
             const nameSpan = document.getElementById('replacementName');
@@ -1655,7 +1189,6 @@ $autoUpdateDueStmt->execute();
             }
         });
 
-        // Close modal on outside click
         document.addEventListener('click', function (e) {
             const modal = document.getElementById('absentModal');
             if (e.target === modal) closeAbsentModal();
@@ -1680,8 +1213,7 @@ $autoUpdateDueStmt->execute();
 
             filterEditD2(d1);
 
-            const modal = document.getElementById('editResubmitModal');
-            modal.style.display = 'flex';
+            document.getElementById('editResubmitModal').style.display = 'flex';
         }
 
         function closeEditModal() {
@@ -1701,195 +1233,136 @@ $autoUpdateDueStmt->execute();
             document.getElementById('editAmount').required = val === 'Paid';
         }
 
-        // Close edit modal on outside click
         document.addEventListener('click', function (e) {
             const modal = document.getElementById('editResubmitModal');
             if (e.target === modal) closeEditModal();
         });
     </script>
-    <!-- Client Detail Modal -->
-    <div id="clientDetailModal" style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%;
-     background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div style="background:white; padding:30px; border-radius:12px; max-width:600px; width:90%;
-                max-height:90vh; overflow-y:auto; position:relative;">
 
-            <!-- Modal Header -->
-            <div style="display:flex; justify-content:space-between; align-items:center;
-                    margin-bottom:20px; border-bottom:2px solid #f3f4f6; padding-bottom:14px;">
-                <h2 style="font-size:20px; font-weight:bold; color:#3b1f0f; display:flex; align-items:center; gap:8px;">
-                    <i class="fas fa-user-circle" style="color:#8a5a44;"></i> Client Details
-                </h2>
-                <button onclick="document.getElementById('clientDetailModal').style.display='none'"
-                    style="font-size:22px; color:#666; background:none; border:none; cursor:pointer; line-height:1;">
+    <!-- Client Detail Modal -->
+    <div id="clientDetailModal" class="hidden fixed inset-0 z-[9999] bg-black/50 items-center justify-center">
+        <div class="bg-white p-7 rounded-[14px] max-w-xl w-[90%] max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-5 border-b border-line pb-3.5">
+                <h2 class="text-lg font-bold flex items-center gap-2"><i class="fas fa-user-circle text-soft"></i> Client Details</h2>
+                <button onclick="document.getElementById('clientDetailModal').style.display='none'" class="text-soft hover:text-ink text-lg">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <!-- Reference Number -->
-            <div
-                style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                <div style="font-weight:600; color:#666; font-size:13px;">Reference Number:</div>
-                <div style="color:#3b82f6; font-family:monospace; font-size:13px; font-weight:600;">
-                    <?= htmlspecialchars($client['reference_number']) ?>
-                </div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Reference Number:</div>
+                <div class="text-blue-700 font-mono text-[13px] font-semibold"><?= htmlspecialchars($client['reference_number']) ?></div>
             </div>
 
-            <!-- Client Name -->
-            <div
-                style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                <div style="font-weight:600; color:#666; font-size:13px;">Client Name:</div>
-                <div style="color:#111; font-size:13px;"><?= htmlspecialchars($client['clientname']) ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Client Name:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['clientname']) ?></div>
             </div>
 
-            <!-- Project Name -->
-            <div
-                style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                <div style="font-weight:600; color:#666; font-size:13px;">Project Name:</div>
-                <div style="color:#111; font-size:13px;"><?= htmlspecialchars($client['nameproject']) ?></div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Project Name:</div>
+                <div class="text-ink text-[13px]"><?= htmlspecialchars($client['nameproject']) ?></div>
             </div>
 
-            <!-- Status -->
-            <div
-                style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                <div style="font-weight:600; color:#666; font-size:13px;">Status:</div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Status:</div>
                 <div>
                     <?php $st = $client['status'] ?? ''; ?>
-                    <span style="padding:4px 12px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase;
-                    background:<?= $st === 'New Client' ? '#fef3c7' : '#dbeafe' ?>;
-                    color:<?= $st === 'New Client' ? '#92400e' : '#1e40af' ?>;">
+                    <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase <?= $st === 'New Client' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800' ?>">
                         <?= htmlspecialchars($st) ?>
                     </span>
                 </div>
             </div>
 
-            <!-- Phone -->
             <?php if (!empty($client['contact'])): ?>
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Phone:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($client['contact']) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Phone:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($client['contact']) ?></div>
                 </div>
             <?php endif; ?>
 
-            <!-- Email -->
             <?php if (!empty($client['email'])): ?>
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Email:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($client['email']) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Email:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($client['email']) ?></div>
                 </div>
             <?php endif; ?>
 
-            <!-- Address -->
             <?php if (!empty($client['address'])): ?>
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Address:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($client['address']) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Address:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($client['address']) ?></div>
                 </div>
             <?php endif; ?>
 
-            <!-- Project Scope -->
             <?php if (!empty($client['project_scope'])): ?>
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Project Scope:</div>
-                    <div style="color:#111; font-size:13px;"><?= nl2br(htmlspecialchars($client['project_scope'])) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Project Scope:</div>
+                    <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($client['project_scope'])) ?></div>
                 </div>
             <?php endif; ?>
 
-            <!-- Scope of Work -->
             <?php if (!empty($client['scope_of_work'])): ?>
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Scope of Work:</div>
-                    <div style="color:#111; font-size:13px;"><?= nl2br(htmlspecialchars($client['scope_of_work'])) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Scope of Work:</div>
+                    <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($client['scope_of_work'])) ?></div>
                 </div>
             <?php endif; ?>
 
-            <!-- House State -->
-            <div
-                style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                <div style="font-weight:600; color:#666; font-size:13px;">House State:</div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">House State:</div>
                 <div>
                     <?php if ($house_state):
-                        $hsBg = '#fef3c7';
-                        $hsColor = '#92400e';
-                        if ($house_state === 'Bare/Empty Lot') {
-                            $hsBg = '#dbeafe';
-                            $hsColor = '#1e40af';
-                        } elseif ($house_state === 'Construction Started') {
-                            $hsBg = '#fee2e2';
-                            $hsColor = '#991b1b';
-                        } elseif ($house_state === 'Renovation') {
-                            $hsBg = '#ede9fe';
-                            $hsColor = '#5b21b6';
-                        }
+                        $hsClass = 'bg-amber-100 text-amber-800';
+                        if ($house_state === 'Bare/Empty Lot') { $hsClass = 'bg-blue-100 text-blue-800'; }
+                        elseif ($house_state === 'Construction Started') { $hsClass = 'bg-red-100 text-red-800'; }
+                        elseif ($house_state === 'Renovation') { $hsClass = 'bg-purple-100 text-purple-800'; }
                         ?>
-                        <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:700;
-                                 background:<?= $hsBg ?>; color:<?= $hsColor ?>;">
-                            <?= htmlspecialchars($house_state) ?>
-                        </span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold <?= $hsClass ?>"><?= htmlspecialchars($house_state) ?></span>
                     <?php else: ?>
-                        <span style="color:#9ca3af; font-size:13px;">—</span>
+                        <span class="text-muted text-[13px]">—</span>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Permit Required -->
-            <div
-                style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                <div style="font-weight:600; color:#666; font-size:13px;">Permit Required:</div>
+            <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                <div class="font-semibold text-soft text-[13px]">Permit Required:</div>
                 <div>
                     <?php if ($permit_required):
-                        $prBg = '#fef3c7';
-                        $prColor = '#92400e';
-                        if ($permit_required === 'Yes') {
-                            $prBg = '#fee2e2';
-                            $prColor = '#991b1b';
-                        } elseif ($permit_required === 'No') {
-                            $prBg = '#d1fae5';
-                            $prColor = '#065f46';
-                        }
+                        $prClass = 'bg-amber-100 text-amber-800';
+                        if ($permit_required === 'Yes') { $prClass = 'bg-red-100 text-red-800'; }
+                        elseif ($permit_required === 'No') { $prClass = 'bg-emerald-100 text-emerald-800'; }
                         ?>
-                        <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:700;
-                                 background:<?= $prBg ?>; color:<?= $prColor ?>;">
-                            <?= htmlspecialchars($permit_required) ?>
-                        </span>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold <?= $prClass ?>"><?= htmlspecialchars($permit_required) ?></span>
                     <?php else: ?>
-                        <span style="color:#9ca3af; font-size:13px;">—</span>
+                        <span class="text-muted text-[13px]">—</span>
                     <?php endif; ?>
                 </div>
             </div>
 
-            <!-- Target Move-in Date -->
-            <div style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; align-items:start;">
-                <div style="font-weight:600; color:#666; font-size:13px;">Target Move-in:</div>
-                <div style="color:#111; font-size:13px; font-weight:600;">
+            <div class="grid grid-cols-[160px_1fr] py-3 items-start">
+                <div class="font-semibold text-soft text-[13px]">Target Move-in:</div>
+                <div class="text-ink text-[13px] font-semibold">
                     <?php if ($target_movein_date): ?>
-                        <i class="fas fa-calendar-check" style="color:#10b981;"></i>
-                        <?= date('F d, Y', strtotime($target_movein_date)) ?>
+                        <i class="fas fa-calendar-check text-emerald-600"></i> <?= date('F d, Y', strtotime($target_movein_date)) ?>
                     <?php else: ?>
-                        <span style="color:#9ca3af;">—</span>
+                        <span class="text-muted">—</span>
                     <?php endif; ?>
                 </div>
             </div>
-
         </div>
     </div>
 
     <script>
-        // Close modal when clicking outside
         document.getElementById('clientDetailModal').addEventListener('click', function (e) {
             if (e.target === this) this.style.display = 'none';
         });
     </script>
 
     <!-- Photo Lightbox -->
-    <div id="photoModal" onclick="closePhotoModal()" style="display:none; position:fixed; z-index:99999; left:0; top:0; width:100%; height:100%;
-            background:rgba(0,0,0,0.88); align-items:center; justify-content:center; cursor:zoom-out;">
-        <img id="photoModalImg" src="" alt="Proof Photo" style="max-width:92vw; max-height:92vh; border-radius:10px; object-fit:contain;
-                box-shadow:0 10px 40px rgba(0,0,0,0.5);">
+    <div id="photoModal" onclick="closePhotoModal()"
+        class="hidden fixed inset-0 z-[99999] bg-black/90 items-center justify-center cursor-zoom-out">
+        <img id="photoModalImg" src="" alt="Proof Photo" class="max-w-[92vw] max-h-[92vh] rounded-lg object-contain">
     </div>
     <script>
         function openPhotoModal(src) {

@@ -178,542 +178,98 @@ $locationLabel = $area;
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload — <?= htmlspecialchars($locationLabel) ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        .tab-bar::-webkit-scrollbar { display: none; }
 
-        body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .btn-back {
-            background: linear-gradient(135deg, #3b1f0f, #8a5a44);
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            margin-bottom: 16px;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 24px 30px;
-            border-radius: 14px;
-            color: white;
-            margin-bottom: 22px;
-        }
-
-        .page-header h1 {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-
-        .page-header .sub {
-            font-size: 12px;
-            opacity: 0.85;
-            margin-top: 4px;
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 14px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-
-        /* Tabs */
-        .tab-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 18px;
-            overflow-x: auto;
-            padding-bottom: 4px;
-            padding-left: 2px;
-            padding-right: 2px;
-        }
-
-        .tab-bar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .tab-btn {
-            flex: 1;
-            min-width: 100px;
-            padding: 10px 12px;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 700;
-            transition: all 0.2s;
-            background: white;
-            color: #6b7280;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            white-space: nowrap;
-            flex-shrink: 0;
-        }
-
-        .tab-btn:hover:not(.active) {
-            border-color: #8a5a44;
-            background: #fdf6f0;
-        }
-
-        /* Upload card */
-        .upload-card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-        }
-
-        .upload-zone {
-            border: 2px dashed #d1d5db;
-            border-radius: 10px;
-            padding: 36px 20px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 14px;
-            background: #fafafa;
-        }
-
-        .upload-zone:hover,
-        .upload-zone.drag-over {
-            border-color: #8a5a44;
-            background: #fdf6f0;
-        }
-
-        .upload-zone i {
-            font-size: 36px;
-            color: #9ca3af;
-            margin-bottom: 12px;
-            display: block;
-        }
-
-        .upload-zone .hint {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 6px;
-        }
-
-        .note-input {
-            width: 100%;
-            padding: 9px 13px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: inherit;
-            resize: none;
-        }
-
-        .note-input:focus {
-            outline: none;
-            border-color: #8a5a44;
-        }
-
-        .btn-upload {
-            background: linear-gradient(135deg, #3b1f0f, #8a5a44);
-            color: white;
-            padding: 11px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 4px;
-        }
-
-        .btn-upload:hover {
-            opacity: 0.9;
-        }
-
-        /* File list */
-        .file-card {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            background: #fafafa;
-            flex-wrap: wrap;
-        }
-
-        .file-thumb {
-            width: 46px;
-            height: 46px;
-            object-fit: cover;
-            border-radius: 6px;
-            flex-shrink: 0;
-            border: 1px solid #e9ecef;
-        }
-
-        .file-icon {
-            width: 46px;
-            height: 46px;
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .file-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .file-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1f2937;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-meta {
-            font-size: 10px;
-            color: #9ca3af;
-            margin-top: 2px;
-            line-height: 1.5;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2px 6px;
-            align-items: center;
-        }
-
-        .file-note {
-            font-size: 11px;
-            color: #92400e;
-            background: #fffbeb;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-top: 4px;
-            display: inline-block;
-        }
-
-        .btn-view {
-            background: #e0e7ff;
-            color: #3730a3;
-            border: none;
-            border-radius: 6px;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 700;
-            text-decoration: none;
-            flex-shrink: 0;
-        }
-
-        .btn-delete {
-            background: #fee2e2;
-            color: #ef4444;
-            border: none;
-            border-radius: 6px;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .btn-delete:hover {
-            background: #fecaca;
-        }
-
-        .files-header {
-            font-size: 11px;
-            font-weight: 700;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            margin-bottom: 10px;
-        }
-
-        .max-reached {
-            background: #fffbeb;
-            border: 1px solid #fcd34d;
-            border-radius: 8px;
-            padding: 12px 16px;
-            font-size: 13px;
-            color: #92400e;
-        }
-
-        .file-count-text {
-            font-size: 13px;
-            color: #065f46;
-            font-weight: 600;
-            margin-top: 8px;
-        }
-
-        /* Upload mode toggle */
-        .upload-mode-toggle {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f9fafb;
-            border: 1px solid #e9ecef;
-            border-radius: 9px;
-            padding: 8px 14px;
-            margin-bottom: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #374151;
-            flex-wrap: wrap;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background: #d1d5db;
-            border-radius: 24px;
-            transition: .3s;
-        }
-
-        .toggle-slider:before {
-            content: '';
-            position: absolute;
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background: #fff;
-            border-radius: 50%;
-            transition: .3s;
-        }
-
-        .toggle-switch input:checked+.toggle-slider {
-            background: #3b1f0f;
-        }
-
-        .toggle-switch input:checked+.toggle-slider:before {
-            transform: translateX(20px);
-        }
-
-        .mode-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .mode-badge.direct {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-
-        .mode-badge.chunked {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #D1D5DB; border-radius: 999px; transition: .2s; }
+        .toggle-slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+        .toggle-switch input:checked + .toggle-slider { background: #0B0B0B; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
 
         @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
-            }
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                max-width: 800px;
-                margin: 30px auto;
-                padding: 0 20px;
-                overflow-x: hidden;
-            }
-
-            .page-header {
-                padding: 16px;
-            }
-
-            .page-header h1 {
-                font-size: 16px;
-            }
-
-            .page-header .sub {
-                font-size: 11px;
-            }
-
-            /* File card compact */
-            .file-thumb {
-                width: 36px;
-                height: 36px;
-            }
-
-            .file-icon {
-                width: 36px;
-                height: 36px;
-            }
-
-            .file-name {
-                font-size: 12px;
-            }
-
-            .file-meta {
-                font-size: 10px;
-                white-space: normal;
-                line-height: 1.4;
-            }
-
-            .file-note {
-                font-size: 10px;
-            }
-
-            /* View/Download/Delete buttons smaller */
-            .btn-view {
-                padding: 4px 8px;
-                font-size: 10px;
-            }
-
-            .btn-delete {
-                padding: 4px 8px;
-                font-size: 10px;
-            }
-
-            /* Upload zone smaller */
-            .upload-zone {
-                padding: 20px 14px;
-            }
-
-            .upload-zone i {
-                font-size: 26px;
-            }
-
-            /* Page header — stack title and View Items button */
-            .page-header>div>div:first-child {
-                display: flex;
-                flex-direction: column;
-                gap: 8px;
-            }
-
-            .page-header button {
-                align-self: flex-start;
-                font-size: 12px !important;
-                padding: 7px 12px !important;
-            }
-
-            /* Icon-only tabs on mobile */
-            .tab-btn {
-                min-width: unset;
-                padding: 8px 10px;
-                flex: 1;
-            }
-
-            .tab-label {
-                display: none;
-            }
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
     </style>
 </head>
 
-<body>
-    <div class="container">
-        <a href="<?= htmlspecialchars($backUrl) ?>" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Back
-        </a>
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[880px] mx-auto px-5 py-8">
 
-        <div class="page-header">
-            <div style="display:flex; justify-content:space-between; align-items:start; gap:16px;">
-                <div>
-                    <h1><i class="fas fa-upload"></i> <?= htmlspecialchars($locationLabel) ?></h1>
-                    <div class="sub">
-                        <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($area) ?>
-                    </div>
-                    <div class="sub"><?= htmlspecialchars($clientInfo['clientname']) ?> —
-                        <?= htmlspecialchars($clientInfo['nameproject']) ?>
-                    </div>
+        <!-- Back button -->
+        <div class="mb-5">
+            <a href="<?= htmlspecialchars($backUrl) ?>"
+                class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+
+        <!-- ── Page Header ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5 flex justify-between items-start gap-4 flex-wrap">
+            <div>
+                <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                    <i class="fas fa-upload"></i> Attachment Upload
                 </div>
-                <button type="button"
-                    onclick="openItemsModal(<?= $client_id ?>, '<?= htmlspecialchars($area, ENT_QUOTES) ?>', null, '<?= htmlspecialchars($locationLabel, ENT_QUOTES) ?>')"
-                    style="background:rgba(255,255,255,0.2); border:1.5px solid rgba(255,255,255,0.5); color:white; padding:9px 18px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; flex-shrink:0;">
-                    <i class="fas fa-boxes"></i> View Items
-                </button>
+                <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($locationLabel) ?></h1>
+                <p class="text-[13.5px] text-soft mt-1">
+                    <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($area) ?>
+                </p>
+                <p class="text-[13px] text-muted mt-1">
+                    <?= htmlspecialchars($clientInfo['clientname']) ?> — <?= htmlspecialchars($clientInfo['nameproject']) ?>
+                </p>
             </div>
+            <button type="button"
+                onclick="openItemsModal(<?= $client_id ?>, '<?= htmlspecialchars($area, ENT_QUOTES) ?>', null, '<?= htmlspecialchars($locationLabel, ENT_QUOTES) ?>')"
+                class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition whitespace-nowrap">
+                <i class="fas fa-boxes"></i> View Items
+            </button>
         </div>
 
         <?php if ($success): ?>
-            <div class="alert alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?></div>
+            <div class="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?>
+            </div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?></div>
+            <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
 
         <!-- Tab Bar -->
-        <div class="tab-bar">
+        <div class="tab-bar flex gap-2 mb-5 overflow-x-auto pb-1">
             <?php foreach ($tabs as $typeKey => $tabInfo): ?>
-                <?php $files = getFiles($conn, $client_id, $typeKey, $area); ?>
-                <button type="button" class="tab-btn <?= $activeTab === $typeKey ? 'active' : '' ?>"
+                <?php
+                $files = getFiles($conn, $client_id, $typeKey, $area);
+                $isActiveTab = $activeTab === $typeKey;
+                ?>
+                <button type="button" class="tab-btn flex-1 min-w-[110px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border text-[12px] font-bold whitespace-nowrap transition <?= $isActiveTab ? '' : 'bg-white border-line text-soft hover:border-ink' ?>"
                     onclick="switchTab('<?= $typeKey ?>')"
-                    style="<?= $activeTab === $typeKey ? 'border-color:' . $tabInfo['color'] . '; background:' . $tabInfo['bg'] . '; color:' . $tabInfo['color'] . ';' : '' ?>">
+                    style="<?= $isActiveTab ? 'border-color:' . $tabInfo['color'] . '; background:' . $tabInfo['bg'] . '; color:' . $tabInfo['color'] . ';' : '' ?>">
                     <i class="fas <?= $tabInfo['icon'] ?>"></i>
-                    <span class="tab-label"><?= $tabInfo['label'] ?></span>
+                    <span class="tab-label hidden sm:inline"><?= $tabInfo['label'] ?></span>
                     <?php if (!empty($files)): ?>
-                        <span
-                            style="background:<?= $tabInfo['color'] ?>; color:white; font-size:10px; padding:2px 7px; border-radius:10px; margin-left:4px;"><?= count($files) ?></span>
+                        <span class="text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                            style="background:<?= $tabInfo['color'] ?>;"><?= count($files) ?></span>
                     <?php endif; ?>
                 </button>
             <?php endforeach; ?>
@@ -731,90 +287,95 @@ $locationLabel = $area;
                 . '&tab=' . $typeKey;
             $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-word', 'xls' => 'fa-file-excel', 'xlsx' => 'fa-file-excel', 'ppt' => 'fa-file-powerpoint', 'pptx' => 'fa-file-powerpoint', 'zip' => 'fa-file-archive', 'txt' => 'fa-file-alt'];
             ?>
-            <div id="tabpanel-<?= $typeKey ?>" style="display:<?= $activeTab === $typeKey ? 'block' : 'none' ?>;">
-                <div class="upload-card">
+            <div id="tabpanel-<?= $typeKey ?>" class="mb-5" style="display:<?= $activeTab === $typeKey ? 'block' : 'none' ?>;">
+                <div class="bg-white border border-line rounded-[10px] p-6">
 
                     <!-- Existing Files -->
                     <?php if (!empty($files)): ?>
-                        <p class="files-header"><i class="fas fa-paperclip"></i> Uploaded Files
-                            (<?= $fileCount ?>/<?= $maxFiles ?>)</p>
-                        <?php foreach ($files as $file): ?>
-                            <?php
-                            $isImage = strpos($file['file_type'], 'image/') === 0;
-                            $filePath = BASE_URL . 'uploads/layout_attachments/' . $file['file_path'];
-                            $ext = strtolower(pathinfo($file['file_name'], PATHINFO_EXTENSION));
-                            $fIcon = $iconMap[$ext] ?? 'fa-file';
-                            ?>
-                            <div class="file-card" style="flex-direction:column; gap:10px;">
-                                <!-- Row 1: icon + name + delete -->
-                                <div style="display:flex; align-items:center; gap:10px; width:100%;">
-                                    <?php if ($isImage): ?>
-                                        <img src="<?= htmlspecialchars($filePath) ?>" class="file-thumb"
-                                            onerror="this.style.display='none'">
-                                    <?php else: ?>
-                                        <div class="file-icon" style="background:<?= $tabInfo['bg'] ?>;">
-                                            <i class="fas <?= $fIcon ?>" style="color:<?= $tabInfo['color'] ?>; font-size:20px;"></i>
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-3">
+                            <i class="fas fa-paperclip"></i> Uploaded Files (<?= $fileCount ?>/<?= $maxFiles ?>)
+                        </div>
+                        <div class="flex flex-col gap-2.5 mb-5">
+                            <?php foreach ($files as $file): ?>
+                                <?php
+                                $isImage = strpos($file['file_type'], 'image/') === 0;
+                                $filePath = BASE_URL . 'uploads/layout_attachments/' . $file['file_path'];
+                                $ext = strtolower(pathinfo($file['file_name'], PATHINFO_EXTENSION));
+                                $fIcon = $iconMap[$ext] ?? 'fa-file';
+                                $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+                                ?>
+                                <div class="border border-line rounded-lg p-3.5 bg-[#F5F5F5]">
+                                    <div class="flex items-center gap-3">
+                                        <?php if ($isImage): ?>
+                                            <img src="<?= htmlspecialchars($filePath) ?>"
+                                                class="w-11 h-11 object-cover rounded-md border border-line flex-shrink-0"
+                                                onerror="this.style.display='none'">
+                                        <?php else: ?>
+                                            <div class="w-11 h-11 rounded-md flex items-center justify-center flex-shrink-0"
+                                                style="background:<?= $tabInfo['bg'] ?>;">
+                                                <i class="fas <?= $fIcon ?> text-lg" style="color:<?= $tabInfo['color'] ?>;"></i>
+                                            </div>
+                                        <?php endif; ?>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-[13px] font-semibold truncate"><?= htmlspecialchars($file['file_name']) ?></div>
+                                            <div class="text-[11px] text-muted mt-0.5">
+                                                <?= round($file['file_size'] / 1024, 1) ?> KB &nbsp;•&nbsp;
+                                                <?= htmlspecialchars($file['uploader_name'] ?? '') ?> &nbsp;•&nbsp;
+                                                <?= date('M d, Y g:i A', strtotime($file['created_at'])) ?>
+                                            </div>
+                                            <?php if (!empty($file['note'])): ?>
+                                                <span class="inline-block text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md mt-1.5">
+                                                    <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($file['note']) ?>
+                                                </span>
+                                            <?php endif; ?>
                                         </div>
-                                    <?php endif; ?>
-                                    <div style="flex:1; min-width:0;">
-                                        <div class="file-name"><?= htmlspecialchars($file['file_name']) ?></div>
-                                        <div style="font-size:11px; color:#9ca3af; margin-top:2px;">
-                                            <?= round($file['file_size'] / 1024, 1) ?> KB &nbsp;•&nbsp;
-                                            <?= htmlspecialchars($file['uploader_name'] ?? '') ?> &nbsp;•&nbsp;
-                                            <?= date('M d, Y g:i A', strtotime($file['created_at'])) ?>
-                                        </div>
-                                        <?php if (!empty($file['note'])): ?>
-                                            <span class="file-note"><i class="fas fa-sticky-note"></i>
-                                                <?= htmlspecialchars($file['note']) ?></span>
+                                        <?php if (!$viewOnly): ?>
+                                            <button type="button"
+                                                class="flex-shrink-0 bg-red-50 text-red-600 border border-red-200 rounded-lg px-2.5 py-1.5 text-[11px] font-bold hover:bg-red-100 transition"
+                                                onclick="confirmDelete(<?= $file['id'] ?>, '<?= htmlspecialchars($file['file_name'], ENT_QUOTES) ?>', '<?= $redirectBase ?>')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         <?php endif; ?>
                                     </div>
-                                    <?php if (!$viewOnly): ?>
-                                        <button type="button" class="btn-delete"
-                                            onclick="confirmDelete(<?= $file['id'] ?>, '<?= htmlspecialchars($file['file_name'], ENT_QUOTES) ?>', '<?= $redirectBase ?>')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    <?php endif; ?>
-                                </div>
-                                <!-- Row 2: View + Download buttons -->
-                                <div style="display:flex; gap:8px; width:100%;">
-                                    <?php $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg']; ?>
-                                    <?php if ($isImage || in_array($ext, $imageExts) || $ext === 'pdf'): ?>
-                                        <a href="<?= htmlspecialchars($filePath) ?>" target="_blank" class="btn-view"
-                                            style="flex:1; text-align:center; padding:8px;">
-                                            <i class="fas fa-eye"></i> View
+                                    <div class="flex gap-2 mt-2.5">
+                                        <?php if ($isImage || in_array($ext, $imageExts) || $ext === 'pdf'): ?>
+                                            <a href="<?= htmlspecialchars($filePath) ?>" target="_blank"
+                                                class="flex-1 text-center bg-white border border-line rounded-lg py-2 text-[11px] font-bold hover:border-ink transition">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        <?php endif; ?>
+                                        <a href="<?= htmlspecialchars($filePath) ?>" download="<?= htmlspecialchars($file['file_name']) ?>"
+                                            class="flex-1 text-center bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg py-2 text-[11px] font-bold hover:bg-emerald-100 transition">
+                                            <i class="fas fa-download"></i> Download
                                         </a>
-                                    <?php endif; ?>
-                                    <a href="<?= htmlspecialchars($filePath) ?>"
-                                        download="<?= htmlspecialchars($file['file_name']) ?>" class="btn-view"
-                                        style="flex:1; text-align:center; padding:8px; background:#dcfce7; color:#166534;">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
+                                    </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
-                        <div style="height:16px;"></div>
+                            <?php endforeach; ?>
+                        </div>
                     <?php endif; ?>
 
                     <!-- Upload Form -->
                     <?php if ($canUpload): ?>
                         <div id="form-<?= $typeKey ?>">
 
-                            <div class="upload-zone" id="zone-<?= $typeKey ?>">
-                                <i class="fas fa-cloud-upload-alt" style="color:<?= $tabInfo['color'] ?>;"></i>
-                                <p style="font-size:14px; font-weight:600; color:#374151;">Click or drag files here</p>
-                                <p class="hint" id="hint-<?= $typeKey ?>">Images &amp; documents only — no videos &nbsp;•&nbsp;
+                            <div id="zone-<?= $typeKey ?>"
+                                class="border-2 border-dashed border-line rounded-lg py-9 px-5 text-center cursor-pointer transition hover:border-ink hover:bg-[#F5F5F5] mb-3.5">
+                                <i class="fas fa-cloud-upload-alt text-3xl mb-3 block" style="color:<?= $tabInfo['color'] ?>;"></i>
+                                <p class="text-sm font-semibold">Click or drag files here</p>
+                                <p class="text-[11px] text-muted mt-1.5" id="hint-<?= $typeKey ?>">
+                                    Images &amp; documents only — no videos &nbsp;•&nbsp;
                                     Max <?= $maxFiles - $fileCount ?> more &nbsp;•&nbsp; Max 50MB (Direct) or 1.3GB (Chunked)
                                 </p>
-                                <p class="file-count-text" id="count-<?= $typeKey ?>"></p>
+                                <p class="text-[13px] text-emerald-700 font-semibold mt-2" id="count-<?= $typeKey ?>"></p>
                                 <input type="file" multiple id="input-<?= $typeKey ?>"
                                     accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" style="display:none;"
                                     onclick="event.stopPropagation()" onchange="autoSuggestAttachMode('<?= $typeKey ?>', this)">
                             </div>
 
                             <!-- Upload mode toggle -->
-                            <div class="upload-mode-toggle">
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <i class="fas fa-bolt" style="color:#1e40af;"></i>
+                            <div class="flex items-center gap-2.5 bg-[#F5F5F5] border border-line rounded-lg px-3.5 py-2.5 mb-3.5 text-[12px] font-semibold flex-wrap">
+                                <div class="flex items-center gap-1.5 text-soft">
+                                    <i class="fas fa-bolt"></i>
                                     <span>Upload Mode:</span>
                                 </div>
                                 <label class="toggle-switch">
@@ -823,55 +384,51 @@ $locationLabel = $area;
                                     <span class="toggle-slider"></span>
                                 </label>
                                 <div id="mode-label-<?= $typeKey ?>">
-                                    <span class="mode-badge direct"><i class="fas fa-bolt"></i> Direct</span>
-                                    <span style="font-size:11px; color:#9ca3af; margin-left:4px;">Best for files under 50MB ·
-                                        faster, no 405 errors</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800">
+                                        <i class="fas fa-bolt"></i> Direct
+                                    </span>
+                                    <span class="text-[11px] text-muted ml-1">Best for files under 50MB · faster, no 405 errors</span>
                                 </div>
                             </div>
 
-                            <div style="margin-bottom:14px;">
-                                <label
-                                    style="font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:6px;">
+                            <div class="mb-3.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">
                                     <i class="fas fa-sticky-note"></i> Note (optional — applies to all files in this upload)
                                 </label>
-                                <textarea id="note-<?= $typeKey ?>" class="note-input" rows="2"
+                                <textarea id="note-<?= $typeKey ?>" rows="2"
+                                    class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink resize-none"
                                     placeholder="e.g. Taken during initial site visit, north side..."></textarea>
                             </div>
 
                             <!-- Progress bar (hidden until upload starts) -->
-                            <div id="progress-wrap-<?= $typeKey ?>" style="display:none; margin-bottom:14px;">
-                                <div
-                                    style="display:flex; justify-content:space-between; font-size:12px; color:#374151; margin-bottom:5px;">
+                            <div id="progress-wrap-<?= $typeKey ?>" style="display:none;" class="mb-3.5">
+                                <div class="flex justify-between text-[12px] text-soft mb-1.5">
                                     <span id="progress-label-<?= $typeKey ?>">Uploading...</span>
                                     <span id="progress-pct-<?= $typeKey ?>">0%</span>
                                 </div>
-                                <div style="height:7px; background:#e9ecef; border-radius:99px; overflow:hidden;">
-                                    <div id="progress-bar-<?= $typeKey ?>"
-                                        style="height:100%; width:0%; border-radius:99px; transition:width .2s; background:linear-gradient(90deg, <?= $tabInfo['color'] ?>, <?= $tabInfo['color'] ?>99);">
-                                    </div>
+                                <div class="h-[7px] bg-line rounded-full overflow-hidden">
+                                    <div id="progress-bar-<?= $typeKey ?>" style="height:100%; width:0%; border-radius:999px; transition:width .2s; background:<?= $tabInfo['color'] ?>;"></div>
                                 </div>
-                                <div id="progress-sub-<?= $typeKey ?>" style="font-size:11px; color:#9ca3af; margin-top:4px;">
-                                </div>
+                                <div id="progress-sub-<?= $typeKey ?>" class="text-[11px] text-muted mt-1"></div>
                             </div>
 
                             <div id="upload-error-<?= $typeKey ?>"
-                                style="display:none; background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:10px;">
-                            </div>
+                                class="hidden bg-red-50 border border-red-300 text-red-800 rounded-lg px-3.5 py-2.5 text-[13px] mb-2.5"></div>
 
                             <?php if (!$viewOnly): ?>
                                 <button type="button" id="btn-upload-<?= $typeKey ?>" onclick="startAttachUpload('<?= $typeKey ?>')"
-                                    style="background:linear-gradient(135deg, <?= $tabInfo['color'] ?>, <?= $tabInfo['color'] ?>dd); color:white; padding:11px 24px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:8px; margin-top:4px;">
+                                    class="inline-flex items-center gap-2 text-white rounded-lg px-6 py-3 text-sm font-semibold hover:opacity-90 transition"
+                                    style="background:<?= $tabInfo['color'] ?>;">
                                     <i class="fas fa-upload"></i> Upload Files
                                 </button>
                             <?php else: ?>
-                                <div
-                                    style="background:#f3f4f6; border-radius:8px; padding:12px 16px; font-size:13px; color:#6b7280; display:inline-flex; align-items:center; gap:8px;">
+                                <div class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line rounded-lg px-4 py-2.5 text-[13px] text-soft">
                                     <i class="fas fa-eye"></i> View only — you cannot upload files
                                 </div>
                             <?php endif; ?>
                         </div>
                     <?php else: ?>
-                        <div class="max-reached">
+                        <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-4 py-3 text-[13px]">
                             <i class="fas fa-exclamation-triangle"></i>
                             Maximum of <?= $maxFiles ?> files reached for this section. Delete a file to upload more.
                         </div>
@@ -879,62 +436,57 @@ $locationLabel = $area;
                 </div>
             </div>
         <?php endforeach; ?>
-    </div>
 
-    <!-- ═══════════════════════════════════════════════
-     APPROVAL PANEL
-════════════════════════════════════════════════ -->
-    <?php
-    $hasAnyFile = false;
-    foreach ($tabs as $typeKey => $tabInfo) {
-        $f = getFiles($conn, $client_id, $typeKey, $area);
-        if (!empty($f)) {
-            $hasAnyFile = true;
-            break;
+        <!-- ═══════════════════════════════════════════════
+             APPROVAL PANEL
+        ════════════════════════════════════════════════ -->
+        <?php
+        $hasAnyFile = false;
+        foreach ($tabs as $typeKey => $tabInfo) {
+            $f = getFiles($conn, $client_id, $typeKey, $area);
+            if (!empty($f)) {
+                $hasAnyFile = true;
+                break;
+            }
         }
-    }
 
-    // Overall color for the approval panel
-    if ($allApproved) {
-        $panelBg = '#d1fae5';
-        $panelBorder = '#10b981';
-        $panelColor = '#065f46';
-        $panelLabel = 'All Approved';
-        $panelIcon = 'fa-check-circle';
-    } elseif ($anyRejected) {
-        $panelBg = '#fee2e2';
-        $panelBorder = '#ef4444';
-        $panelColor = '#991b1b';
-        $panelLabel = 'Has Rejection(s)';
-        $panelIcon = 'fa-times-circle';
-    } elseif ($approvalRequested) {
-        $panelBg = '#dbeafe';
-        $panelBorder = '#3b82f6';
-        $panelColor = '#1e40af';
-        $panelLabel = 'Pending Review';
-        $panelIcon = 'fa-hourglass-half';
-    } else {
-        $panelBg = '#f3f4f6';
-        $panelBorder = '#d1d5db';
-        $panelColor = '#374151';
-        $panelLabel = 'Not Requested';
-        $panelIcon = 'fa-circle';
-    }
-    ?>
-    <div style="max-width:800px; margin:20px auto 0 auto; padding:0 20px;">
-        <div
-            style="background:white; border:2px solid <?= $panelBorder ?>; border-radius:14px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.07);">
+        // Overall color for the approval panel
+        if ($allApproved) {
+            $panelBorderClass = 'border-emerald-300';
+            $panelBgClass = 'bg-emerald-50';
+            $panelTextClass = 'text-emerald-900';
+            $panelLabel = 'All Approved';
+            $panelIcon = 'fa-check-circle';
+        } elseif ($anyRejected) {
+            $panelBorderClass = 'border-red-300';
+            $panelBgClass = 'bg-red-50';
+            $panelTextClass = 'text-red-900';
+            $panelLabel = 'Has Rejection(s)';
+            $panelIcon = 'fa-times-circle';
+        } elseif ($approvalRequested) {
+            $panelBorderClass = 'border-blue-300';
+            $panelBgClass = 'bg-blue-50';
+            $panelTextClass = 'text-blue-900';
+            $panelLabel = 'Pending Review';
+            $panelIcon = 'fa-hourglass-half';
+        } else {
+            $panelBorderClass = 'border-line';
+            $panelBgClass = 'bg-[#F5F5F5]';
+            $panelTextClass = 'text-soft';
+            $panelLabel = 'Not Requested';
+            $panelIcon = 'fa-circle';
+        }
+        ?>
+        <div class="bg-white border <?= $panelBorderClass ?> rounded-[10px] overflow-hidden mb-5">
             <!-- Panel Header Bar -->
-            <div
-                style="background:<?= $panelBg ?>; border-bottom:2px solid <?= $panelBorder ?>33; padding:14px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fas <?= $panelIcon ?>" style="color:<?= $panelColor ?>; font-size:18px;"></i>
+            <div class="<?= $panelBgClass ?> border-b <?= $panelBorderClass ?> px-5 py-3.5 flex justify-between items-center gap-3 flex-wrap">
+                <div class="flex items-center gap-2.5">
+                    <i class="fas <?= $panelIcon ?> text-lg <?= $panelTextClass ?>"></i>
                     <div>
-                        <div style="font-size:13px; font-weight:700; color:<?= $panelColor ?>; line-height:1.3;">
-                            Approval Status — <span
-                                style="font-weight:800;"><?= htmlspecialchars($locationLabel) ?></span>
+                        <div class="text-[13px] font-bold <?= $panelTextClass ?>">
+                            Approval Status — <?= htmlspecialchars($locationLabel) ?>
                         </div>
-                        <div style="font-size:11px; color:<?= $panelColor ?>; opacity:0.7; margin-top:1px;">
+                        <div class="text-[11px] <?= $panelTextClass ?> opacity-75 mt-0.5">
                             <?= $approvalRequested ? '● Approval has been requested' : '○ No approval request yet' ?>
                         </div>
                     </div>
@@ -942,39 +494,31 @@ $locationLabel = $area;
 
                 <?php if ($hasActiveRevision && $revisionStatus === 'pending'): ?>
                     <!-- Revision pending — designer needs to resubmit -->
-                    <div
-                        style="background:#fef3c7; border:2px solid #f59e0b; border-radius:10px; padding:14px 18px; margin-bottom:16px; display:flex; align-items:flex-start; gap:12px; width:100%;">
-                        <i class="fas fa-redo" style="color:#d97706; font-size:18px; margin-top:2px; flex-shrink:0;"></i>
-                        <div style="flex:1;">
-                            <div style="font-size:13px; font-weight:700; color:#92400e; margin-bottom:4px;">
+                    <div class="w-full bg-amber-50 border border-amber-300 rounded-lg px-4 py-3.5 flex items-start gap-3">
+                        <i class="fas fa-redo text-amber-600 text-lg mt-0.5 flex-shrink-0"></i>
+                        <div class="flex-1">
+                            <div class="text-[13px] font-bold text-amber-900 mb-1 flex items-center gap-2 flex-wrap">
                                 Revision #<?= $activeRevision['revision_number'] ?> Requested
-                                <span
-                                    style="background:#f59e0b; color:white; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:6px; font-weight:700;">Awaiting
-                                    Resubmission</span>
-                                <span style="font-size:11px; font-weight:400; margin-left:8px; color:#b45309;">
-                                    <?= date('M d, Y g:i A', strtotime($activeRevision['created_at'])) ?>
-                                </span>
+                                <span class="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">Awaiting Resubmission</span>
+                                <span class="text-[11px] font-normal text-amber-700"><?= date('M d, Y g:i A', strtotime($activeRevision['created_at'])) ?></span>
                             </div>
-                            <div style="font-size:12px; color:#78350f; margin-bottom:8px;">
-                                <?= nl2br(htmlspecialchars($activeRevision['reason'])) ?>
-                            </div>
+                            <div class="text-[12px] text-amber-800 mb-2"><?= nl2br(htmlspecialchars($activeRevision['reason'])) ?></div>
                             <?php if ($canRequestApproval && $hasAnyFile): ?>
-                                <form method="POST" action="<?= BASE_URL ?>request-layout-approval" style="margin-top:4px;">
+                                <form method="POST" action="<?= BASE_URL ?>request-layout-approval" class="mt-1">
                                     <input type="hidden" name="client_id" value="<?= $client_id ?>">
                                     <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                                    <input type="hidden" name="redirect_url"
-                                        value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+                                    <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                                     <button type="submit"
-                                        style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:9px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
+                                        class="inline-flex items-center gap-2 bg-amber-600 text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 transition">
                                         <i class="fas fa-paper-plane"></i> Submit Revised & Request Approval
                                     </button>
                                 </form>
                             <?php elseif ($canRequestApproval && !$hasAnyFile): ?>
-                                <div style="margin-top:6px; font-size:12px; color:#9ca3af; font-style:italic;">
+                                <div class="text-[12px] text-muted italic mt-1.5">
                                     <i class="fas fa-upload"></i> Upload your revised files above first, then request approval.
                                 </div>
                             <?php elseif ($isApprover): ?>
-                                <div style="margin-top:6px; font-size:12px; color:#92400e; font-style:italic;">
+                                <div class="text-[12px] text-amber-800 italic mt-1.5">
                                     <i class="fas fa-clock"></i> Waiting for designer to upload revised files and resubmit.
                                 </div>
                             <?php endif; ?>
@@ -983,40 +527,30 @@ $locationLabel = $area;
 
                 <?php elseif ($hasActiveRevision && $revisionStatus === 'designer_resubmitted'): ?>
                     <!-- Revision resubmitted — approvers can now act -->
-                    <div
-                        style="background:#dbeafe; border:2px solid #3b82f6; border-radius:10px; padding:14px 18px; margin-bottom:16px; display:flex; align-items:flex-start; gap:12px; width:100%;">
-                        <i class="fas fa-paper-plane"
-                            style="color:#2563eb; font-size:18px; margin-top:2px; flex-shrink:0;"></i>
-                        <div style="flex:1;">
-                            <div style="font-size:13px; font-weight:700; color:#1e40af; margin-bottom:4px;">
+                    <div class="w-full bg-blue-50 border border-blue-300 rounded-lg px-4 py-3.5 flex items-start gap-3">
+                        <i class="fas fa-paper-plane text-blue-600 text-lg mt-0.5 flex-shrink-0"></i>
+                        <div class="flex-1">
+                            <div class="text-[13px] font-bold text-blue-900 mb-1 flex items-center gap-2 flex-wrap">
                                 Revision #<?= $activeRevision['revision_number'] ?> — Revised Design Submitted
-                                <span
-                                    style="background:#3b82f6; color:white; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:6px; font-weight:700;">Awaiting
-                                    Approval</span>
-                                <span style="font-size:11px; font-weight:400; margin-left:8px; color:#1d4ed8;">
-                                    <?= date('M d, Y g:i A', strtotime($activeRevision['created_at'])) ?>
-                                </span>
+                                <span class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">Awaiting Approval</span>
+                                <span class="text-[11px] font-normal text-blue-700"><?= date('M d, Y g:i A', strtotime($activeRevision['created_at'])) ?></span>
                             </div>
-                            <div style="font-size:12px; color:#1e3a8a;">
-                                <?= nl2br(htmlspecialchars($activeRevision['reason'])) ?>
-                            </div>
+                            <div class="text-[12px] text-blue-800"><?= nl2br(htmlspecialchars($activeRevision['reason'])) ?></div>
                             <?php if ($canRequestApproval): ?>
                                 <?php if ($anyRejected): ?>
-                                    <form method="POST" action="<?= BASE_URL ?>request-layout-approval" style="margin-top:8px;">
+                                    <form method="POST" action="<?= BASE_URL ?>request-layout-approval" class="mt-2">
                                         <input type="hidden" name="client_id" value="<?= $client_id ?>">
                                         <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
-                                        <input type="hidden" name="redirect_url"
-                                            value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
+                                        <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                                         <input type="hidden" name="resubmit" value="1">
                                         <button type="submit"
-                                            style="background:linear-gradient(135deg,#dc2626,#ef4444); color:white; padding:9px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
+                                            class="inline-flex items-center gap-2 bg-red-600 text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 transition">
                                             <i class="fas fa-redo"></i> Re-request Approval
                                         </button>
                                     </form>
                                 <?php else: ?>
-                                    <div style="margin-top:8px; font-size:12px; color:#1e40af; font-style:italic;">
-                                        <i class="fas fa-hourglass-half"></i> Revised design submitted. Waiting for all approvers to
-                                        review.
+                                    <div class="text-[12px] text-blue-800 italic mt-2">
+                                        <i class="fas fa-hourglass-half"></i> Revised design submitted. Waiting for all approvers to review.
                                     </div>
                                 <?php endif; ?>
                             <?php endif; ?>
@@ -1031,13 +565,12 @@ $locationLabel = $area;
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <button type="submit"
-                                style="background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
+                                class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
                                 <i class="fas fa-paper-plane"></i> Request Approval
                             </button>
                         </form>
                     <?php elseif (!$approvalRequested && !$hasAnyFile): ?>
-                        <span style="font-size:12px; color:#9ca3af; font-style:italic;">Upload files first to request
-                            approval</span>
+                        <span class="text-[12px] text-muted italic">Upload files first to request approval</span>
                     <?php elseif ($approvalRequested && $anyRejected): ?>
                         <!-- Re-request only for rejectors -->
                         <form method="POST" action="<?= BASE_URL ?>request-layout-approval">
@@ -1046,7 +579,7 @@ $locationLabel = $area;
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <input type="hidden" name="resubmit" value="1">
                             <button type="submit"
-                                style="background:linear-gradient(135deg,#dc2626,#ef4444); color:white; padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
+                                class="inline-flex items-center gap-2 bg-red-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
                                 <i class="fas fa-redo"></i> Re-request Approval
                             </button>
                         </form>
@@ -1056,47 +589,37 @@ $locationLabel = $area;
 
             <!-- TD Remark Display -->
             <?php if ($approvalRequested): ?>
-                <div
-                    style="background:#f0f9ff; border-top:1px solid #bfdbfe; border-bottom:1px solid #bfdbfe; padding:14px 20px;">
+                <div class="bg-sky-50 border-y border-sky-200 px-5 py-3.5">
                     <?php if ($tdRemarkSubmitted): ?>
-                        <div style="display:flex; align-items:flex-start; gap:10px;">
-                            <i class="fas fa-comment-dots" style="color:#0369a1; margin-top:2px; flex-shrink:0;"></i>
-                            <div style="flex:1;">
-                                <div style="font-size:12px; font-weight:700; color:#0c4a6e; margin-bottom:5px;">
+                        <div class="flex items-start gap-2.5">
+                            <i class="fas fa-comment-dots text-sky-700 mt-0.5 flex-shrink-0"></i>
+                            <div class="flex-1">
+                                <div class="text-[12px] font-bold text-sky-900 mb-1.5 flex items-center gap-1.5 flex-wrap">
                                     Technical Designer Remark
-                                    <span
-                                        style="background:#d1fae5; color:#065f46; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:5px; font-weight:700;">
+                                    <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
                                         <i class="fas fa-check"></i> Submitted
                                     </span>
                                     <?php if ($assignedTDName): ?>
-                                        <span style="font-size:11px; font-weight:400; color:#6b7280; margin-left:5px;">
-                                            by <?= htmlspecialchars($assignedTDName) ?>
-                                        </span>
+                                        <span class="text-[11px] font-normal text-soft">by <?= htmlspecialchars($assignedTDName) ?></span>
                                     <?php endif; ?>
                                 </div>
-                                <div
-                                    style="font-size:13px; color:#1e293b; background:white; border:1.5px solid #bfdbfe; padding:10px 13px; border-radius:8px; font-style:italic;">
+                                <div class="text-[13px] text-ink bg-white border border-sky-200 px-3 py-2.5 rounded-lg italic">
                                     "<?= htmlspecialchars($tdRemarkText) ?>"
                                 </div>
                                 <?php if ($tdRemarkFile): ?>
-                                    <div
-                                        style="margin-top:10px; display:flex; align-items:center; gap:10px; background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:10px 13px;">
-                                        <i class="fas fa-file-pdf" style="color:#dc2626; font-size:20px; flex-shrink:0;"></i>
-                                        <div style="flex:1; min-width:0;">
-                                            <div
-                                                style="font-size:12px; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                                <?= htmlspecialchars($tdRemarkFileName ?: 'TD Remark Attachment') ?>
-                                            </div>
-                                            <div style="font-size:11px; color:#92400e; margin-top:1px;">PDF from Technical Designer
-                                            </div>
+                                    <div class="mt-2.5 flex items-center gap-2.5 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2.5">
+                                        <i class="fas fa-file-pdf text-red-600 text-xl flex-shrink-0"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-[12px] font-bold truncate"><?= htmlspecialchars($tdRemarkFileName ?: 'TD Remark Attachment') ?></div>
+                                            <div class="text-[11px] text-amber-700 mt-0.5">PDF from Technical Designer</div>
                                         </div>
                                         <a href="<?= BASE_URL ?><?= htmlspecialchars($tdRemarkFile) ?>" target="_blank"
-                                            style="background:#dbeafe; color:#1d4ed8; padding:6px 12px; border-radius:7px; font-size:11px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
+                                            class="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap">
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                         <a href="<?= BASE_URL ?><?= htmlspecialchars($tdRemarkFile) ?>"
                                             download="<?= htmlspecialchars($tdRemarkFileName ?: 'td_remark.pdf') ?>"
-                                            style="background:#dcfce7; color:#166534; padding:6px 12px; border-radius:7px; font-size:11px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
+                                            class="bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap">
                                             <i class="fas fa-download"></i>
                                         </a>
                                     </div>
@@ -1104,17 +627,17 @@ $locationLabel = $area;
                             </div>
                         </div>
                     <?php elseif ($assignedTDId): ?>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <i class="fas fa-clock" style="color:#f59e0b; flex-shrink:0;"></i>
-                            <div style="font-size:12px; color:#92400e;">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-clock text-amber-500 flex-shrink-0"></i>
+                            <div class="text-[12px] text-amber-800">
                                 Waiting for <strong><?= htmlspecialchars($assignedTDName) ?></strong> to submit a remark from
                                 their TD Attachments page before the <strong>Technical Designer</strong> approver can proceed.
                             </div>
                         </div>
                     <?php else: ?>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <i class="fas fa-user-slash" style="color:#9ca3af; flex-shrink:0;"></i>
-                            <div style="font-size:12px; color:#6b7280;">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-user-slash text-muted flex-shrink-0"></i>
+                            <div class="text-[12px] text-soft">
                                 No Technical Designer assigned yet. A TD must be assigned and submit a remark before approval
                                 can proceed.
                             </div>
@@ -1124,74 +647,68 @@ $locationLabel = $area;
             <?php endif; ?>
 
             <!-- Per-approver status rows -->
-            <div style="padding:18px 22px; display:flex; flex-direction:column; gap:8px;">
+            <div class="p-5 flex flex-col gap-2.5">
                 <?php foreach ($approvers as $apr):
                     $rec = $approvalMap[$apr['id']] ?? null;
                     $aStatus = $rec ? $rec['status'] : 'not_requested';
 
                     if ($aStatus === 'approved') {
-                        $aBg = '#d1fae5';
-                        $aBorder = '#10b981';
-                        $aColor = '#065f46';
+                        $aRowBg = 'bg-emerald-50 border-emerald-200';
+                        $aIconWrap = 'bg-emerald-100 border-emerald-300';
+                        $aIconColor = 'text-emerald-700';
                         $aIcon = 'fa-check-circle';
+                        $aBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300';
                         $aLabel = 'Approved';
                     } elseif ($aStatus === 'rejected') {
-                        $aBg = '#fee2e2';
-                        $aBorder = '#ef4444';
-                        $aColor = '#991b1b';
+                        $aRowBg = 'bg-red-50 border-red-200';
+                        $aIconWrap = 'bg-red-100 border-red-300';
+                        $aIconColor = 'text-red-700';
                         $aIcon = 'fa-times-circle';
+                        $aBadge = 'bg-red-100 text-red-800 border-red-300';
                         $aLabel = 'Rejected';
                     } elseif ($aStatus === 'pending') {
-                        $aBg = '#fef3c7';
-                        $aBorder = '#f59e0b';
-                        $aColor = '#92400e';
+                        $aRowBg = 'bg-amber-50 border-amber-200';
+                        $aIconWrap = 'bg-amber-100 border-amber-300';
+                        $aIconColor = 'text-amber-700';
                         $aIcon = 'fa-hourglass-half';
+                        $aBadge = 'bg-amber-100 text-amber-800 border-amber-300';
                         $aLabel = 'Pending';
                     } else {
-                        $aBg = '#f3f4f6';
-                        $aBorder = '#d1d5db';
-                        $aColor = '#6b7280';
+                        $aRowBg = 'bg-[#F5F5F5] border-line';
+                        $aIconWrap = 'bg-white border-line';
+                        $aIconColor = 'text-muted';
                         $aIcon = 'fa-minus-circle';
+                        $aBadge = 'bg-white text-soft border-line';
                         $aLabel = 'Not Requested';
                     }
 
-                    // Can this approver act? Only if status is pending AND it's them
-                    // Approvers can act when:
-                    // - their approval is pending AND
-                    // - either no active revision, OR revision is designer_resubmitted (designer already uploaded revised)
                     $isHeadTD = ($apr['role'] === 'technical_designer' && ($apr['is_head'] ?? 0) == 1);
                     $canAct = ($isApprover && $apr['id'] == $admin_id && $aStatus === 'pending')
                         && (!$hasActiveRevision || $revisionStatus === 'designer_resubmitted')
                         && (!$isHeadTD || $tdRemarkSubmitted);
                     ?>
-                    <div
-                        style="background:<?= $aBg ?>; border:1.5px solid <?= $aBorder ?>44; border-radius:8px; padding:10px 14px; display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                    <div class="<?= $aRowBg ?> border rounded-lg px-3.5 py-2.5 flex justify-between items-center gap-3 flex-wrap">
                         <!-- Left: Icon + Info -->
-                        <div style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
-                            <div
-                                style="width:36px; height:36px; background:<?= $aBorder ?>22; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1.5px solid <?= $aBorder ?>55;">
-                                <i class="fas <?= $aIcon ?>" style="color:<?= $aColor ?>; font-size:14px;"></i>
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <div class="w-9 h-9 <?= $aIconWrap ?> border rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas <?= $aIcon ?> <?= $aIconColor ?> text-sm"></i>
                             </div>
-                            <div style="min-width:0;">
-                                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                    <span
-                                        style="font-weight:700; font-size:13px; color:#1f2937;"><?= htmlspecialchars($apr['full_name']) ?></span>
-                                    <span
-                                        style="font-size:10px; background:<?= $aBorder ?>22; color:<?= $aColor ?>; padding:2px 8px; border-radius:20px; font-weight:600; text-transform:capitalize; letter-spacing:0.3px;">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-bold text-[13px]"><?= htmlspecialchars($apr['full_name']) ?></span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize <?= $aBadge ?>">
                                         <?= str_replace('_', ' ', $apr['role']) ?>
                                     </span>
                                 </div>
                                 <?php if ($rec && $rec['responded_at']): ?>
-                                    <div
-                                        style="font-size:11px; color:#9ca3af; margin-top:3px; display:flex; align-items:center; gap:4px;">
-                                        <i class="fas fa-clock" style="font-size:9px;"></i>
+                                    <div class="text-[11px] text-muted mt-1 flex items-center gap-1.5">
+                                        <i class="fas fa-clock text-[9px]"></i>
                                         <?= date('M d, Y · g:i A', strtotime($rec['responded_at'])) ?>
                                     </div>
                                 <?php endif; ?>
                                 <?php if ($rec && $rec['comment']): ?>
-                                    <div
-                                        style="font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fcd34d; padding:4px 10px; border-radius:6px; margin-top:6px; display:inline-flex; align-items:center; gap:5px;">
-                                        <i class="fas fa-comment-alt" style="font-size:10px;"></i>
+                                    <div class="text-[11px] text-amber-800 bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-md mt-1.5 inline-flex items-center gap-1.5">
+                                        <i class="fas fa-comment-alt text-[10px]"></i>
                                         <?= htmlspecialchars($rec['comment']) ?>
                                     </div>
                                 <?php endif; ?>
@@ -1200,26 +717,25 @@ $locationLabel = $area;
 
                         <!-- Right: Status or Action Buttons -->
                         <?php if ($canAct): ?>
-                            <div style="display:flex; gap:8px; align-items:center; flex-shrink:0;">
+                            <div class="flex gap-2 items-center flex-shrink-0">
                                 <button
                                     onclick="openApproveModal(<?= $apr['id'] ?>, '<?= htmlspecialchars($apr['full_name'], ENT_QUOTES) ?>', 'approved')"
-                                    style="background:#10b981; color:white; border:none; padding:7px 16px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px; box-shadow:0 1px 4px rgba(16,185,129,0.3);">
+                                    class="bg-emerald-600 text-white border-none px-4 py-1.5 rounded-lg text-[12px] font-bold hover:opacity-90 transition inline-flex items-center gap-1.5">
                                     <i class="fas fa-check"></i> Approve
                                 </button>
                                 <button
                                     onclick="openApproveModal(<?= $apr['id'] ?>, '<?= htmlspecialchars($apr['full_name'], ENT_QUOTES) ?>', 'rejected')"
-                                    style="background:#ef4444; color:white; border:none; padding:7px 16px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px; box-shadow:0 1px 4px rgba(239,68,68,0.3);">
+                                    class="bg-red-600 text-white border-none px-4 py-1.5 rounded-lg text-[12px] font-bold hover:opacity-90 transition inline-flex items-center gap-1.5">
                                     <i class="fas fa-times"></i> Reject
                                 </button>
                             </div>
                         <?php else: ?>
-                            <div style="display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
-                                <span
-                                    style="font-size:11px; font-weight:700; color:<?= $aColor ?>; background:<?= $aBorder ?>22; padding:4px 10px; border-radius:20px; border:1px solid <?= $aBorder ?>55; white-space:nowrap;">
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap <?= $aBadge ?>">
                                     <?= $aLabel ?>
                                 </span>
                                 <?php if ($aStatus === 'pending' && !$tdRemarkSubmitted && $approvalRequested && $apr['role'] === 'technical_designer' && ($apr['is_head'] ?? 0) == 1): ?>
-                                    <span style="font-size:10px; color:#d97706; font-style:italic; white-space:nowrap;">
+                                    <span class="text-[10px] text-amber-600 italic whitespace-nowrap">
                                         <i class="fas fa-clock"></i> Awaiting TD remark
                                     </span>
                                 <?php endif; ?>
@@ -1227,35 +743,33 @@ $locationLabel = $area;
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
-            </div><!-- end approver rows padding -->
-        </div><!-- end panel wrapper -->
-    </div><!-- end constrained container -->
+            </div>
+        </div>
+
+    </div>
 
     <!-- Approve/Reject Modal -->
-    <div id="approveModal"
-        style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div style="background:white; border-radius:12px; padding:28px; max-width:480px; width:90%;">
-            <h3 id="approveModalTitle" style="font-size:17px; font-weight:700; color:#1f2937; margin-bottom:16px;"></h3>
+    <div id="approveModal" class="hidden fixed inset-0 z-[3000] bg-black/50 items-center justify-center">
+        <div class="bg-white rounded-[14px] p-7 max-w-[480px] w-[90%]">
+            <h3 id="approveModalTitle" class="text-[17px] font-bold mb-4"></h3>
             <?php if ($tdRemarkSubmitted): ?>
-                <div
-                    style="background:#f0f9ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:10px 13px; margin-bottom:14px; font-size:12px;">
-                    <div style="font-weight:700; color:#0c4a6e; margin-bottom:3px;">
+                <div class="bg-sky-50 border border-sky-200 rounded-lg px-3.5 py-2.5 mb-3.5 text-[12px]">
+                    <div class="font-bold text-sky-900 mb-1">
                         <i class="fas fa-comment-dots"></i> TD Remark
                         <?php if ($assignedTDName): ?>
-                            <span style="font-weight:400; color:#6b7280; margin-left:4px;">by
-                                <?= htmlspecialchars($assignedTDName) ?></span>
+                            <span class="font-normal text-soft ml-1">by <?= htmlspecialchars($assignedTDName) ?></span>
                         <?php endif; ?>
                     </div>
-                    <div style="color:#1f2937; font-style:italic;">"<?= htmlspecialchars($tdRemarkText) ?>"</div>
+                    <div class="italic">"<?= htmlspecialchars($tdRemarkText) ?>"</div>
                 </div>
             <?php endif; ?>
             <textarea id="approveComment" placeholder="Comment (required for rejection, optional for approval)..."
-                style="width:100%; padding:10px; border:2px solid #e9ecef; border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; min-height:90px; margin-bottom:16px;"></textarea>
-            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                class="w-full border border-line rounded-lg px-3.5 py-2.5 text-[13px] resize-y min-h-[90px] mb-4 focus:outline-none focus:border-ink"></textarea>
+            <div class="flex gap-2.5 justify-end">
                 <button onclick="closeApproveModal()"
-                    style="background:#6b7280; color:white; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:600;">Cancel</button>
+                    class="bg-white border border-line rounded-lg px-4.5 py-2.5 font-semibold text-[13px] hover:border-ink transition">Cancel</button>
                 <button id="approveConfirmBtn" onclick="submitApproval()"
-                    style="padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:600; color:white;"></button>
+                    class="rounded-lg px-4.5 py-2.5 font-semibold text-[13px] text-white"></button>
             </div>
         </div>
     </div>
@@ -1362,11 +876,11 @@ $locationLabel = $area;
             const countEl = document.getElementById('count-' + tabKey);
 
             zone.addEventListener('click', () => input.click());
-            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('border-ink'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('border-ink'));
             zone.addEventListener('drop', e => {
                 e.preventDefault();
-                zone.classList.remove('drag-over');
+                zone.classList.remove('border-ink');
                 // Block video files dropped in
                 const filtered = Array.from(e.dataTransfer.files).filter(f => !f.type.startsWith('video/'));
                 if (filtered.length < e.dataTransfer.files.length) {
@@ -1400,8 +914,8 @@ $locationLabel = $area;
             const el = document.getElementById('upload-error-' + tabKey);
             if (!el) return;
             el.textContent = msg;
-            el.style.display = 'block';
-            setTimeout(() => { el.style.display = 'none'; }, 5000);
+            el.classList.remove('hidden');
+            setTimeout(() => { el.classList.add('hidden'); }, 5000);
         }
 
         function formatBytes(bytes) {
@@ -1416,12 +930,12 @@ $locationLabel = $area;
             const label = document.getElementById('mode-label-' + tabKey);
             const hint = document.getElementById('hint-' + tabKey);
             if (isChunk) {
-                label.innerHTML = `<span class="mode-badge chunked"><i class="fas fa-layer-group"></i> Chunked</span>
-            <span style="font-size:11px;color:#9ca3af;margin-left:4px;">For large files up to 1.3GB · slower start</span>`;
+                label.innerHTML = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-800"><i class="fas fa-layer-group"></i> Chunked</span>
+            <span class="text-[11px] text-muted ml-1">For large files up to 1.3GB · slower start</span>`;
                 if (hint) hint.innerHTML = 'Images &amp; documents only — no videos &nbsp;•&nbsp; Max 1.3GB each (Chunked mode)';
             } else {
-                label.innerHTML = `<span class="mode-badge direct"><i class="fas fa-bolt"></i> Direct</span>
-            <span style="font-size:11px;color:#9ca3af;margin-left:4px;">Best for files under 50MB · faster, no 405 errors</span>`;
+                label.innerHTML = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800"><i class="fas fa-bolt"></i> Direct</span>
+            <span class="text-[11px] text-muted ml-1">Best for files under 50MB · faster, no 405 errors</span>`;
                 if (hint) hint.innerHTML = 'Images &amp; documents only — no videos &nbsp;•&nbsp; Max 50MB (Direct) or 1.3GB (Chunked)';
             }
         }
@@ -1451,7 +965,7 @@ $locationLabel = $area;
             const oversized = files.filter(f => f.size > DIRECT_LIMIT);
             if (oversized.length > 0) {
                 errEl.textContent = oversized.map(f => f.name + ' exceeds 50MB — switch to Chunked mode.').join(' ');
-                errEl.style.display = 'block';
+                errEl.classList.remove('hidden');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-upload"></i> Upload Files';
                 return;
@@ -1528,7 +1042,7 @@ $locationLabel = $area;
                     progressBar.style.animation = 'none';
                     progressBar.style.width = '0%';
                     errEl.textContent = file.name + ': ' + (result.error || 'Upload failed');
-                    errEl.style.display = 'block';
+                    errEl.classList.remove('hidden');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-upload"></i> Upload Files';
                     return;
@@ -1611,7 +1125,7 @@ $locationLabel = $area;
             const files = Array.from(input.files);
             const btn = document.getElementById('btn-upload-' + tabKey);
             const errEl = document.getElementById('upload-error-' + tabKey);
-            errEl.style.display = 'none';
+            errEl.classList.add('hidden');
 
             if (files.length === 0) { showError(tabKey, 'Please select at least one file.'); return; }
             const hasVideo = files.some(f => f.type.startsWith('video/'));
@@ -1773,31 +1287,28 @@ $locationLabel = $area;
         }
     </script>
     <!-- Items Modal -->
-    <div id="itemsModal"
-        style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.55); align-items:center; justify-content:center;">
-        <div
-            style="background:white; border-radius:14px; width:90%; max-width:640px; max-height:88vh; overflow:hidden; display:flex; flex-direction:column;">
+    <div id="itemsModal" class="hidden fixed inset-0 z-[3000] bg-black/55 items-center justify-center">
+        <div class="bg-white rounded-[14px] w-[90%] max-w-[640px] max-h-[88vh] overflow-hidden flex flex-col">
 
             <!-- Modal Header -->
-            <div
-                style="background:linear-gradient(135deg,#3730a3,#6366f1); padding:18px 22px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+            <div class="bg-ink px-5.5 px-[22px] py-4.5 py-[18px] flex justify-between items-center flex-shrink-0">
                 <div>
-                    <h3 id="itemsModalTitle" style="font-size:16px; font-weight:700; color:white; margin-bottom:3px;">
+                    <h3 id="itemsModalTitle" class="text-[16px] font-bold text-white mb-0.5">
                         <i class="fas fa-boxes"></i> Items
                     </h3>
-                    <p id="itemsModalSub" style="font-size:11px; color:rgba(255,255,255,0.8);"></p>
+                    <p id="itemsModalSub" class="text-[11px] text-white/70"></p>
                 </div>
                 <button onclick="closeItemsModal()"
-                    style="background:rgba(255,255,255,0.2); border:none; color:white; width:32px; height:32px; border-radius:8px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">
+                    class="bg-white/15 border-none text-white w-8 h-8 rounded-lg cursor-pointer text-base flex items-center justify-center hover:bg-white/25 transition">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <!-- Modal Body -->
-            <div id="itemsModalBody" style="overflow-y:auto; padding:18px; flex:1;">
-                <div style="text-align:center; padding:30px; color:#9ca3af;">
-                    <i class="fas fa-spinner fa-spin" style="font-size:28px;"></i>
-                    <p style="margin-top:10px;">Loading items...</p>
+            <div id="itemsModalBody" class="overflow-y-auto p-4.5 p-[18px] flex-1">
+                <div class="text-center py-8 text-muted">
+                    <i class="fas fa-spinner fa-spin text-[28px]"></i>
+                    <p class="mt-2.5">Loading items...</p>
                 </div>
             </div>
         </div>
@@ -1845,23 +1356,23 @@ $locationLabel = $area;
                 const addonBodyId = 'ia-body-' + index;
                 const addonIconId = 'ia-icon-' + index;
 
-                html += '<div style="border:1px solid #e0e7ff; border-radius:10px; overflow:hidden;">';
+                html += '<div style="border:1px solid #E2E2E2; border-radius:10px; overflow:hidden;">';
 
                 // Item row
-                html += '<div style="display:flex; gap:12px; padding:13px; align-items:center; background:#fafbff;">';
+                html += '<div style="display:flex; gap:12px; padding:13px; align-items:center; background:#F5F5F5;">';
 
                 // Image
                 if (imgPath) {
-                    html += '<img src="' + imgPath + '" style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #e0e7ff;flex-shrink:0;" onerror="this.style.display=\'none\'">';
+                    html += '<img src="' + imgPath + '" style="width:50px;height:50px;object-fit:cover;border-radius:8px;border:1px solid #E2E2E2;flex-shrink:0;" onerror="this.style.display=\'none\'">';
                 } else {
-                    html += '<div style="width:50px;height:50px;background:#e0e7ff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-box" style="color:#818cf8;font-size:18px;"></i></div>';
+                    html += '<div style="width:50px;height:50px;background:#E2E2E2;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-box" style="color:#6B6B6B;font-size:18px;"></i></div>';
                 }
 
                 // Info
                 html += '<div style="flex:1;min-width:0;">';
-                html += '<div style="font-weight:700;font-size:13px;color:#1e1b4b;">' + escItemHtml(item.item_name) + '</div>';
+                html += '<div style="font-weight:700;font-size:13px;color:#0B0B0B;">' + escItemHtml(item.item_name) + '</div>';
                 if (item.display_color) {
-                    html += '<div style="font-size:11px;color:#6b7280;margin-top:2px;"><i class="fas fa-palette"></i> ' + escItemHtml(item.display_color) + '</div>';
+                    html += '<div style="font-size:11px;color:#6B6B6B;margin-top:2px;"><i class="fas fa-palette"></i> ' + escItemHtml(item.display_color) + '</div>';
                 }
 
                 // Dimensions
@@ -1870,7 +1381,7 @@ $locationLabel = $area;
                 if (item.height) dims.push((item.height_label || 'H') + ': ' + item.height + 'mm');
                 if (item.length) dims.push((item.length_label || 'L') + ': ' + item.length + 'mm');
                 if (dims.length) {
-                    html += '<div style="font-size:11px;color:#9ca3af;margin-top:2px;">' + dims.join(' &nbsp;•&nbsp; ') + '</div>';
+                    html += '<div style="font-size:11px;color:#9A9A9A;margin-top:2px;">' + dims.join(' &nbsp;•&nbsp; ') + '</div>';
                 }
 
                 // Notes
@@ -1881,34 +1392,34 @@ $locationLabel = $area;
 
                 // Right side: qty + type badge
                 html += '<div style="flex-shrink:0;text-align:center;">';
-                html += '<div style="background:#e0e7ff;color:#3730a3;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">' + item.quantity + ' pcs</div>';
-                html += '<div style="font-size:10px;color:#9ca3af;margin-top:3px;">' + (item.entry_type === 'customized' ? 'Custom' : 'Fixed') + '</div>';
+                html += '<div style="background:#0B0B0B;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;">' + item.quantity + ' pcs</div>';
+                html += '<div style="font-size:10px;color:#9A9A9A;margin-top:3px;">' + (item.entry_type === 'customized' ? 'Custom' : 'Fixed') + '</div>';
                 html += '</div>';
 
                 html += '</div>'; // end item row
 
                 // Addons toggle
                 if (item.addons && item.addons.length > 0) {
-                    html += '<div style="border-top:1px solid #e0e7ff;background:#f0f4ff;">';
+                    html += '<div style="border-top:1px solid #E2E2E2;background:#FAFAFA;">';
                     html += '<button type="button" onclick="toggleItemAddon(\'' + addonBodyId + '\',\'' + addonIconId + '\')" ';
-                    html += 'style="width:100%;padding:7px 14px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#3730a3;">';
+                    html += 'style="width:100%;padding:7px 14px;background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#0B0B0B;">';
                     html += '<i class="fas fa-puzzle-piece"></i> ' + item.addons.length + ' Add-on' + (item.addons.length > 1 ? 's' : '');
                     html += '<i id="' + addonIconId + '" class="fas fa-chevron-down" style="margin-left:auto;transition:transform 0.2s;"></i>';
                     html += '</button>';
 
                     html += '<div id="' + addonBodyId + '" style="display:none;">';
                     item.addons.forEach(function (addon, ai) {
-                        const border = ai > 0 ? 'border-top:1px solid #dde3ff;' : '';
+                        const border = ai > 0 ? 'border-top:1px solid #E2E2E2;' : '';
                         html += '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;' + border + '">';
                         if (addon.addon_image_path) {
-                            html += '<img src=<?= CLIENT_ASSET ?>/images/product_addons/' + escItemHtml(addon.addon_image_path) + '" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid #c7d2fe;flex-shrink:0;" onerror="this.style.display=\'none\'">';
+                            html += '<img src=<?= CLIENT_ASSET ?>/images/product_addons/' + escItemHtml(addon.addon_image_path) + '" style="width:32px;height:32px;object-fit:cover;border-radius:6px;border:1px solid #E2E2E2;flex-shrink:0;" onerror="this.style.display=\'none\'">';
                         } else {
-                            html += '<div style="width:32px;height:32px;background:#dde3ff;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-puzzle-piece" style="color:#818cf8;font-size:12px;"></i></div>';
+                            html += '<div style="width:32px;height:32px;background:#E2E2E2;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-puzzle-piece" style="color:#6B6B6B;font-size:12px;"></i></div>';
                         }
                         html += '<div style="flex:1;">';
-                        html += '<div style="font-size:12px;font-weight:700;color:#1e1b4b;">' + escItemHtml(addon.addon_name) + '</div>';
-                        html += '<div style="font-size:11px;color:#4f46e5;">₱' + parseFloat(addon.price).toFixed(2) + ' / pc</div>';
-                        if (addon.note) html += '<div style="font-size:10px;color:#64748b;font-style:italic;">' + escItemHtml(addon.note) + '</div>';
+                        html += '<div style="font-size:12px;font-weight:700;color:#0B0B0B;">' + escItemHtml(addon.addon_name) + '</div>';
+                        html += '<div style="font-size:11px;color:#374151;">₱' + parseFloat(addon.price).toFixed(2) + ' / pc</div>';
+                        if (addon.note) html += '<div style="font-size:10px;color:#6B6B6B;font-style:italic;">' + escItemHtml(addon.note) + '</div>';
                         html += '</div>';
                         html += '</div>';
                     });
@@ -1921,7 +1432,7 @@ $locationLabel = $area;
             html += '</div>';
 
             // Footer summary
-            html += '<div style="margin-top:14px;padding:14px 16px;background:linear-gradient(135deg,#3730a3,#6366f1);border-radius:10px;display:flex;justify-content:space-between;align-items:center;color:white;">';
+            html += '<div style="margin-top:14px;padding:14px 16px;background:#0B0B0B;border-radius:10px;display:flex;justify-content:space-between;align-items:center;color:white;">';
             html += '<span style="font-size:13px;font-weight:600;"><i class="fas fa-boxes"></i> Total Items</span>';
             html += '<span style="font-size:22px;font-weight:700;">' + total + '</span>';
             html += '</div>';

@@ -317,394 +317,52 @@ if ($isOperationalManager) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2D/3D Layout — <?= htmlspecialchars($clientInfo['clientname']) ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 30px 35px;
-            border-radius: 16px;
-            color: white;
-            margin-bottom: 25px;
-        }
-
-        .page-header h1 {
-            font-size: 22px;
-            margin-bottom: 5px;
-        }
-
-        .page-header .sub {
-            font-size: 13px;
-            opacity: 0.85;
-            margin-top: 6px;
-        }
-
-        .btn-back {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 8px 16px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            margin-bottom: 16px;
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 28px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            margin-bottom: 22px;
-        }
-
-        .card h2 {
-            font-size: 17px;
-            color: #3b1f0f;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #f5f1ed;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 18px;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-group.full {
-            grid-column: 1/-1;
-        }
-
-        .form-label {
-            font-size: 12px;
-            font-weight: 700;
-            color: #374151;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
-        .form-label span {
-            color: #ef4444;
-        }
-
-        .form-control {
-            padding: 9px 13px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #111;
-            transition: border-color 0.2s;
-            font-family: inherit;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #8a5a44;
-        }
-
-        .checkbox-group {
-            display: flex;
-            gap: 20px;
-            margin-top: 4px;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            padding: 10px 16px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .checkbox-label:has(input:checked) {
-            border-color: #3b1f0f;
-            background: #fdf6f0;
-            color: #3b1f0f;
-        }
-
-        .checkbox-label input {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 12px 28px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .btn-submit:hover {
-            opacity: 0.9;
-        }
-
-        /* Intake summary display */
-        .intake-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 14px;
-        }
-
-        .intake-item {
-            background: #f9f9f9;
-            border-radius: 8px;
-            padding: 14px;
-            border-left: 3px solid #8a5a44;
-        }
-
-        .intake-item .label {
-            font-size: 11px;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .intake-item .value {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        /* Computation table */
-        .area-header {
-            background: #f0e6db;
-            padding: 10px 16px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-weight: 700;
-            color: #3b1f0f;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .comp-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            margin-bottom: 20px;
-        }
-
-        .comp-table th {
-            background: #f9f9f9;
-            padding: 8px 10px;
-            text-align: left;
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #6b7280;
-            border-bottom: 2px solid #e9ecef;
-        }
-
-        .comp-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #f3f4f6;
-            color: #374151;
-            vertical-align: middle;
-        }
-
-        .comp-table tr:hover td {
-            background: #fafafa;
-        }
-
-        .item-img {
-            width: 40px;
-            height: 40px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-
-        .grand-total-box {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 20px 28px;
-            border-radius: 12px;
-            margin-top: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .grand-total-box .label {
-            font-size: 14px;
-            opacity: 0.85;
-        }
-
-        .grand-total-box .amount {
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        .layout-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            background: #dbeafe;
-            color: #1e40af;
-            margin-right: 6px;
-        }
-
-        .submitted-info {
-            background: #d1fae5;
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 18px;
-            font-size: 13px;
-            color: #065f46;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-weight: 600;
-        }
-
-        /* Room unit buttons */
-        .room-unit-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 12px;
-            background: #e0e7ff;
-            color: #3730a3;
-            border: none;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-        }
-
-        .room-unit-btn:hover {
-            background: #c7d2fe;
-            transform: translateY(-1px);
-        }
-
-        .room-scroll-btn {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 4px 8px;
-            cursor: pointer;
-            font-size: 11px;
-            color: #6b7280;
-            transition: background 0.2s;
-            flex-shrink: 0;
-        }
-
-        .room-scroll-btn:hover {
-            background: #f3f4f6;
-        }
-
-        .hide-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .hide-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
 </head>
 
-<body>
-    <div class="container">
-        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[1100px] mx-auto px-5 py-8">
+
+        <!-- Back buttons -->
+        <div class="flex gap-2.5 mb-5 flex-wrap">
             <?php if ($cameFromManager && in_array($me['role'], ['general_manager', 'operational_manager'])): ?>
                 <a href="<?= $backToManager ?>"
-                    style="background:linear-gradient(135deg,#1e3a5f,#2563eb); color:white; padding:9px 18px; border-radius:8px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:7px; text-decoration:none;">
+                    class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
                     <i class="fas fa-arrow-left"></i> Back to Project Detail
                 </a>
             <?php elseif ($isDesignerHead): ?>
                 <a href="<?= $backToList ?>"
-                    style="background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; padding:9px 18px; border-radius:8px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:7px; text-decoration:none;">
+                    class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
                     <i class="fas fa-arrow-left"></i> Back to Layout List
                 </a>
                 <a href="<?= $backToTracker ?>"
-                    style="background:linear-gradient(135deg,#1e3a5f,#2563eb); color:white; padding:9px 18px; border-radius:8px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:7px; text-decoration:none;">
+                    class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
                     <i class="fas fa-chart-line"></i> Back to Tracker
                 </a>
             <?php elseif ($canViewAll): ?>
                 <a href="<?= $backToTracker ?>"
-                    style="background:linear-gradient(135deg,#1e3a5f,#2563eb); color:white; padding:9px 18px; border-radius:8px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:7px; text-decoration:none;">
+                    class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
                     <i class="fas fa-arrow-left"></i> Back to Tracker
                 </a>
             <?php else: ?>
                 <a href="<?= $backToList ?>"
-                    style="background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; padding:9px 18px; border-radius:8px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:7px; text-decoration:none;">
+                    class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
                     <i class="fas fa-arrow-left"></i> Back to Layout List
                 </a>
             <?php endif; ?>
@@ -717,250 +375,181 @@ if ($isOperationalManager) {
         $costStmt2->execute();
         $costData2 = $costStmt2->get_result()->fetch_assoc();
         ?>
-        <div
-            style="background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%); border-radius: 12px; padding: 28px 35px; margin-bottom: 20px; color: white; position: relative; overflow: hidden;">
-            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="flex justify-between items-start gap-4 mb-5 flex-wrap">
                 <div>
-                    <h1 style="font-size: 28px; margin-bottom: 6px;">📋
-                        <?= htmlspecialchars($clientInfo['clientname']) ?>
-                    </h1>
-                    <p style="opacity: 0.9; font-size: 15px;"><?= htmlspecialchars($clientInfo['nameproject']) ?></p>
+                    <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">Client</div>
+                    <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($clientInfo['clientname']) ?></h1>
+                    <p class="text-[13.5px] text-soft mt-1"><?= htmlspecialchars($clientInfo['nameproject']) ?></p>
                 </div>
                 <button onclick="document.getElementById('clientDetailModal2').style.display='flex'"
-                    style="background: white; color: #3b1f0f; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; gap: 8px;">
+                    class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition">
                     <i class="fas fa-info-circle"></i> View Full Details
                 </button>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <?php if (!empty($costData2['reference_number'])): ?>
-                    <div
-                        style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 15px;">
-                        <div
-                            style="font-size: 11px; opacity: 0.75; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
-                            Reference Number</div>
-                        <div style="font-size: 13px; font-weight: 600; margin-top: 4px; font-family: monospace;">
-                            <?= htmlspecialchars($costData2['reference_number']) ?>
-                        </div>
+                    <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Reference Number</div>
+                        <div class="text-[13px] font-semibold font-mono"><?= htmlspecialchars($costData2['reference_number']) ?></div>
                     </div>
                 <?php endif; ?>
                 <?php if (!empty($costData2['business_type'])): ?>
-                    <div
-                        style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 15px;">
-                        <div
-                            style="font-size: 11px; opacity: 0.75; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
-                            Business Type</div>
-                        <div style="font-size: 14px; font-weight: 600; margin-top: 4px;">
-                            <?= htmlspecialchars($business_type_label) ?>
-                        </div>
+                    <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                        <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Business Type</div>
+                        <div class="text-[14px] font-semibold"><?= htmlspecialchars($business_type_label) ?></div>
                     </div>
                 <?php endif; ?>
-                <div
-                    style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 15px;">
-                    <div
-                        style="font-size: 11px; opacity: 0.75; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Total Project Cost</div>
-                    <div style="font-size: 14px; font-weight: 600; margin-top: 4px;">
-                        ₱<?= number_format($costData2['total_project_cost'] ?? 0, 2) ?></div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Total Project Cost</div>
+                    <div class="text-[14px] font-semibold">₱<?= number_format($costData2['total_project_cost'] ?? 0, 2) ?></div>
                 </div>
-                <div
-                    style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px; padding: 15px;">
-                    <div
-                        style="font-size: 11px; opacity: 0.75; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px;">
-                        Remaining Balance</div>
-                    <div style="font-size: 14px; font-weight: 600; margin-top: 4px;">
-                        ₱<?= number_format($costData2['remaining_balance'] ?? 0, 2) ?></div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Remaining Balance</div>
+                    <div class="text-[14px] font-semibold">₱<?= number_format($costData2['remaining_balance'] ?? 0, 2) ?></div>
                 </div>
             </div>
         </div>
 
-        <!-- Client Detail Modal — matches computation_list.php full details -->
+        <!-- Client Detail Modal -->
         <div id="clientDetailModal2"
-            style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-            <div
-                style="background:white; padding:30px; border-radius:12px; max-width:600px; width:90%; max-height:90vh; overflow-y:auto; position:relative;">
-                <div
-                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom: 2px solid #f3f4f6; padding-bottom: 14px;">
-                    <h2
-                        style="font-size:20px; font-weight:bold; color:#3b1f0f; display:flex; align-items:center; gap:8px;">
-                        <i class="fas fa-user-circle" style="color:#8a5a44;"></i> Client Details
+            class="hidden fixed inset-0 z-[1000] bg-black/50 items-center justify-center">
+            <div class="bg-white p-7 rounded-[14px] max-w-xl w-[90%] max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-5 border-b border-line pb-3.5">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-user-circle text-soft"></i> Client Details
                     </h2>
                     <button onclick="document.getElementById('clientDetailModal2').style.display='none'"
-                        style="font-size:22px; color:#666; background:none; border:none; cursor:pointer; line-height:1;">
+                        class="text-soft hover:text-ink text-lg">
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
 
-                <!-- Reference Number -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Reference Number:</div>
-                    <div style="color:#3b82f6; font-family:monospace; font-size:13px; font-weight:600;">
-                        <?= htmlspecialchars($costData2['reference_number'] ?? '') ?>
-                    </div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Reference Number:</div>
+                    <div class="text-ink font-mono text-[13px] font-semibold"><?= htmlspecialchars($costData2['reference_number'] ?? '') ?></div>
                 </div>
 
-                <!-- Client Name -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Client Name:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($clientInfo['clientname']) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Client Name:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($clientInfo['clientname']) ?></div>
                 </div>
 
-                <!-- Project Name -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Project Name:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($clientInfo['nameproject']) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Project Name:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($clientInfo['nameproject']) ?></div>
                 </div>
 
-                <!-- Status -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Status:</div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Status:</div>
                     <div>
                         <?php $st = $costData2['status'] ?? ''; ?>
-                        <span style="padding:4px 12px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase;
-                        background:<?= strtolower($st) === 'new client' ? '#fef3c7' : '#dbeafe' ?>;
-                        color:<?= strtolower($st) === 'new client' ? '#92400e' : '#1e40af' ?>;">
+                        <span class="px-3 py-1 rounded-full text-[11px] font-bold uppercase <?= strtolower($st) === 'new client' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800' ?>">
                             <?= htmlspecialchars($st) ?>
                         </span>
                     </div>
                 </div>
 
-                <!-- Business Type -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Business Type:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($business_type_label) ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Business Type:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($business_type_label) ?></div>
                 </div>
 
-                <!-- Phone -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Phone:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($costData2['contact'] ?? '') ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Phone:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($costData2['contact'] ?? '') ?></div>
                 </div>
 
-                <!-- Email -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Email:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($costData2['email'] ?? '') ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Email:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($costData2['email'] ?? '') ?></div>
                 </div>
 
-                <!-- Address -->
-                <div
-                    style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                    <div style="font-weight:600; color:#666; font-size:13px;">Address:</div>
-                    <div style="color:#111; font-size:13px;"><?= htmlspecialchars($costData2['address'] ?? '') ?></div>
+                <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                    <div class="font-semibold text-soft text-[13px]">Address:</div>
+                    <div class="text-ink text-[13px]"><?= htmlspecialchars($costData2['address'] ?? '') ?></div>
                 </div>
 
-                <!-- Gender -->
                 <?php if (!empty($costData2['gender'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Gender:</div>
-                        <div style="color:#111; font-size:13px;"><?= htmlspecialchars($costData2['gender']) ?></div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Gender:</div>
+                        <div class="text-ink text-[13px]"><?= htmlspecialchars($costData2['gender']) ?></div>
                     </div>
                 <?php endif; ?>
 
-                <!-- Classification -->
                 <?php if (!empty($costData2['client_class'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Classification:</div>
-                        <div style="color:#111; font-size:13px;"><?= htmlspecialchars($costData2['client_class']) ?></div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Classification:</div>
+                        <div class="text-ink text-[13px]"><?= htmlspecialchars($costData2['client_class']) ?></div>
                     </div>
                 <?php endif; ?>
 
-                <!-- Client Type -->
                 <?php if (!empty($costData2['client_type'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Client Type:</div>
-                        <div style="color:#111; font-size:13px;"><?= htmlspecialchars($costData2['client_type']) ?></div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Client Type:</div>
+                        <div class="text-ink text-[13px]"><?= htmlspecialchars($costData2['client_type']) ?></div>
                     </div>
                 <?php endif; ?>
 
-                <!-- Project Scope -->
                 <?php if (!empty($costData2['project_scope'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Project Scope:</div>
-                        <div style="color:#111; font-size:13px;"><?= nl2br(htmlspecialchars($costData2['project_scope'])) ?>
-                        </div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Project Scope:</div>
+                        <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($costData2['project_scope'])) ?></div>
                     </div>
                 <?php endif; ?>
 
-                <!-- Scope of Work -->
                 <?php if (!empty($costData2['scope_of_work'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Scope of Work:</div>
-                        <div style="color:#111; font-size:13px;"><?= nl2br(htmlspecialchars($costData2['scope_of_work'])) ?>
-                        </div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Scope of Work:</div>
+                        <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($costData2['scope_of_work'])) ?></div>
                     </div>
                 <?php endif; ?>
 
-                <!-- House State -->
                 <?php if (!empty($costData2['house_state'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">House State:</div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">House State:</div>
                         <div>
                             <?php
-                            $hsBg = '#fef3c7';
-                            $hsColor = '#92400e';
+                            $hsClass = 'bg-amber-100 text-amber-800';
                             if ($costData2['house_state'] === 'Bare/Empty Lot') {
-                                $hsBg = '#dbeafe';
-                                $hsColor = '#1e40af';
+                                $hsClass = 'bg-blue-100 text-blue-800';
                             } elseif ($costData2['house_state'] === 'Construction Started') {
-                                $hsBg = '#fee2e2';
-                                $hsColor = '#991b1b';
+                                $hsClass = 'bg-red-100 text-red-800';
                             } elseif ($costData2['house_state'] === 'Renovation') {
-                                $hsBg = '#ede9fe';
-                                $hsColor = '#5b21b6';
+                                $hsClass = 'bg-purple-100 text-purple-800';
                             }
                             ?>
-                            <span
-                                style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:700; background:<?= $hsBg ?>; color:<?= $hsColor ?>;">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold <?= $hsClass ?>">
                                 <?= htmlspecialchars($costData2['house_state']) ?>
                             </span>
                         </div>
                     </div>
                 <?php endif; ?>
 
-                <!-- Permit Required -->
                 <?php if (!empty($costData2['permit_required'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; border-bottom:1px solid #e9ecef; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Permit Required:</div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Permit Required:</div>
                         <div>
                             <?php
-                            $prBg = '#fef3c7';
-                            $prColor = '#92400e';
+                            $prClass = 'bg-amber-100 text-amber-800';
                             if ($costData2['permit_required'] === 'Yes') {
-                                $prBg = '#fee2e2';
-                                $prColor = '#991b1b';
+                                $prClass = 'bg-red-100 text-red-800';
                             } elseif ($costData2['permit_required'] === 'No') {
-                                $prBg = '#d1fae5';
-                                $prColor = '#065f46';
+                                $prClass = 'bg-emerald-100 text-emerald-800';
                             }
                             ?>
-                            <span
-                                style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:700; background:<?= $prBg ?>; color:<?= $prColor ?>;">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold <?= $prClass ?>">
                                 <?= htmlspecialchars($costData2['permit_required']) ?>
                             </span>
                         </div>
                     </div>
                 <?php endif; ?>
 
-                <!-- Target Move-in Date -->
                 <?php if (!empty($costData2['target_movein_date'])): ?>
-                    <div style="display:grid; grid-template-columns:160px 1fr; padding:12px 0; align-items:start;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Target Move-in:</div>
-                        <div style="color:#111; font-size:13px; font-weight:600;">
-                            <i class="fas fa-calendar-check" style="color:#10b981;"></i>
+                    <div class="grid grid-cols-[160px_1fr] py-3 items-start">
+                        <div class="font-semibold text-soft text-[13px]">Target Move-in:</div>
+                        <div class="text-ink text-[13px] font-semibold">
+                            <i class="fas fa-calendar-check text-emerald-600"></i>
                             <?= date('F d, Y', strtotime($costData2['target_movein_date'])) ?>
                         </div>
                     </div>
@@ -970,56 +559,60 @@ if ($isOperationalManager) {
         </div>
 
         <!-- ── Assigned Staff Section ── -->
-        <div class="card" style="margin-bottom:22px;">
-            <h2><i class="fas fa-users"></i> Assigned Staff</h2>
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                <i class="fas fa-users text-soft"></i> Assigned Staff
+                <span class="flex-1 h-px bg-line"></span>
+            </div>
 
             <!-- Current assignments display -->
-            <div
-                style="display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; margin-bottom:20px;">
-                <div class="intake-item" style="border-left-color:#3b82f6;">
-                    <div class="label"><i class="fas fa-pencil-ruler" style="color:#3b82f6;"></i> Designer 1</div>
-                    <div class="value" style="color:#1e40af;">
-                        <?= $assignedStaff['designer1_name'] ? htmlspecialchars($assignedStaff['designer1_name']) : '<span style="color:#9ca3af; font-weight:400; font-size:13px;">Not assigned</span>' ?>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-pencil-ruler"></i> Designer 1
+                    </div>
+                    <div class="text-[14px] font-semibold">
+                        <?= $assignedStaff['designer1_name'] ? htmlspecialchars($assignedStaff['designer1_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
-                <div class="intake-item" style="border-left-color:#6366f1;">
-                    <div class="label"><i class="fas fa-pencil-ruler" style="color:#6366f1;"></i> Designer 2</div>
-                    <div class="value" style="color:#4338ca;">
-                        <?= $assignedStaff['designer2_name'] ? htmlspecialchars($assignedStaff['designer2_name']) : '<span style="color:#9ca3af; font-weight:400; font-size:13px;">Not assigned</span>' ?>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-pencil-ruler"></i> Designer 2
+                    </div>
+                    <div class="text-[14px] font-semibold">
+                        <?= $assignedStaff['designer2_name'] ? htmlspecialchars($assignedStaff['designer2_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
-                <div class="intake-item" style="border-left-color:#0891b2;">
-                    <div class="label"><i class="fas fa-tools" style="color:#0891b2;"></i> Technical Designer</div>
-                    <div class="value" style="color:#0e7490;">
-                        <?= $assignedStaff['tech_designer_name'] ? htmlspecialchars($assignedStaff['tech_designer_name']) : '<span style="color:#9ca3af; font-weight:400; font-size:13px;">Not assigned</span>' ?>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-tools"></i> Technical Designer
+                    </div>
+                    <div class="text-[14px] font-semibold">
+                        <?= $assignedStaff['tech_designer_name'] ? htmlspecialchars($assignedStaff['tech_designer_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
-                <div class="intake-item" style="border-left-color:#059669;">
-                    <div class="label"><i class="fas fa-clipboard-check" style="color:#059669;"></i> Project Coordinator
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-clipboard-check"></i> Project Coordinator
                     </div>
-                    <div class="value" style="color:#047857;">
-                        <?= $assignedStaff['project_coordinator_name'] ? htmlspecialchars($assignedStaff['project_coordinator_name']) : '<span style="color:#9ca3af; font-weight:400; font-size:13px;">Not assigned</span>' ?>
+                    <div class="text-[14px] font-semibold">
+                        <?= $assignedStaff['project_coordinator_name'] ? htmlspecialchars($assignedStaff['project_coordinator_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
             </div>
 
             <!-- Designer Head: assign designer1 & designer2 -->
             <?php if ($isDesignerHeadCheck): ?>
-                <div style="border-top:2px solid #f5f1ed; padding-top:18px;">
-                    <div
-                        style="font-size:13px; font-weight:700; color:#1e40af; margin-bottom:12px; display:flex; align-items:center; gap:7px;">
+                <div class="border-t border-line pt-4.5 pt-[18px]">
+                    <div class="text-[13px] font-semibold mb-3 flex items-center gap-2">
                         <i class="fas fa-pencil-ruler"></i> Assign Designers
-                        <span
-                            style="background:#dbeafe; color:#1e40af; padding:2px 10px; border-radius:10px; font-size:11px;">Designer
-                            Head Only</span>
+                        <span class="bg-[#F5F5F5] border border-line text-soft px-2.5 py-0.5 rounded-full text-[11px]">Designer Head Only</span>
                     </div>
-                    <form method="POST" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+                    <form method="POST" class="flex gap-2.5 items-end flex-wrap">
                         <input type="hidden" name="action" value="assign_designers">
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <label
-                                style="font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.4px;">Designer
-                                1</label>
-                            <select name="designer1_id" class="form-control" style="min-width:220px;">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Designer 1</label>
+                            <select name="designer1_id" class="min-w-[220px] border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                                 <option value="">— None —</option>
                                 <?php foreach ($designersList as $d): ?>
                                     <option value="<?= $d['id'] ?>" <?= ($clientInfo['designer1_id'] == $d['id']) ? 'selected' : '' ?>>
@@ -1028,11 +621,9 @@ if ($isOperationalManager) {
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <label
-                                style="font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.4px;">Designer
-                                2</label>
-                            <select name="designer2_id" class="form-control" style="min-width:220px;">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Designer 2</label>
+                            <select name="designer2_id" class="min-w-[220px] border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                                 <option value="">— None —</option>
                                 <?php foreach ($designersList as $d): ?>
                                     <option value="<?= $d['id'] ?>" <?= ($clientInfo['designer2_id'] == $d['id']) ? 'selected' : '' ?>>
@@ -1042,34 +633,28 @@ if ($isOperationalManager) {
                             </select>
                         </div>
                         <button type="submit"
-                            style="background:linear-gradient(135deg,#1e40af,#3b82f6); color:white; padding:9px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px; height:38px;">
+                            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition h-[42px]">
                             <i class="fas fa-save"></i> Save
                         </button>
                     </form>
                     <?php if (empty($designersList)): ?>
-                        <p style="font-size:12px; color:#9ca3af; margin-top:8px;"><i class="fas fa-info-circle"></i> No
-                            designers found in the system.</p>
+                        <p class="text-xs text-muted mt-2"><i class="fas fa-info-circle"></i> No designers found in the system.</p>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
 
             <!-- Technical Designer Head: assign technical_designer -->
             <?php if ($isTechDesignerHeadCheck): ?>
-                <div style="border-top:2px solid #f5f1ed; padding-top:18px; margin-top:18px;">
-                    <div
-                        style="font-size:13px; font-weight:700; color:#0e7490; margin-bottom:12px; display:flex; align-items:center; gap:7px;">
+                <div class="border-t border-line pt-[18px] mt-[18px]">
+                    <div class="text-[13px] font-semibold mb-3 flex items-center gap-2">
                         <i class="fas fa-tools"></i> Assign Technical Designer
-                        <span
-                            style="background:#cffafe; color:#0e7490; padding:2px 10px; border-radius:10px; font-size:11px;">Technical
-                            Designer Head Only</span>
+                        <span class="bg-[#F5F5F5] border border-line text-soft px-2.5 py-0.5 rounded-full text-[11px]">Technical Designer Head Only</span>
                     </div>
-                    <form method="POST" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+                    <form method="POST" class="flex gap-2.5 items-end flex-wrap">
                         <input type="hidden" name="action" value="assign_technical_designer">
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <label
-                                style="font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.4px;">Technical
-                                Designer</label>
-                            <select name="technical_designer_id" class="form-control" style="min-width:220px;">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Technical Designer</label>
+                            <select name="technical_designer_id" class="min-w-[220px] border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                                 <option value="">— None —</option>
                                 <?php foreach ($techDesignersList as $td): ?>
                                     <option value="<?= $td['id'] ?>" <?= ($clientInfo['technical_designer_id'] == $td['id']) ? 'selected' : '' ?>>
@@ -1079,34 +664,28 @@ if ($isOperationalManager) {
                             </select>
                         </div>
                         <button type="submit"
-                            style="background:linear-gradient(135deg,#0891b2,#0e7490); color:white; padding:9px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px; height:38px;">
+                            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition h-[42px]">
                             <i class="fas fa-save"></i> Save
                         </button>
                     </form>
                     <?php if (empty($techDesignersList)): ?>
-                        <p style="font-size:12px; color:#9ca3af; margin-top:8px;"><i class="fas fa-info-circle"></i> No
-                            technical designers found in the system.</p>
+                        <p class="text-xs text-muted mt-2"><i class="fas fa-info-circle"></i> No technical designers found in the system.</p>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
 
             <!-- Operational Manager: assign project_coordinator -->
             <?php if ($isOperationalManager): ?>
-                <div style="border-top:2px solid #f5f1ed; padding-top:18px; margin-top:18px;">
-                    <div
-                        style="font-size:13px; font-weight:700; color:#059669; margin-bottom:12px; display:flex; align-items:center; gap:7px;">
+                <div class="border-t border-line pt-[18px] mt-[18px]">
+                    <div class="text-[13px] font-semibold mb-3 flex items-center gap-2">
                         <i class="fas fa-clipboard-check"></i> Assign Project Coordinator
-                        <span
-                            style="background:#d1fae5; color:#059669; padding:2px 10px; border-radius:10px; font-size:11px;">Operational
-                            Manager Only</span>
+                        <span class="bg-[#F5F5F5] border border-line text-soft px-2.5 py-0.5 rounded-full text-[11px]">Operational Manager Only</span>
                     </div>
-                    <form method="POST" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+                    <form method="POST" class="flex gap-2.5 items-end flex-wrap">
                         <input type="hidden" name="action" value="assign_project_coordinator">
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <label
-                                style="font-size:11px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.4px;">Project
-                                Coordinator</label>
-                            <select name="project_coordinator_id" class="form-control" style="min-width:220px;">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Project Coordinator</label>
+                            <select name="project_coordinator_id" class="min-w-[220px] border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                                 <option value="">— None —</option>
                                 <?php foreach ($projectCoordinatorsList as $pc): ?>
                                     <option value="<?= $pc['id'] ?>" <?= ($clientInfo['project_coordinator_id'] == $pc['id']) ? 'selected' : '' ?>>
@@ -1116,27 +695,29 @@ if ($isOperationalManager) {
                             </select>
                         </div>
                         <button type="submit"
-                            style="background:linear-gradient(135deg,#059669,#047857); color:white; padding:9px 20px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px; height:38px;">
+                            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition h-[42px]">
                             <i class="fas fa-save"></i> Save
                         </button>
                     </form>
                     <?php if (empty($projectCoordinatorsList)): ?>
-                        <p style="font-size:12px; color:#9ca3af; margin-top:8px;"><i class="fas fa-info-circle"></i> No project
-                            coordinators found in the system.</p>
+                        <p class="text-xs text-muted mt-2"><i class="fas fa-info-circle"></i> No project coordinators found in the system.</p>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
 
         </div>
 
-        <div class="page-header">
-            <h1><i class="fas fa-drafting-compass"></i> 2D / 3D Layout Manager</h1>
-            <div class="sub">
-                <?= htmlspecialchars($clientInfo['clientname']) ?> —
+        <!-- Page header -->
+        <div class="mb-5">
+            <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                <i class="fas fa-drafting-compass"></i> 2D / 3D Layout Manager
+            </div>
+            <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($clientInfo['clientname']) ?></h1>
+            <p class="text-[13.5px] text-soft mt-1">
                 <?= htmlspecialchars($clientInfo['nameproject']) ?>
                 &nbsp;•&nbsp; Ref: <?= htmlspecialchars($clientInfo['reference_number']) ?>
-            </div>
-            <div class="sub">Designer: <?= htmlspecialchars($me['full_name']) ?></div>
+            </p>
+            <p class="text-[13px] text-muted mt-1">Designer: <?= htmlspecialchars($me['full_name']) ?></p>
         </div>
 
         <?php
@@ -1161,67 +742,61 @@ if ($isOperationalManager) {
         $pendingApprovalCount = getPendingApprovalCount($conn, $admin_id, $client_id);
         if ($pendingApprovalCount > 0):
             ?>
-            <div
-                style="background:#fef3c7; border:2px solid #f59e0b; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fas fa-bell" style="color:#d97706; font-size:20px;"></i>
+            <div class="bg-amber-50 border border-amber-300 rounded-[10px] p-4 mb-4.5 mb-[18px] flex items-center justify-between gap-3.5 flex-wrap">
+                <div class="flex items-center gap-2.5">
+                    <i class="fas fa-bell text-amber-600 text-xl"></i>
                     <div>
-                        <div style="font-weight:700; font-size:14px; color:#92400e;">
+                        <div class="font-semibold text-sm text-amber-900">
                             You have <?= $pendingApprovalCount ?> pending
                             approval<?= $pendingApprovalCount > 1 ? 's' : '' ?> for this client
                         </div>
-                        <div style="font-size:12px; color:#b45309; margin-top:2px;">
+                        <div class="text-xs text-amber-700 mt-0.5">
                             Go to Attachments to review and approve or reject.
                         </div>
                     </div>
                 </div>
                 <a href="designer-attachments?client_id=<?= $client_id ?>"
-                    style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:7px; white-space:nowrap;">
+                    class="inline-flex items-center gap-2 bg-amber-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition whitespace-nowrap">
                     <i class="fas fa-arrow-right"></i> Go to Attachments
                 </a>
             </div>
         <?php endif; ?>
 
         <?php if (!empty($rejectedLayoutItems) && $isAssigned): ?>
-            <div
-                style="background:#fee2e2; border:2px solid #ef4444; border-radius:12px; padding:14px 20px; margin-bottom:18px;">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
-                    <i class="fas fa-times-circle" style="color:#dc2626; font-size:20px; flex-shrink:0;"></i>
-                    <div style="flex:1;">
-                        <div style="font-weight:700; font-size:14px; color:#991b1b;">
+            <div class="bg-red-50 border border-red-300 rounded-[10px] p-4 mb-[18px]">
+                <div class="flex items-center gap-2.5 mb-3 flex-wrap">
+                    <i class="fas fa-times-circle text-red-600 text-xl flex-shrink-0"></i>
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm text-red-900">
                             <?= count($rejectedLayoutItems) ?> layout
                             area<?= count($rejectedLayoutItems) > 1 ? 's/units' : '/unit' ?> rejected — action required
                         </div>
-                        <div style="font-size:12px; color:#b91c1c; margin-top:2px;">
+                        <div class="text-xs text-red-700 mt-0.5">
                             Go to <strong>Attachments</strong> to review the rejection comments and resubmit updated files.
                         </div>
                     </div>
                     <a href="designer-attachments?client_id=<?= $client_id ?>"
-                        style="background:linear-gradient(135deg,#dc2626,#ef4444); color:white; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; flex-shrink:0;">
+                        class="inline-flex items-center gap-2 bg-red-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition whitespace-nowrap flex-shrink-0">
                         <i class="fas fa-arrow-right"></i> Go to Attachments
                     </a>
                 </div>
-                <!-- List each rejected item -->
-                <div style="display:flex; flex-direction:column; gap:8px;">
+                <div class="flex flex-col gap-2">
                     <?php foreach ($rejectedLayoutItems as $rej): ?>
-                        <div
-                            style="background:white; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px; display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;">
-                            <div style="flex:1; min-width:0;">
-                                <div style="font-size:13px; font-weight:700; color:#991b1b;">
+                        <div class="bg-white border border-red-200 rounded-lg px-3.5 py-2.5 flex items-start gap-2.5 flex-wrap">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[13px] font-semibold text-red-900">
                                     <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($rej['area']) ?>
                                     <?php if ($rej['room_unit_number']): ?>
-                                        <span style="color:#6b7280; font-weight:400;"> › </span>
+                                        <span class="text-soft font-normal"> › </span>
                                         <i class="fas fa-door-open"></i> Unit <?= $rej['room_unit_number'] ?>
                                     <?php endif; ?>
                                 </div>
                                 <?php if ($rej['comment']): ?>
-                                    <div
-                                        style="font-size:12px; color:#7f1d1d; background:#fff5f5; padding:6px 10px; border-radius:6px; margin-top:6px; border-left:3px solid #ef4444; font-style:italic;">
+                                    <div class="text-xs text-red-800 bg-red-50 px-2.5 py-1.5 rounded-md mt-1.5 border-l-2 border-red-500 italic">
                                         <i class="fas fa-comment-slash"></i> "<?= htmlspecialchars($rej['comment']) ?>"
                                     </div>
                                 <?php endif; ?>
-                                <div
-                                    style="font-size:11px; color:#9ca3af; margin-top:5px; display:flex; align-items:center; gap:5px;">
+                                <div class="text-[11px] text-muted mt-1.5 flex items-center gap-1.5">
                                     <i class="fas fa-user-times"></i>
                                     Rejected by: <?= htmlspecialchars($rej['rejected_by_name'] ?? 'Manager') ?>
                                     <?php if ($rej['responded_at']): ?>
@@ -1236,10 +811,14 @@ if ($isOperationalManager) {
         <?php endif; ?>
 
         <?php if ($success): ?>
-            <div class="alert alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?></div>
+            <div class="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?>
+            </div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?></div>
+            <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
 
         <?php
@@ -1252,23 +831,22 @@ if ($isOperationalManager) {
                 $now2d = new DateTime();
                 $endDt2d = $dlRow2d['end_date'] ? new DateTime($dlRow2d['end_date']) : null;
                 $isOverdue2d = $endDt2d && $now2d > $endDt2d;
-                $dlBg2d = $isOverdue2d ? '#fee2e2' : '#eff6ff';
-                $dlBorder2d = $isOverdue2d ? '#ef4444' : '#3b82f6';
-                $dlColor2d = $isOverdue2d ? '#991b1b' : '#1e40af';
+                $dlClasses2d = $isOverdue2d ? 'bg-red-50 border-red-300 text-red-900' : 'bg-blue-50 border-blue-300 text-blue-900';
+                $dlIconColor2d = $isOverdue2d ? 'text-red-600' : 'text-blue-600';
                 $dlIcon2d = $isOverdue2d ? 'fa-exclamation-circle' : 'fa-calendar-alt';
         ?>
-        <div style="background:<?= $dlBg2d ?>; border:2px solid <?= $dlBorder2d ?>; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <i class="fas <?= $dlIcon2d ?>" style="color:<?= $dlBorder2d ?>; font-size:20px; flex-shrink:0;"></i>
-            <div style="flex:1;">
-                <div style="font-weight:700; font-size:14px; color:<?= $dlColor2d ?>;">
+        <div class="border rounded-[10px] p-4 mb-[18px] flex items-center gap-3 flex-wrap <?= $dlClasses2d ?>">
+            <i class="fas <?= $dlIcon2d ?> <?= $dlIconColor2d ?> text-xl flex-shrink-0"></i>
+            <div class="flex-1">
+                <div class="font-semibold text-sm">
                     2D / 3D Layout <?= $isOverdue2d ? '— OVERDUE' : 'Deadline' ?>
                 </div>
-                <div style="font-size:12px; color:<?= $dlColor2d ?>; opacity:0.85; margin-top:2px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <div class="text-xs opacity-85 mt-0.5 flex items-center gap-2.5 flex-wrap">
                     <?php if ($dlRow2d['start_date']): ?>
-                        <span><i class="fas fa-play-circle" style="color:#10b981;"></i> Start: <strong><?= date('F d, Y', strtotime($dlRow2d['start_date'])) ?></strong></span>
+                        <span><i class="fas fa-play-circle text-emerald-600"></i> Start: <strong><?= date('F d, Y', strtotime($dlRow2d['start_date'])) ?></strong></span>
                     <?php endif; ?>
                     <?php if ($dlRow2d['end_date']): ?>
-                        <span><i class="fas fa-stop-circle" style="color:#ef4444;"></i> Deadline: <strong><?= date('F d, Y', strtotime($dlRow2d['end_date'])) ?></strong></span>
+                        <span><i class="fas fa-stop-circle text-red-600"></i> Deadline: <strong><?= date('F d, Y', strtotime($dlRow2d['end_date'])) ?></strong></span>
                     <?php endif; ?>
                     <?php if ($dlRow2d['duration']): ?>
                         <span><i class="fas fa-clock"></i> <?= $dlRow2d['duration'] ?> day<?= $dlRow2d['duration'] != 1 ? 's' : '' ?></span>
@@ -1281,79 +859,84 @@ if ($isOperationalManager) {
         <!-- INTAKE FORM or SUBMITTED VIEW -->
         <?php if (!$intake): ?>
             <?php if ($clientInfo['designer1_id'] == $admin_id || $clientInfo['designer2_id'] == $admin_id): ?>
-                <div class="card">
-                    <h2><i class="fas fa-clipboard-list"></i> Client Intake Form</h2>
-                    <p style="font-size:13px; color:#9ca3af; margin-bottom:20px;">
+                <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+                    <div class="flex items-center gap-2.5 text-xs font-semibold mb-2">
+                        <i class="fas fa-clipboard-list text-soft"></i> Client Intake Form
+                        <span class="flex-1 h-px bg-line"></span>
+                    </div>
+                    <p class="text-[13px] text-muted mb-5">
                         Fill out this form once before proceeding with the layout. Only one submission is allowed per client.
                     </p>
                     <form method="POST">
                         <input type="hidden" name="action" value="submit_intake">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Decoration Stage <span>*</span></label>
-                                <input type="text" name="decoration_stage" class="form-control"
-                                    placeholder="e.g. New Build, Renovation..." required>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4.5 gap-[18px]">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Decoration Stage <span class="text-red-500">*</span></label>
+                                <input type="text" name="decoration_stage" required
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
+                                    placeholder="e.g. New Build, Renovation...">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Decoration Style <span>*</span></label>
-                                <input type="text" name="decoration_style" class="form-control"
-                                    placeholder="e.g. Modern, Classic, Minimalist..." required>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Decoration Style <span class="text-red-500">*</span></label>
+                                <input type="text" name="decoration_style" required
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
+                                    placeholder="e.g. Modern, Classic, Minimalist...">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Occupation <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="text" name="occupation" class="form-control" placeholder="Client's occupation...">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Occupation <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="text" name="occupation"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
+                                    placeholder="Client's occupation...">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Favourite Color <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="text" name="favour_color" class="form-control"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Favourite Color <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="text" name="favour_color"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     placeholder="e.g. Beige, White, Navy...">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Area (Total SQM of House) <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="number" name="area_sqm" class="form-control" step="0.01" min="0"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Area (Total SQM of House) <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="number" name="area_sqm" step="0.01" min="0"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     placeholder="e.g. 120.50">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Family Members <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="number" name="family_members" class="form-control" min="0"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Family Members <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="number" name="family_members" min="0"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     placeholder="Total number of people">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Budget <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="number" name="budget" class="form-control" step="0.01" min="0"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Budget <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="number" name="budget" step="0.01" min="0"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     placeholder="₱ 0.00">
                             </div>
-                            <div class="form-group full">
-                                <label class="form-label">Layout Type <span>*</span></label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label" style="opacity:0.75; cursor:not-allowed;">
+                            <div class="md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Layout Type <span class="text-red-500">*</span></label>
+                                <div class="flex gap-3 mt-1">
+                                    <label class="opacity-75 cursor-not-allowed border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold flex items-center gap-2">
                                         <input type="checkbox" name="layout_2d" value="1" checked disabled>
-                                        <i class="fas fa-vector-square" style="color:#3b82f6;"></i> 2D Layout
-                                        <span
-                                            style="font-size:10px; background:#dbeafe; color:#1e40af; padding:1px 7px; border-radius:8px; margin-left:4px; font-weight:700;">Always</span>
+                                        <i class="fas fa-vector-square text-blue-600"></i> 2D Layout
+                                        <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-md font-bold">Always</span>
                                     </label>
-                                    <label class="checkbox-label">
+                                    <label class="border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold flex items-center gap-2 cursor-pointer transition has-[:checked]:border-ink has-[:checked]:bg-[#F5F5F5]">
                                         <input type="checkbox" name="layout_3d" value="1">
-                                        <i class="fas fa-cube" style="color:#8b5cf6;"></i> 3D Layout
-                                        <span
-                                            style="font-size:10px; background:#ede9fe; color:#5b21b6; padding:1px 7px; border-radius:8px; margin-left:4px; font-weight:700;">Optional</span>
+                                        <i class="fas fa-cube text-purple-600"></i> 3D Layout
+                                        <span class="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-md font-bold">Optional</span>
                                     </label>
                                 </div>
                                 <input type="hidden" name="layout_2d" value="1">
                             </div>
-                            <div class="form-group full">
-                                <label class="form-label">Measurement Remark <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <textarea name="measurement_remark" class="form-control" rows="3"
+                            <div class="md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Measurement Remark <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <textarea name="measurement_remark" rows="3"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     placeholder="Any additional remarks about measurements..."></textarea>
                             </div>
                         </div>
-                        <button type="submit" class="btn-submit">
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-6 py-3 text-sm font-semibold hover:opacity-90 transition mt-4">
                             <i class="fas fa-paper-plane"></i> Submit Intake Form
                         </button>
                     </form>
@@ -1427,13 +1010,12 @@ if ($isOperationalManager) {
             );
             ?>
             <?php if ($allAreasApproved && $layoutTrackerStatus !== 'Done' && $isAssignedDesigner): ?>
-                <div
-                    style="background:#d1fae5; border:2px solid #10b981; border-radius:12px; padding:20px 24px; margin-bottom:22px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+                <div class="bg-emerald-50 border border-emerald-300 rounded-[10px] p-5 mb-[22px] flex justify-between items-center gap-4 flex-wrap">
                     <div>
-                        <div style="font-weight:700; font-size:15px; color:#065f46; margin-bottom:4px;">
+                        <div class="font-semibold text-[15px] text-emerald-900 mb-1">
                             <i class="fas fa-check-circle"></i> All Areas Approved!
                         </div>
-                        <div style="font-size:13px; color:#065f46; opacity:0.85;">
+                        <div class="text-[13px] text-emerald-800 opacity-85">
                             All layout areas have been approved by all reviewers. You can now mark this stage as Done.
                         </div>
                     </div>
@@ -1442,16 +1024,15 @@ if ($isOperationalManager) {
                         <input type="hidden" name="redirect_url"
                             value="<?= BASE_URL ?>designer-2d3d-layout?client_id=<?= $client_id ?>">
                         <button type="submit"
-                            style="background:linear-gradient(135deg,#065f46,#10b981); color:white; padding:11px 22px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px; white-space:nowrap;">
+                            class="inline-flex items-center gap-2 bg-emerald-700 text-white rounded-lg px-5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition whitespace-nowrap">
                             <i class="fas fa-flag-checkered"></i> Mark as Done
                         </button>
                     </form>
                 </div>
             <?php elseif ($layoutTrackerStatus === 'Done'): ?>
-                <div
-                    style="background:#d1fae5; border:2px solid #10b981; border-radius:12px; padding:16px 24px; margin-bottom:22px; display:flex; align-items:center; gap:10px;">
-                    <i class="fas fa-check-circle" style="color:#10b981; font-size:22px;"></i>
-                    <span style="font-weight:700; font-size:14px; color:#065f46;">2D / 3D Layout stage is marked as Done.</span>
+                <div class="bg-emerald-50 border border-emerald-300 rounded-[10px] px-6 py-4 mb-[22px] flex items-center gap-2.5">
+                    <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
+                    <span class="font-semibold text-sm text-emerald-900">2D / 3D Layout stage is marked as Done.</span>
                 </div>
             <?php endif; ?>
 
@@ -1471,29 +1052,27 @@ if ($isOperationalManager) {
 
             <!-- Revision Request Section -->
             <?php if (($clientInfo['designer1_id'] == $admin_id || $clientInfo['designer2_id'] == $admin_id) && !empty($areas)): ?>
-                <div class="card" style="border:2px solid #f59e0b;">
-                    <h2 style="color:#92400e;">
+                <div class="bg-white border-2 border-amber-400 rounded-[10px] p-6 mb-5">
+                    <div class="flex items-center gap-2.5 text-xs font-semibold text-amber-800 mb-2">
                         <i class="fas fa-redo"></i> Request Revision
                         <?php if ($current_revision > 0): ?>
-                            <span
-                                style="font-size:13px; background:#fef3c7; color:#92400e; padding:3px 12px; border-radius:12px; margin-left:10px; font-weight:700;">
+                            <span class="bg-amber-100 text-amber-800 px-3 py-0.5 rounded-full text-[13px] font-bold normal-case">
                                 <?= $current_revision ?> Revision(s) so far
                             </span>
                         <?php endif; ?>
-                    </h2>
-                    <p style="font-size:13px; color:#9ca3af; margin-bottom:20px;">
+                        <span class="flex-1 h-px bg-line"></span>
+                    </div>
+                    <p class="text-[13px] text-muted mb-5">
                         Select an area (and unit if applicable) to request a revision. This will reset the approvals for that
                         area and increment the revision count.
                     </p>
 
                     <!-- Selected Summary Box -->
-                    <div id="selectionSummary"
-                        style="display:none; background:#fffbeb; border:2px solid #f59e0b; border-radius:10px; padding:16px; margin-bottom:16px;">
-                        <div
-                            style="font-size:12px; font-weight:700; color:#92400e; text-transform:uppercase; letter-spacing:0.4px; margin-bottom:12px;">
+                    <div id="selectionSummary" class="hidden bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
+                        <div class="text-xs font-semibold text-amber-800 uppercase tracking-[0.4px] mb-3">
                             <i class="fas fa-list-check"></i> Selected for Revision — add a reason for each:
                         </div>
-                        <div id="selectionItems" style="display:flex; flex-direction:column; gap:10px;"></div>
+                        <div id="selectionItems" class="flex flex-col gap-2.5"></div>
                     </div>
 
                     <form method="POST" action="<?= BASE_URL ?>request-revision" id="revisionForm">
@@ -1502,14 +1081,11 @@ if ($isOperationalManager) {
                         <input type="hidden" name="selections" id="selectionsInput" value="">
 
                         <!-- Area + Unit selector -->
-                        <div style="margin-bottom:16px;">
-                            <label
-                                style="font-size:12px; font-weight:700; color:#374151; text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:8px;">
+                        <div class="mb-4">
+                            <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-2">
                                 <i class="fas fa-map-marker-alt"></i> Select Areas / Units for Revision
-                                <span style="color:#ef4444;">*</span>
-                                <span
-                                    style="font-size:11px; color:#9ca3af; font-weight:400; text-transform:none; margin-left:6px;">(You
-                                    can select multiple)</span>
+                                <span class="text-red-500">*</span>
+                                <span class="text-[11px] text-muted font-normal normal-case ml-1.5">(You can select multiple)</span>
                             </label>
 
                             <?php foreach ($areas as $areaOption): ?>
@@ -1526,42 +1102,33 @@ if ($isOperationalManager) {
 
                                 if (empty($areaApprRows)) {
                                     $aTag = 'none';
-                                    $aTagBg = '#f3f4f6';
-                                    $aTagColor = '#9ca3af';
+                                    $aTagClass = 'bg-gray-100 text-muted';
                                 } elseif (in_array('rejected', $areaApprStatuses)) {
                                     $aTag = 'rejected';
-                                    $aTagBg = '#fee2e2';
-                                    $aTagColor = '#991b1b';
+                                    $aTagClass = 'bg-red-100 text-red-800';
                                 } elseif (count(array_filter($areaApprStatuses, fn($s) => $s === 'approved')) === count($areaApprStatuses)) {
                                     $aTag = 'approved';
-                                    $aTagBg = '#d1fae5';
-                                    $aTagColor = '#065f46';
+                                    $aTagClass = 'bg-emerald-100 text-emerald-800';
                                 } else {
                                     $aTag = 'pending';
-                                    $aTagBg = '#fef3c7';
-                                    $aTagColor = '#92400e';
+                                    $aTagClass = 'bg-amber-100 text-amber-800';
                                 }
 
                                 $areaSlugRev = 'revarea_' . preg_replace('/[^a-zA-Z0-9]/', '_', $areaOption);
                                 ?>
 
-                                <div style="border:2px solid #e9ecef; border-radius:10px; margin-bottom:10px; overflow:hidden;"
-                                    id="areablock-<?= $areaSlugRev ?>">
+                                <div class="border border-line rounded-lg mb-2.5 overflow-hidden" id="areablock-<?= $areaSlugRev ?>">
                                     <!-- Area row -->
-                                    <div
-                                        style="display:flex; align-items:center; gap:10px; padding:12px 16px; background:#fafafa; flex-wrap:wrap;">
-                                        <!-- Area-level checkbox -->
-                                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; flex:1;">
-                                            <input type="checkbox" class="rev-area-check"
+                                    <div class="flex items-center gap-2.5 px-4 py-3 bg-[#F5F5F5] flex-wrap">
+                                        <label class="flex items-center gap-2 cursor-pointer flex-1">
+                                            <input type="checkbox" class="rev-area-check w-4 h-4 cursor-pointer accent-amber-500"
                                                 data-area="<?= htmlspecialchars($areaOption, ENT_QUOTES) ?>"
-                                                onchange="onAreaCheck(this)"
-                                                style="width:16px; height:16px; cursor:pointer; accent-color:#f59e0b;">
-                                            <span style="font-size:14px; font-weight:700; color:#1f2937;">
-                                                <i class="fas fa-layer-group" style="color:#8a5a44;"></i>
+                                                onchange="onAreaCheck(this)">
+                                            <span class="text-sm font-semibold">
+                                                <i class="fas fa-layer-group text-soft"></i>
                                                 <?= htmlspecialchars($areaOption) ?>
                                             </span>
-                                            <span
-                                                style="padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700; background:<?= $aTagBg ?>; color:<?= $aTagColor ?>;">
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold <?= $aTagClass ?>">
                                                 <?= ucfirst($aTag) ?>
                                             </span>
                                         </label>
@@ -1571,7 +1138,7 @@ if ($isOperationalManager) {
                         </div>
 
                         <button type="submit" id="revisionSubmitBtn" disabled
-                            style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:11px 24px; border:none; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:8px; opacity:0.5;"
+                            class="inline-flex items-center gap-2 bg-amber-600 text-white rounded-lg px-6 py-2.5 text-[13px] font-semibold opacity-50 cursor-not-allowed transition"
                             onclick="return confirmRevision()">
                             <i class="fas fa-redo"></i> Request Revision
                         </button>
@@ -1591,41 +1158,39 @@ if ($isOperationalManager) {
                 }
                 krsort($revGroups); // newest revision number first
                 ?>
-                <div class="card" style="margin-top:0;">
-                    <div
-                        style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #f5f1ed;">
-                        <h2 style="color:#3b1f0f; margin-bottom:0; border:none; padding:0;">
+                <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-line">
+                        <div class="flex items-center gap-2.5 text-xs font-semibold">
                             <i class="fas fa-history"></i> Revision History
-                        </h2>
+                        </div>
                         <button type="button" onclick="toggleRevHistory()" id="revHistoryToggleBtn"
-                            style="background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; border:none; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
+                            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 transition">
                             <i class="fas fa-eye" id="revHistoryBtnIcon"></i>
                             <span id="revHistoryBtnText">Show History</span>
                         </button>
                     </div>
 
-                    <div id="revHistoryPanel" style="display:none;">
-                        <!-- Revision number list (accordion) -->
+                    <div id="revHistoryPanel" class="hidden">
                         <?php foreach ($revGroups as $revNum => $logs): ?>
                             <?php
                             // Determine overall status for this revision group
                             $groupStatuses = array_column($logs, 'status');
                             if (in_array('approved', $groupStatuses)) {
-                                $grpBg = '#d1fae5';
-                                $grpBorder = '#10b981';
-                                $grpColor = '#065f46';
+                                $grpClasses = 'bg-emerald-50 border-emerald-300';
+                                $grpBadge = 'bg-emerald-600';
+                                $grpText = 'text-emerald-800';
                                 $grpLabel = 'Approved';
                                 $grpIcon = 'fa-check-circle';
                             } elseif (in_array('designer_resubmitted', $groupStatuses)) {
-                                $grpBg = '#dbeafe';
-                                $grpBorder = '#3b82f6';
-                                $grpColor = '#1e40af';
+                                $grpClasses = 'bg-blue-50 border-blue-300';
+                                $grpBadge = 'bg-blue-600';
+                                $grpText = 'text-blue-800';
                                 $grpLabel = 'Resubmitted';
                                 $grpIcon = 'fa-paper-plane';
                             } else {
-                                $grpBg = '#fef3c7';
-                                $grpBorder = '#f59e0b';
-                                $grpColor = '#92400e';
+                                $grpClasses = 'bg-amber-50 border-amber-300';
+                                $grpBadge = 'bg-amber-600';
+                                $grpText = 'text-amber-800';
                                 $grpLabel = 'Pending';
                                 $grpIcon = 'fa-hourglass-half';
                             }
@@ -1633,70 +1198,56 @@ if ($isOperationalManager) {
                             $revPanelId = 'revpanel_' . $revNum;
                             $revChevronId = 'revchevron_' . $revNum;
                             ?>
-                            <div
-                                style="border:2px solid <?= $grpBorder ?>44; border-radius:10px; margin-bottom:10px; overflow:hidden;">
-                                <!-- Revision header row — clickable -->
+                            <div class="border rounded-lg mb-2.5 overflow-hidden <?= $grpClasses ?>">
                                 <button type="button" onclick="toggleRevPanel('<?= $revPanelId ?>', '<?= $revChevronId ?>')"
-                                    style="width:100%; background:<?= $grpBg ?>; border:none; padding:13px 16px; cursor:pointer; display:flex; align-items:center; gap:12px; text-align:left;">
-                                    <span
-                                        style="background:<?= $grpBorder ?>; color:white; padding:3px 12px; border-radius:10px; font-size:12px; font-weight:700; white-space:nowrap; flex-shrink:0;">
+                                    class="w-full border-none px-4 py-3.5 cursor-pointer flex items-center gap-3 text-left <?= $grpClasses ?>">
+                                    <span class="<?= $grpBadge ?> text-white px-2.5 py-0.5 rounded-full text-xs font-bold whitespace-nowrap flex-shrink-0">
                                         Revision #<?= $revNum ?>
                                     </span>
-                                    <span style="font-size:12px; font-weight:600; color:<?= $grpColor ?>; flex:1;">
+                                    <span class="text-xs font-medium <?= $grpText ?> flex-1">
                                         <?= count($logs) ?>
                                         area<?= count($logs) > 1 ? 's' : '' ?>/unit<?= count($logs) > 1 ? 's' : '' ?> affected
                                         &nbsp;•&nbsp;
                                         <?= date('M d, Y g:i A', strtotime($firstLog['created_at'])) ?>
                                     </span>
-                                    <span
-                                        style="background:<?= $grpBorder ?>22; color:<?= $grpColor ?>; padding:3px 10px; border-radius:10px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:4px; flex-shrink:0;">
+                                    <span class="<?= $grpText ?> px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 flex-shrink-0 bg-white/60">
                                         <i class="fas <?= $grpIcon ?>"></i> <?= $grpLabel ?>
                                     </span>
-                                    <i id="<?= $revChevronId ?>" class="fas fa-chevron-down"
-                                        style="color:<?= $grpColor ?>; font-size:13px; transition:transform 0.2s; flex-shrink:0;"></i>
+                                    <i id="<?= $revChevronId ?>" class="fas fa-chevron-down <?= $grpText ?> text-[13px] transition-transform flex-shrink-0"></i>
                                 </button>
 
-                                <!-- Revision detail panel (hidden by default) -->
-                                <div id="<?= $revPanelId ?>"
-                                    style="display:none; padding:14px 16px; background:white; border-top:1px solid <?= $grpBorder ?>33;">
-                                    <div style="display:flex; flex-direction:column; gap:10px;">
+                                <div id="<?= $revPanelId ?>" class="hidden px-4 py-3.5 bg-white border-t border-line">
+                                    <div class="flex flex-col gap-2.5">
                                         <?php foreach ($logs as $log):
-                                            $logStatusBg = '#f3f4f6';
-                                            $logStatusColor = '#6b7280';
+                                            $logStatusClass = 'bg-gray-100 text-muted';
                                             $logStatusLabel = 'Pending';
                                             if ($log['status'] === 'designer_resubmitted') {
-                                                $logStatusBg = '#dbeafe';
-                                                $logStatusColor = '#1e40af';
+                                                $logStatusClass = 'bg-blue-100 text-blue-800';
                                                 $logStatusLabel = 'Resubmitted';
                                             } elseif ($log['status'] === 'approved') {
-                                                $logStatusBg = '#d1fae5';
-                                                $logStatusColor = '#065f46';
+                                                $logStatusClass = 'bg-emerald-100 text-emerald-800';
                                                 $logStatusLabel = 'Approved';
                                             }
                                             ?>
-                                            <div
-                                                style="border:1px solid #fcd34d; border-radius:8px; padding:12px 14px; background:#fffbeb;">
-                                                <div
-                                                    style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-bottom:6px;">
-                                                    <span style="font-size:13px; font-weight:700; color:#92400e;">
+                                            <div class="border border-amber-300 rounded-lg px-3.5 py-3 bg-amber-50">
+                                                <div class="flex justify-between items-center flex-wrap gap-1.5 mb-1.5">
+                                                    <span class="text-[13px] font-semibold text-amber-900">
                                                         <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($log['area']) ?>
                                                         <?php if ($log['room_unit_name'] || $log['room_unit_number']): ?>
                                                             &nbsp;›&nbsp; <i class="fas fa-door-open"></i>
                                                             <?= htmlspecialchars($log['room_unit_name'] ?: 'Unit ' . $log['room_unit_number']) ?>
                                                         <?php endif; ?>
                                                     </span>
-                                                    <span
-                                                        style="background:<?= $logStatusBg ?>; color:<?= $logStatusColor ?>; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:700;">
+                                                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold <?= $logStatusClass ?>">
                                                         <?= $logStatusLabel ?>
                                                     </span>
                                                 </div>
                                                 <?php if ($log['reason']): ?>
-                                                    <div
-                                                        style="font-size:13px; color:#374151; background:white; padding:8px 12px; border-radius:6px; border-left:3px solid #f59e0b; margin-bottom:6px;">
+                                                    <div class="text-[13px] text-ink bg-white px-3 py-2 rounded-md border-l-2 border-amber-500 mb-1.5">
                                                         <?= nl2br(htmlspecialchars($log['reason'])) ?>
                                                     </div>
                                                 <?php endif; ?>
-                                                <div style="font-size:11px; color:#9ca3af; display:flex; align-items:center; gap:6px;">
+                                                <div class="text-[11px] text-muted flex items-center gap-1.5">
                                                     <i class="fas fa-user-edit"></i>
                                                     Requested by: <?= htmlspecialchars($log['requester_name'] ?? '') ?>
                                                     &nbsp;•&nbsp;
@@ -1713,20 +1264,20 @@ if ($isOperationalManager) {
             <?php endif; ?>
 
             <!-- INTAKE SUBMITTED — show summary + edit -->
-            <div class="card">
-                <div
-                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; padding-bottom:12px; border-bottom:2px solid #f5f1ed;">
-                    <h2 style="margin:0; padding:0; border:none;"><i class="fas fa-clipboard-check"></i> Client Intake
-                        Information</h2>
+            <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-line">
+                    <div class="flex items-center gap-2.5 text-xs font-semibold">
+                        <i class="fas fa-clipboard-check"></i> Client Intake Information
+                    </div>
                     <?php if ($clientInfo['designer1_id'] == $admin_id || $clientInfo['designer2_id'] == $admin_id): ?>
                         <button type="button" onclick="toggleIntakeEdit()" id="intakeEditBtn"
-                            style="background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; border:none; padding:8px 18px; border-radius:8px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
+                            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 transition">
                             <i class="fas fa-pen"></i> Edit
                         </button>
                     <?php endif; ?>
                 </div>
 
-                <div class="submitted-info">
+                <div class="bg-emerald-50 text-emerald-800 rounded-lg px-4 py-3 mb-4.5 mb-[18px] text-[13px] font-semibold flex items-center gap-2">
                     <i class="fas fa-check-circle"></i>
                     Submitted by <?= htmlspecialchars($submitterName) ?> on
                     <?= date('F d, Y g:i A', strtotime($intake['created_at'])) ?>
@@ -1734,133 +1285,134 @@ if ($isOperationalManager) {
 
                 <!-- VIEW MODE -->
                 <div id="intakeViewMode">
-                    <div style="margin-bottom:14px;">
+                    <div class="mb-3.5">
                         <?php if ($intake['layout_type_2d']): ?>
-                            <span class="layout-badge"><i class="fas fa-vector-square"></i> 2D Layout</span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-800 mr-1.5">
+                                <i class="fas fa-vector-square"></i> 2D Layout
+                            </span>
                         <?php endif; ?>
                         <?php if ($intake['layout_type_3d']): ?>
-                            <span class="layout-badge" style="background:#ede9fe; color:#5b21b6;"><i class="fas fa-cube"></i> 3D
-                                Layout</span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800">
+                                <i class="fas fa-cube"></i> 3D Layout
+                            </span>
                         <?php endif; ?>
                     </div>
-                    <div class="intake-grid">
-                        <div class="intake-item">
-                            <div class="label">Decoration Stage</div>
-                            <div class="value"><?= htmlspecialchars($intake['decoration_stage']) ?></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Decoration Stage</div>
+                            <div class="text-sm font-semibold"><?= htmlspecialchars($intake['decoration_stage']) ?></div>
                         </div>
-                        <div class="intake-item">
-                            <div class="label">Decoration Style</div>
-                            <div class="value"><?= htmlspecialchars($intake['decoration_style']) ?></div>
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Decoration Style</div>
+                            <div class="text-sm font-semibold"><?= htmlspecialchars($intake['decoration_style']) ?></div>
                         </div>
-                        <div class="intake-item">
-                            <div class="label">Occupation</div>
-                            <div class="value"><?= htmlspecialchars($intake['occupation']) ?></div>
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Occupation</div>
+                            <div class="text-sm font-semibold"><?= htmlspecialchars($intake['occupation']) ?></div>
                         </div>
-                        <div class="intake-item">
-                            <div class="label">Favourite Color</div>
-                            <div class="value"><?= htmlspecialchars($intake['favour_color']) ?></div>
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Favourite Color</div>
+                            <div class="text-sm font-semibold"><?= htmlspecialchars($intake['favour_color']) ?></div>
                         </div>
-                        <div class="intake-item">
-                            <div class="label">Area (SQM)</div>
-                            <div class="value"><?= number_format($intake['area_sqm'], 2) ?> m²</div>
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Area (SQM)</div>
+                            <div class="text-sm font-semibold"><?= number_format($intake['area_sqm'], 2) ?> m²</div>
                         </div>
                         <?php if ($intake['family_members'] !== null): ?>
-                            <div class="intake-item">
-                                <div class="label">Family Members</div>
-                                <div class="value"><?= $intake['family_members'] ?> people</div>
+                            <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Family Members</div>
+                                <div class="text-sm font-semibold"><?= $intake['family_members'] ?> people</div>
                             </div>
                         <?php endif; ?>
-                        <div class="intake-item">
-                            <div class="label">Budget</div>
-                            <div class="value">₱<?= number_format($intake['budget'], 2) ?></div>
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Budget</div>
+                            <div class="text-sm font-semibold">₱<?= number_format($intake['budget'], 2) ?></div>
                         </div>
                         <?php if ($intake['measurement_remark']): ?>
-                            <div class="intake-item" style="grid-column:1/-1;">
-                                <div class="label">Measurement Remark</div>
-                                <div class="value" style="font-weight:400; font-size:13px;">
-                                    <?= nl2br(htmlspecialchars($intake['measurement_remark'])) ?>
-                                </div>
+                            <div class="sm:col-span-2 lg:col-span-3 bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                                <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Measurement Remark</div>
+                                <div class="text-[13px] font-normal"><?= nl2br(htmlspecialchars($intake['measurement_remark'])) ?></div>
                             </div>
                         <?php endif; ?>
                     </div>
                 </div>
 
                 <!-- EDIT MODE (hidden by default) -->
-                <div id="intakeEditMode" style="display:none;">
+                <div id="intakeEditMode" class="hidden">
                     <form method="POST">
                         <input type="hidden" name="action" value="edit_intake">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Decoration Stage <span>*</span></label>
-                                <input type="text" name="decoration_stage" class="form-control"
-                                    value="<?= htmlspecialchars($intake['decoration_stage']) ?>" required>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-[18px]">
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Decoration Stage <span class="text-red-500">*</span></label>
+                                <input type="text" name="decoration_stage" required
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
+                                    value="<?= htmlspecialchars($intake['decoration_stage']) ?>">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Decoration Style <span>*</span></label>
-                                <input type="text" name="decoration_style" class="form-control"
-                                    value="<?= htmlspecialchars($intake['decoration_style']) ?>" required>
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Decoration Style <span class="text-red-500">*</span></label>
+                                <input type="text" name="decoration_style" required
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
+                                    value="<?= htmlspecialchars($intake['decoration_style']) ?>">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Occupation <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="text" name="occupation" class="form-control"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Occupation <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="text" name="occupation"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     value="<?= htmlspecialchars($intake['occupation']) ?>">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Favourite Color <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="text" name="favour_color" class="form-control"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Favourite Color <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="text" name="favour_color"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     value="<?= htmlspecialchars($intake['favour_color']) ?>">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Area (Total SQM) <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="number" name="area_sqm" class="form-control" step="0.01" min="0"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Area (Total SQM) <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="number" name="area_sqm" step="0.01" min="0"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     value="<?= htmlspecialchars($intake['area_sqm']) ?>">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Family Members <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="number" name="family_members" class="form-control" min="0"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Family Members <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="number" name="family_members" min="0"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     value="<?= htmlspecialchars($intake['family_members'] ?? '') ?>">
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Budget <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <input type="number" name="budget" class="form-control" step="0.01" min="0"
+                            <div class="flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Budget <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <input type="number" name="budget" step="0.01" min="0"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
                                     value="<?= htmlspecialchars($intake['budget']) ?>">
                             </div>
-                            <div class="form-group full">
-                                <label class="form-label">Layout Type <span>*</span></label>
-                                <div class="checkbox-group">
-                                    <label class="checkbox-label" style="opacity:0.75; cursor:not-allowed;">
+                            <div class="md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Layout Type <span class="text-red-500">*</span></label>
+                                <div class="flex gap-3 mt-1">
+                                    <label class="opacity-75 cursor-not-allowed border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold flex items-center gap-2">
                                         <input type="checkbox" name="layout_2d" value="1" checked disabled>
-                                        <i class="fas fa-vector-square" style="color:#3b82f6;"></i> 2D Layout
-                                        <span
-                                            style="font-size:10px; background:#dbeafe; color:#1e40af; padding:1px 7px; border-radius:8px; margin-left:4px; font-weight:700;">Always</span>
+                                        <i class="fas fa-vector-square text-blue-600"></i> 2D Layout
+                                        <span class="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-md font-bold">Always</span>
                                     </label>
-                                    <label class="checkbox-label">
+                                    <label class="border border-line rounded-lg px-4 py-2.5 text-[13px] font-semibold flex items-center gap-2 cursor-pointer transition has-[:checked]:border-ink has-[:checked]:bg-[#F5F5F5]">
                                         <input type="checkbox" name="layout_3d" value="1" <?= $intake['layout_type_3d'] ? 'checked' : '' ?>>
-                                        <i class="fas fa-cube" style="color:#8b5cf6;"></i> 3D Layout
-                                        <span
-                                            style="font-size:10px; background:#ede9fe; color:#5b21b6; padding:1px 7px; border-radius:8px; margin-left:4px; font-weight:700;">Optional</span>
+                                        <i class="fas fa-cube text-purple-600"></i> 3D Layout
+                                        <span class="text-[10px] bg-purple-100 text-purple-800 px-1.5 py-0.5 rounded-md font-bold">Optional</span>
                                     </label>
                                 </div>
                                 <input type="hidden" name="layout_2d" value="1">
                             </div>
-                            <div class="form-group full">
-                                <label class="form-label">Measurement Remark <span
-                                        style="color:#9ca3af; font-weight:400; text-transform:none;">(Optional)</span></label>
-                                <textarea name="measurement_remark" class="form-control"
-                                    rows="3"><?= htmlspecialchars($intake['measurement_remark'] ?? '') ?></textarea>
+                            <div class="md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Measurement Remark <span class="text-muted font-normal normal-case">(Optional)</span></label>
+                                <textarea name="measurement_remark" rows="3"
+                                    class="border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"><?= htmlspecialchars($intake['measurement_remark'] ?? '') ?></textarea>
                             </div>
                         </div>
-                        <div style="display:flex; gap:10px; margin-top:16px;">
-                            <button type="submit" class="btn-submit">
+                        <div class="flex gap-2.5 mt-4">
+                            <button type="submit"
+                                class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-6 py-3 text-sm font-semibold hover:opacity-90 transition">
                                 <i class="fas fa-save"></i> Save Changes
                             </button>
                             <button type="button" onclick="toggleIntakeEdit()"
-                                style="background:#6b7280; color:white; padding:12px 24px; border:none; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; display:inline-flex; align-items:center; gap:8px;">
+                                class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-6 py-3 text-sm font-semibold hover:border-ink transition">
                                 <i class="fas fa-times"></i> Cancel
                             </button>
                         </div>
@@ -1868,9 +1420,9 @@ if ($isOperationalManager) {
                 </div>
             </div>
 
-            <div style="margin-bottom:22px;">
+            <div class="mb-[22px]">
                 <a href="<?= BASE_URL ?>designer-attachments?client_id=<?= $client_id ?>"
-                    style="background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; padding:11px 22px; border-radius:8px; font-size:14px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                    class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-5 py-3 text-sm font-semibold hover:opacity-90 transition">
                     <i class="fas fa-paperclip"></i> Go to Attachments
                 </a>
             </div>
@@ -1880,387 +1432,48 @@ if ($isOperationalManager) {
     </div>
 
     <!-- Room Unit Detail Modal -->
-    <div id="designerRoomModal"
-        style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div
-            style="background:white; padding:28px; border-radius:14px; max-width:620px; width:90%; max-height:88vh; overflow-y:auto;">
-            <div
-                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:2px solid #e0e7ff; padding-bottom:12px;">
+    <div id="designerRoomModal" class="hidden fixed inset-0 z-[2000] bg-black/50 items-center justify-center">
+        <div class="bg-white p-7 rounded-[14px] max-w-xl w-[90%] max-h-[88vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4.5 mb-[18px] border-b border-line pb-3">
                 <div>
-                    <h3 id="roomModalTitle" style="font-size:17px; font-weight:700; color:#3730a3;">
+                    <h3 id="roomModalTitle" class="text-[17px] font-bold">
                         <i class="fas fa-door-open"></i> Unit Details
                     </h3>
-                    <p id="roomModalArea" style="font-size:12px; color:#6b7280; margin-top:3px;"></p>
+                    <p id="roomModalArea" class="text-xs text-soft mt-1"></p>
                 </div>
-                <button onclick="closeDesignerRoomModal()"
-                    style="font-size:20px; color:#9ca3af; background:none; border:none; cursor:pointer;">
+                <button onclick="closeDesignerRoomModal()" class="text-soft hover:text-ink text-xl">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div id="roomModalBody">
-                <div style="text-align:center; padding:30px; color:#9ca3af;">
-                    <i class="fas fa-spinner fa-spin" style="font-size:28px;"></i>
-                    <p style="margin-top:10px;">Loading items...</p>
+                <div class="text-center py-8 text-muted">
+                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                    <p class="mt-2.5">Loading items...</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Add-ons Detail Modal -->
-    <div id="addonsModal"
-        style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-        <div
-            style="background:white; padding:28px; border-radius:12px; max-width:560px; width:90%; max-height:85vh; overflow-y:auto;">
-            <div
-                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:2px solid #f3f4f6; padding-bottom:12px;">
-                <h3 id="addonsModalTitle" style="font-size:16px; font-weight:700; color:#3730a3;"><i
-                        class="fas fa-puzzle-piece"></i> Add-ons</h3>
-                <button onclick="document.getElementById('addonsModal').style.display='none'"
-                    style="font-size:20px; color:#666; background:none; border:none; cursor:pointer;"><i
-                        class="fas fa-times"></i></button>
+    <div id="addonsModal" class="hidden fixed inset-0 z-[2000] bg-black/50 items-center justify-center">
+        <div class="bg-white p-7 rounded-[12px] max-w-lg w-[90%] max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4.5 mb-[18px] border-b border-line pb-3">
+                <h3 id="addonsModalTitle" class="text-base font-bold"><i class="fas fa-puzzle-piece"></i> Add-ons</h3>
+                <button onclick="document.getElementById('addonsModal').style.display='none'" class="text-soft hover:text-ink text-xl">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div id="addonsModalBody"></div>
         </div>
     </div>
 
     <script>
-        // ── Room unit scroll ──
-        function scrollRoomBtns(slug, dir) {
-            const el = document.getElementById('rb-' + slug);
-            if (el) el.scrollBy({ left: dir * 200, behavior: 'smooth' });
-        }
-
-        // ── Room unit modal ──
-        async function showDesignerRoomModal(clientId, area, roomNumber, roomLabel) {
-            document.getElementById('roomModalTitle').innerHTML =
-                '<i class="fas fa-door-open"></i> ' + roomLabel;
-            document.getElementById('roomModalArea').innerHTML =
-                '<i class="fas fa-map-marker-alt"></i> Area: ' + area;
-            document.getElementById('roomModalBody').innerHTML = `
-        <div style="text-align:center; padding:30px; color:#9ca3af;">
-            <i class="fas fa-spinner fa-spin" style="font-size:28px;"></i>
-            <p style="margin-top:10px;">Loading items...</p>
-        </div>`;
-            document.getElementById('designerRoomModal').style.display = 'flex';
-
-            try {
-                const res = await fetch('<?= BASE_URL ?>get-area-room-details?client_id=' + clientId +
-                    '&area=' + encodeURIComponent(area) +
-                    '&room_number=' + roomNumber);
-                const data = await res.json();
-                if (!data.success) throw new Error(data.error || 'Failed to load');
-                renderDesignerRoomItems(data.items);
-            } catch (err) {
-                document.getElementById('roomModalBody').innerHTML =
-                    '<div style="text-align:center; padding:30px; color:#ef4444;">' +
-                    '<i class="fas fa-exclamation-triangle" style="font-size:28px;"></i>' +
-                    '<p style="margin-top:10px;">Error: ' + err.message + '</p></div>';
-            }
-        }
-
-        function renderDesignerRoomItems(items) {
-            if (!items || items.length === 0) {
-                document.getElementById('roomModalBody').innerHTML =
-                    '<div style="text-align:center; padding:40px; color:#9ca3af;">' +
-                    '<i class="fas fa-box-open" style="font-size:36px; display:block; margin-bottom:10px;"></i>' +
-                    'No items found for this unit.</div>';
-                return;
-            }
-
-            let totalQty = 0;
-            let html = '<div style="display:flex; flex-direction:column; gap:12px;">';
-
-            items.forEach(function (item) {
-                totalQty += parseInt(item.quantity) || 0;
-
-                let imgPath = '';
-                if (item.image_folder && item.image_file) {
-                    imgPath = '<?= CLIENT_ASSET ?>/images/' + item.image_folder + '/' + item.image_file;
-                }
-
-                html += '<div style="border:1px solid #e0e7ff; border-radius:10px; overflow:hidden;">';
-
-                // Item row
-                html += '<div style="display:flex; gap:12px; padding:14px; background:#fafafa; align-items:center;">';
-
-                // Image
-                if (imgPath) {
-                    html += '<img src="' + imgPath + '" style="width:52px; height:52px; object-fit:cover; border-radius:8px; border:1px solid #e0e7ff; flex-shrink:0;" onerror="this.style.display=\'none\'">';
-                } else {
-                    html += '<div style="width:52px; height:52px; background:#e0e7ff; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-box" style="color:#818cf8;"></i></div>';
-                }
-
-                // Info
-                html += '<div style="flex:1; min-width:0;">';
-                html += '<div style="font-weight:700; font-size:13px; color:#1f2937;">' + escHtml(item.item_name) + '</div>';
-                if (item.display_color) {
-                    html += '<div style="font-size:11px; color:#6b7280; margin-top:2px;"><i class="fas fa-palette"></i> ' + escHtml(item.display_color) + '</div>';
-                }
-                // Dimensions
-                let dims = [];
-                if (item.width) dims.push((item.width_label || 'W') + ': ' + item.width + 'mm');
-                if (item.height) dims.push((item.height_label || 'H') + ': ' + item.height + 'mm');
-                if (item.length) dims.push((item.length_label || 'L') + ': ' + item.length + 'mm');
-                if (dims.length) {
-                    html += '<div style="font-size:11px; color:#9ca3af; margin-top:3px;">' + dims.join(' &nbsp;•&nbsp; ') + '</div>';
-                }
-                if (item.room_unit_name) {
-                    html += '<div style="font-size:11px; color:#6366f1; margin-top:3px;"><i class="fas fa-door-open"></i> ' + escHtml(item.room_unit_name) + '</div>';
-                }
-                if (item.notes && item.notes.trim()) {
-                    html += '<div style="font-size:11px; color:#92400e; background:#fffbeb; padding:3px 8px; border-radius:4px; margin-top:4px;"><i class="fas fa-sticky-note"></i> ' + escHtml(item.notes) + '</div>';
-                }
-                html += '</div>';
-
-                // Qty badge
-                html += '<div style="flex-shrink:0; text-align:center;">';
-                html += '<div style="background:#e0e7ff; color:#3730a3; padding:4px 12px; border-radius:20px; font-size:12px; font-weight:700;">' + item.quantity + ' pcs</div>';
-                html += '<div style="font-size:10px; color:#9ca3af; margin-top:3px;">' + (item.entry_type === 'customized' ? 'Custom' : 'Fixed') + '</div>';
-                html += '</div>';
-
-                html += '</div>'; // end item row
-
-                // Addons sub-section
-                if (item.addons && item.addons.length > 0) {
-                    const bodyId = 'drm-addon-' + Math.random().toString(36).substr(2, 6);
-                    const iconId = 'drm-icon-' + Math.random().toString(36).substr(2, 6);
-
-                    html += '<div style="border-top:1px solid #e0e7ff; background:#f0f4ff;">';
-                    html += '<button type="button" onclick="toggleDrmAddon(\'' + bodyId + '\',\'' + iconId + '\')" ';
-                    html += 'style="width:100%; padding:8px 14px; background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#3730a3;">';
-                    html += '<i class="fas fa-puzzle-piece"></i> ' + item.addons.length + ' Add-on' + (item.addons.length > 1 ? 's' : '');
-                    html += '<i id="' + iconId + '" class="fas fa-chevron-down" style="margin-left:auto; transition:transform 0.2s;"></i>';
-                    html += '</button>';
-
-                    html += '<div id="' + bodyId + '" style="display:none;">';
-                    item.addons.forEach(function (addon, ai) {
-                        const border = ai > 0 ? 'border-top:1px solid #dde3ff;' : '';
-                        html += '<div style="display:flex; align-items:center; gap:10px; padding:8px 14px; ' + border + '">';
-                        if (addon.addon_image_path) {
-                            html += '<img src="<?= CLIENT_ASSET ?>/images/product_addons/' + escHtml(addon.addon_image_path) + '" ';
-                            html += 'style="width:32px; height:32px; object-fit:cover; border-radius:6px; border:1px solid #c7d2fe; flex-shrink:0;" onerror="this.style.display=\'none\'">';
-                        } else {
-                            html += '<div style="width:32px; height:32px; background:#dde3ff; border-radius:6px; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-puzzle-piece" style="color:#818cf8; font-size:12px;"></i></div>';
-                        }
-                        html += '<div style="flex:1;">';
-                        html += '<div style="font-size:12px; font-weight:700; color:#1e1b4b;">' + escHtml(addon.addon_name) + '</div>';
-                        html += '<div style="font-size:11px; color:#4f46e5;">₱' + parseFloat(addon.price).toFixed(2) + ' / pc</div>';
-                        if (addon.note) html += '<div style="font-size:10px; color:#64748b; font-style:italic;">' + escHtml(addon.note) + '</div>';
-                        html += '</div>';
-                        html += '</div>';
-                    });
-                    html += '</div>'; // addon body
-                    html += '</div>'; // addon section
-                }
-
-                html += '</div>'; // end card
-            });
-
-            html += '</div>';
-
-            // Summary footer
-            html += '<div style="margin-top:14px; padding:14px 16px; background:linear-gradient(135deg,#3730a3,#6366f1); border-radius:10px; display:flex; justify-content:space-between; align-items:center; color:white;">';
-            html += '<span style="font-size:13px; font-weight:600;"><i class="fas fa-boxes"></i> Total Items in Unit</span>';
-            html += '<span style="font-size:22px; font-weight:700;">' + totalQty + '</span>';
-            html += '</div>';
-
-            document.getElementById('roomModalBody').innerHTML = html;
-        }
-
-        function toggleDrmAddon(bodyId, iconId) {
-            const body = document.getElementById(bodyId);
-            const icon = document.getElementById(iconId);
-            if (!body) return;
-            const open = body.style.display !== 'none';
-            body.style.display = open ? 'none' : 'block';
-            if (icon) icon.style.transform = open ? '' : 'rotate(180deg)';
-        }
-
-        function closeDesignerRoomModal() {
-            document.getElementById('designerRoomModal').style.display = 'none';
-        }
-
-        function escHtml(text) {
-            if (!text) return '';
-            const d = document.createElement('div');
-            d.textContent = text;
-            return d.innerHTML;
-        }
-
-        function showAddons(itemName, addons) {
-            document.getElementById('addonsModalTitle').innerHTML = '<i class="fas fa-puzzle-piece"></i> Add-ons for: ' + itemName;
-            let html = '<div style="display:flex; flex-direction:column; gap:12px;">';
-            let grandTotal = 0;
-            addons.forEach(function (a) {
-                const sub = parseFloat(a.quantity) * parseFloat(a.price);
-                grandTotal += sub;
-                html += '<div style="display:flex; align-items:center; gap:14px; padding:12px; border:1px solid #e5e7eb; border-radius:8px; background:#fafafa;">';
-                if (a.addon_image_path) {
-                    html += '<img src="<?= CLIENT_ASSET ?>/images/product_addons/' + a.addon_image_path + '" style="width:50px; height:50px; object-fit:cover; border-radius:6px; border:1px solid #e5e7eb;" onerror="this.style.display=\'none\'">';
-                }
-                html += '<div style="flex:1;">';
-                html += '<div style="font-weight:700; font-size:13px; color:#111;">' + a.addon_name + '</div>';
-                if (a.note) html += '<div style="font-size:11px; color:#9ca3af; margin-top:2px;"><i class="fas fa-sticky-note"></i> ' + a.note + '</div>';
-                html += '<div style="font-size:12px; color:#6b7280; margin-top:4px;">Qty: <strong>' + a.quantity + '</strong> × ₱' + parseFloat(a.price).toFixed(2) + '</div>';
-                html += '</div>';
-                html += '<div style="font-weight:700; color:#065f46; font-size:14px;">₱' + sub.toFixed(2) + '</div>';
-                html += '</div>';
-            });
-            html += '</div>';
-            html += '<div style="margin-top:14px; padding:12px 16px; background:#f0fdf4; border-radius:8px; display:flex; justify-content:space-between; align-items:center;">';
-            html += '<span style="font-weight:600; color:#374151;">Add-ons Total</span>';
-            html += '<span style="font-weight:700; font-size:16px; color:#065f46;">₱' + grandTotal.toFixed(2) + '</span>';
-            html += '</div>';
-            document.getElementById('addonsModalBody').innerHTML = html;
-            document.getElementById('addonsModal').style.display = 'flex';
-        }
-
-        // Close modals on outside click
-        document.addEventListener('click', function (e) {
-            ['addonsModal', 'clientDetailModal2', 'designerRoomModal'].forEach(function (id) {
-                const el = document.getElementById(id);
-                if (el && e.target === el) el.style.display = 'none';
-            });
-        });
-
-        // ── Multi-select revision ──
-        let revSelections = []; // [{area, unitNum, unitName, reason}]
-
-        function getSelKey(area, unitNum) {
-            return area + '||' + (unitNum ?? 'null');
-        }
-
-        function onAreaCheck(cb) {
-            const area = cb.dataset.area;
-            const key = getSelKey(area, null);
-            if (cb.checked) {
-                if (!revSelections.find(s => getSelKey(s.area, s.unitNum) === key)) {
-                    revSelections.push({ area, unitNum: null, unitName: null, reason: '' });
-                }
-            } else {
-                revSelections = revSelections.filter(s => getSelKey(s.area, s.unitNum) !== key);
-            }
-            updateSummary();
-        }
-
-        function removeSelection(key) {
-            const idx = revSelections.findIndex(s => getSelKey(s.area, s.unitNum) === key);
-            if (idx === -1) return;
-            const s = revSelections[idx];
-            // Uncheck the checkbox
-            if (s.unitNum !== null) {
-                const cb = document.querySelector(`.rev-unit-check[data-area="${CSS.escape(s.area)}"][data-unit-num="${s.unitNum}"]`);
-                if (cb) { cb.checked = false; onUnitCheck(cb); return; }
-            } else {
-                const cb = document.querySelector(`.rev-area-check[data-area="${CSS.escape(s.area)}"]`);
-                if (cb) { cb.checked = false; onAreaCheck(cb); return; }
-            }
-            revSelections.splice(idx, 1);
-            updateSummary();
-        }
-
-        function updateSummary() {
-            const box = document.getElementById('selectionSummary');
-            const items = document.getElementById('selectionItems');
-            const inp = document.getElementById('selectionsInput');
-
-            if (revSelections.length === 0) {
-                box.style.display = 'none';
-                inp.value = '';
-                updateSubmitBtn();
-                return;
-            }
-
-            box.style.display = 'block';
-            items.innerHTML = revSelections.map((s, i) => {
-                const key = getSelKey(s.area, s.unitNum);
-                const label = s.unitNum !== null
-                    ? s.area + ' › ' + (s.unitName || 'Unit ' + s.unitNum)
-                    : s.area + ' (whole area)';
-                return `<div style="border:1px solid #fcd34d; border-radius:8px; padding:12px 14px; background:white;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span style="font-size:13px; font-weight:700; color:#92400e;">
-                    <i class="fas fa-map-marker-alt"></i> ${label}
-                </span>
-                <button type="button" onclick="removeSelection('${key}')"
-                    style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:13px; padding:0 4px;">
-                    <i class="fas fa-times"></i> Remove
-                </button>
-            </div>
-            <textarea
-                placeholder="Reason for revision on this area/unit... *"
-                oninput="updateReason('${key}', this.value)"
-                style="width:100%; padding:8px 10px; border:1px solid #e9ecef; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical; min-height:60px; box-sizing:border-box;"
-            >${s.reason}</textarea>
-        </div>`;
-            }).join('');
-
-            inp.value = JSON.stringify(revSelections);
-            updateSubmitBtn();
-        }
-
-        function updateReason(key, val) {
-            const s = revSelections.find(s => getSelKey(s.area, s.unitNum) === key);
-            if (s) s.reason = val.trim();
-            document.getElementById('selectionsInput').value = JSON.stringify(revSelections);
-            updateSubmitBtn();
-        }
-
-        function updateSubmitBtn() {
-            const btn = document.getElementById('revisionSubmitBtn');
-            const ready = revSelections.length > 0 && revSelections.every(s => s.reason.trim() !== '');
-            btn.disabled = !ready;
-            btn.style.opacity = ready ? '1' : '0.5';
-            btn.style.cursor = ready ? 'pointer' : 'not-allowed';
-        }
-
-        function confirmRevision() {
-            if (revSelections.length === 0) return false;
-            if (!revSelections.every(s => s.reason.trim() !== '')) {
-                alert('Please fill in a reason for each selected area/unit.');
-                return false;
-            }
-            const lines = revSelections.map(s =>
-                s.unitNum !== null
-                    ? '  • ' + s.area + ' › ' + (s.unitName || 'Unit ' + s.unitNum)
-                    : '  • ' + s.area + ' (whole area)'
-            ).join('\n');
-            return confirm(
-                'This will count as Revision #1 (one submission).\n\nAreas/units to reset:\n' + lines +
-                '\n\nApprovals for these will be reset. Continue?'
-            );
-        }
-
-        function toggleRevHistory() {
-            const panel = document.getElementById('revHistoryPanel');
-            const icon = document.getElementById('revHistoryBtnIcon');
-            const text = document.getElementById('revHistoryBtnText');
-            const open = panel.style.display !== 'none';
-            panel.style.display = open ? 'none' : 'block';
-            icon.className = open ? 'fas fa-eye' : 'fas fa-eye-slash';
-            text.textContent = open ? 'Show History' : 'Hide History';
-        }
-
-        function toggleRevPanel(panelId, chevronId) {
-            const panel = document.getElementById(panelId);
-            const chev = document.getElementById(chevronId);
-            const open = panel.style.display !== 'none';
-            panel.style.display = open ? 'none' : 'block';
-            chev.style.transform = open ? '' : 'rotate(180deg)';
-        }
-
-        function toggleIntakeEdit() {
-            const viewMode = document.getElementById('intakeViewMode');
-            const editMode = document.getElementById('intakeEditMode');
-            const btn = document.getElementById('intakeEditBtn');
-            const isEditing = editMode.style.display !== 'none';
-            viewMode.style.display = isEditing ? 'block' : 'none';
-            editMode.style.display = isEditing ? 'none' : 'block';
-            btn.innerHTML = isEditing
-                ? '<i class="fas fa-pen"></i> Edit'
-                : '<i class="fas fa-times"></i> Cancel';
-        }
+        window.RL_CONFIG = {
+            baseUrl: "<?= BASE_URL ?>",
+            clientAsset: "<?= CLIENT_ASSET ?>"
+        };
     </script>
+    <script src="<?= ADMIN_ASSET ?>/designer-management/designer-management/assets/js/designer_2d3d_layout.js"></script>
 </body>
 
 </html>

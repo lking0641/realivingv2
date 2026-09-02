@@ -105,364 +105,230 @@ function countAreaAttachments($conn, $client_id, $area)
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Attachments — <?= htmlspecialchars($clientInfo['clientname']) ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .container {
-            max-width: 700px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .btn-back {
-            background: linear-gradient(135deg, #3b1f0f, #8a5a44);
-            color: white;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            margin-bottom: 16px;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 24px 30px;
-            border-radius: 14px;
-            color: white;
-            margin-bottom: 22px;
-        }
-
-        .page-header h1 {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-
-        .page-header .sub {
-            font-size: 12px;
-            opacity: 0.85;
-            margin-top: 4px;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            margin-bottom: 18px;
-        }
-
-        .area-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            border: 1.5px solid #e9ecef;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            text-decoration: none;
-            background: white;
-            transition: all 0.2s;
-        }
-
-        .area-card:hover {
-            border-color: #8a5a44;
-            background: #fdf6f0;
-            transform: translateX(4px);
-        }
-
-        .area-card .left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .area-icon {
-            width: 42px;
-            height: 42px;
-            background: #f0e6db;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .area-name {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-
-        .area-meta {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 2px;
-        }
-
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .badge-unit {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-files {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .badge-nofile {
-            background: #f3f4f6;
-            color: #9ca3af;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #9ca3af;
-        }
-
-        .empty-state i {
-            font-size: 40px;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .warning-box {
-            background: #fffbeb;
-            border: 1px solid #fcd34d;
-            border-radius: 8px;
-            padding: 14px 16px;
-            font-size: 13px;
-            color: #92400e;
-            margin-bottom: 16px;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
 </head>
 
-<body>
-    <div class="container">
-        <a href="designer-2d3d-layout?client_id=<?= $client_id ?>" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Back to Layout
-        </a>
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[1100px] mx-auto px-5 py-8">
 
-        <div class="page-header">
-            <h1><i class="fas fa-paperclip"></i> Attachments</h1>
-            <div class="sub"><?= htmlspecialchars($clientInfo['clientname']) ?> —
-                <?= htmlspecialchars($clientInfo['nameproject']) ?>
+        <!-- Back button -->
+        <div class="flex gap-2.5 mb-5 flex-wrap">
+            <a href="designer-2d3d-layout?client_id=<?= $client_id ?>"
+                class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
+                <i class="fas fa-arrow-left"></i> Back to Layout
+            </a>
+        </div>
+
+        <!-- ── Page Header ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                <i class="fas fa-paperclip"></i> Attachments
             </div>
-            <div class="sub">Ref: <?= htmlspecialchars($clientInfo['reference_number']) ?> &nbsp;•&nbsp;
-                <?= htmlspecialchars($me['full_name']) ?>
-            </div>
+            <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($clientInfo['clientname']) ?></h1>
+            <p class="text-[13.5px] text-soft mt-1"><?= htmlspecialchars($clientInfo['nameproject']) ?></p>
+            <p class="text-[13px] text-muted mt-1">
+                Ref: <?= htmlspecialchars($clientInfo['reference_number']) ?>
+                &nbsp;•&nbsp; <?= htmlspecialchars($me['full_name']) ?>
+            </p>
         </div>
 
         <?php
         $pendingApprovalCount = getPendingApprovalCount($conn, $admin_id, $client_id);
         if ($pendingApprovalCount > 0):
             ?>
-            <div
-                style="background:#fef3c7; border:2px solid #f59e0b; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <i class="fas fa-bell" style="color:#d97706; font-size:20px; flex-shrink:0;"></i>
-                <div style="flex:1;">
-                    <div style="font-weight:700; font-size:14px; color:#92400e;">
-                        You have <?= $pendingApprovalCount ?> pending approval<?= $pendingApprovalCount > 1 ? 's' : '' ?> —
-                        click an area below to review
+            <div class="bg-amber-50 border border-amber-300 rounded-[10px] p-4 mb-[18px] flex items-center gap-3 flex-wrap">
+                <i class="fas fa-bell text-amber-600 text-xl flex-shrink-0"></i>
+                <div class="flex-1">
+                    <div class="font-semibold text-sm text-amber-900">
+                        You have <?= $pendingApprovalCount ?> pending
+                        approval<?= $pendingApprovalCount > 1 ? 's' : '' ?> — click an area below to review
                     </div>
-                    <div style="font-size:12px; color:#b45309; margin-top:2px;">
-                        Areas highlighted in yellow/orange have pending approvals waiting for you.
+                    <div class="text-xs text-amber-700 mt-0.5">
+                        Areas highlighted in amber below have pending approvals waiting for you.
                     </div>
                 </div>
             </div>
         <?php endif; ?>
 
         <?php if (empty($intake)): ?>
-            <div class="warning-box"><i class="fas fa-exclamation-triangle"></i> Please submit the intake form first before
-                uploading attachments.</div>
+            <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-exclamation-triangle"></i>
+                Please submit the intake form first before uploading attachments.
+            </div>
         <?php elseif (empty($areas)): ?>
-            <div class="card">
-                <div class="empty-state"><i class="fas fa-inbox"></i>No areas found. Add items to the computation list
-                    first.</div>
+            <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+                <div class="text-center py-10 text-muted">
+                    <i class="fas fa-inbox text-3xl mb-3 block"></i>
+                    No areas found. Add items to the computation list first.
+                </div>
             </div>
         <?php else: ?>
-            <div class="card">
-                <h2
-                    style="font-size:15px; color:#3b1f0f; margin-bottom:16px; padding-bottom:10px; border-bottom:2px solid #f5f1ed;">
-                    <i class="fas fa-map-marker-alt"></i> Select an Area
-                </h2>
-                <?php foreach ($areas as $area): ?>
-                    <?php
-                    $fileCount = countAreaAttachments($conn, $client_id, $area);
-                    $url = BASE_URL . 'designer-attachment-upload?client_id=' . $client_id
-                        . '&area=' . urlencode($area);
+            <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+                <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                    <i class="fas fa-map-marker-alt text-soft"></i> Select an Area
+                    <span class="flex-1 h-px bg-line"></span>
+                </div>
 
-                    // Approval summary for color coding
-                    // Fetch detailed approval records for this area (with approver info)
-                    // For areas with units, aggregate approval status across ALL units
-// For areas without units, check NULL unit approvals as before
-                    $approvalSummaryStmt = $conn->prepare("
-        SELECT la.status, la.comment, la.responded_at,
-               a.id as approver_id, a.full_name as approver_name, a.role as approver_role
-        FROM layout_approvals la
-        JOIN account a ON la.approver_id = a.id
-        WHERE la.client_id = ? AND la.area = ?
-        AND la.room_unit_number IS NULL
-    ");
-                    $approvalSummaryStmt->bind_param("is", $client_id, $area);
-                    $approvalSummaryStmt->execute();
-                    $approvalRows = $approvalSummaryStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                <div class="flex flex-col gap-2.5">
+                    <?php foreach ($areas as $area): ?>
+                        <?php
+                        $fileCount = countAreaAttachments($conn, $client_id, $area);
+                        $url = BASE_URL . 'designer-attachment-upload?client_id=' . $client_id
+                            . '&area=' . urlencode($area);
 
-                    // Also get list of all approvers for this system
-                    $allApproversStmt = $conn->prepare("
-        SELECT id, full_name, role FROM account
-        WHERE (role IN ('general_manager','operational_manager'))
-           OR (role IN ('designer','technical_designer') AND is_head = 1)
-        ORDER BY role
-    ");
-                    $allApproversStmt->execute();
-                    $allApprovers = $allApproversStmt->get_result()->fetch_all(MYSQLI_ASSOC);
+                        // Approval summary for color coding
+                        $approvalSummaryStmt = $conn->prepare("
+            SELECT la.status, la.comment, la.responded_at,
+                   a.id as approver_id, a.full_name as approver_name, a.role as approver_role
+            FROM layout_approvals la
+            JOIN account a ON la.approver_id = a.id
+            WHERE la.client_id = ? AND la.area = ?
+            AND la.room_unit_number IS NULL
+        ");
+                        $approvalSummaryStmt->bind_param("is", $client_id, $area);
+                        $approvalSummaryStmt->execute();
+                        $approvalRows = $approvalSummaryStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-                    // Build map: approver_id => record
-                    $areaApprovalMap = [];
-                    foreach ($approvalRows as $rec) {
-                        $areaApprovalMap[$rec['approver_id']] = $rec;
-                    }
+                        // Also get list of all approvers for this system
+                        $allApproversStmt = $conn->prepare("
+            SELECT id, full_name, role FROM account
+            WHERE (role IN ('general_manager','operational_manager'))
+               OR (role IN ('designer','technical_designer') AND is_head = 1)
+            ORDER BY role
+        ");
+                        $allApproversStmt->execute();
+                        $allApprovers = $allApproversStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-                    if (empty($approvalRows)) {
-                        $areaApprovalState = 'none';
-                    } else {
-                        $aStatuses = array_column($approvalRows, 'status');
-                        if (in_array('rejected', $aStatuses))
-                            $areaApprovalState = 'rejected';
-                        elseif (count(array_filter($aStatuses, fn($s) => $s === 'approved')) === count($aStatuses) && count($aStatuses) > 0)
-                            $areaApprovalState = 'approved';
-                        elseif (in_array('pending', $aStatuses))
-                            $areaApprovalState = 'pending';
-                        else
-                            $areaApprovalState = 'none';
-                    }
-
-                    // Color scheme per approval state
-                    $cardBorder = '#e9ecef';
-                    $cardBg = 'white';
-                    $approvalBadge = '';
-                    if ($areaApprovalState === 'approved') {
-                        $cardBorder = '#10b981';
-                        $cardBg = '#f0fdf4';
-                        $approvalBadge = '<span class="badge" style="background:#d1fae5;color:#065f46;"><i class="fas fa-check-circle"></i> All Approved</span>';
-                    } elseif ($areaApprovalState === 'rejected') {
-                        $cardBorder = '#ef4444';
-                        $cardBg = '#fff5f5';
-                        $approvalBadge = '<span class="badge" style="background:#fee2e2;color:#991b1b;"><i class="fas fa-times-circle"></i> Rejected</span>';
-                    } elseif ($areaApprovalState === 'pending') {
-                        $cardBorder = '#f59e0b';
-                        $cardBg = '#fffbeb';
-                        $approvalBadge = '<span class="badge" style="background:#fef3c7;color:#92400e;"><i class="fas fa-hourglass-half"></i> Pending Review</span>';
-                    }
-
-                    // Build approver badges HTML
-                    $approverBadgesHtml = '';
-                    if (!empty($allApprovers)) {
-                        $approverBadgesHtml .= '<div style="display:flex; flex-wrap:wrap; gap:5px; margin-top:8px;">';
-                        foreach ($allApprovers as $apr) {
-                            $rec = $areaApprovalMap[$apr['id']] ?? null;
-                            $aStatus = $rec ? $rec['status'] : 'not_requested';
-
-                            if ($aStatus === 'approved') {
-                                $bBg = '#d1fae5';
-                                $bColor = '#065f46';
-                                $bIcon = 'fa-check-circle';
-                                $bTitle = htmlspecialchars($apr['full_name']) . ': Approved';
-                            } elseif ($aStatus === 'rejected') {
-                                $bBg = '#fee2e2';
-                                $bColor = '#991b1b';
-                                $bIcon = 'fa-times-circle';
-                                $bTitle = htmlspecialchars($apr['full_name']) . ': Rejected';
-                                if ($rec['comment'])
-                                    $bTitle .= ' — ' . htmlspecialchars($rec['comment']);
-                            } elseif ($aStatus === 'pending') {
-                                $bBg = '#fef3c7';
-                                $bColor = '#92400e';
-                                $bIcon = 'fa-hourglass-half';
-                                $bTitle = htmlspecialchars($apr['full_name']) . ': Pending';
-                            } else {
-                                $bBg = '#f3f4f6';
-                                $bColor = '#9ca3af';
-                                $bIcon = 'fa-minus-circle';
-                                $bTitle = htmlspecialchars($apr['full_name']) . ': Not requested';
-                            }
-
-                            $shortName = explode(' ', $apr['full_name'])[0]; // First name only
-                            $approverBadgesHtml .= '<span title="' . $bTitle . '" style="display:inline-flex; align-items:center; gap:4px; background:' . $bBg . '; color:' . $bColor . '; padding:3px 8px; border-radius:20px; font-size:11px; font-weight:700;">';
-                            $approverBadgesHtml .= '<i class="fas ' . $bIcon . '" style="font-size:10px;"></i> ' . htmlspecialchars($shortName);
-                            $approverBadgesHtml .= '</span>';
+                        // Build map: approver_id => record
+                        $areaApprovalMap = [];
+                        foreach ($approvalRows as $rec) {
+                            $areaApprovalMap[$rec['approver_id']] = $rec;
                         }
-                        $approverBadgesHtml .= '</div>';
-                    }
-                    ?>
-                    <?php
-                    // Check if this area (no unit) has an active revision
-                    $areaRevKey = $area . '||null';
-                    $areaActiveRev = $activeRevMap[$areaRevKey] ?? null;
-                    ?>
-                    <?php if ($areaActiveRev): ?>
-                        <div
-                            style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; padding:8px 14px; margin-bottom:4px; display:flex; align-items:center; gap:8px; font-size:12px; color:#92400e; font-weight:600;">
-                            <i class="fas fa-redo"></i>
-                            Revision #<?= $areaActiveRev['revision_number'] ?> Pending
-                            <span
-                                style="font-weight:400; margin-left:4px;"><?= date('M d, Y', strtotime($areaActiveRev['created_at'])) ?></span>
-                            <span
-                                style="font-weight:400; margin-left:4px; font-style:italic;"><?= htmlspecialchars(mb_strimwidth($areaActiveRev['reason'], 0, 60, '...')) ?></span>
-                        </div>
-                    <?php endif; ?>
-                    <a href="<?= $url ?>" class="area-card"
-                        style="border-color:<?= $areaActiveRev ? '#f59e0b' : $cardBorder ?>; background:<?= $areaActiveRev ? '#fffbeb' : $cardBg ?>;">
-                        <div class="left">
-                            <div class="area-icon">
-                                <i class="fas fa-layer-group" style="color:#8a5a44; font-size:18px;"></i>
+
+                        if (empty($approvalRows)) {
+                            $areaApprovalState = 'none';
+                        } else {
+                            $aStatuses = array_column($approvalRows, 'status');
+                            if (in_array('rejected', $aStatuses))
+                                $areaApprovalState = 'rejected';
+                            elseif (count(array_filter($aStatuses, fn($s) => $s === 'approved')) === count($aStatuses) && count($aStatuses) > 0)
+                                $areaApprovalState = 'approved';
+                            elseif (in_array('pending', $aStatuses))
+                                $areaApprovalState = 'pending';
+                            else
+                                $areaApprovalState = 'none';
+                        }
+
+                        // Color scheme per approval state (adm- palette)
+                        $cardBorderClass = 'border-line';
+                        $cardBgClass = 'bg-white';
+                        $approvalBadgeHtml = '';
+                        if ($areaApprovalState === 'approved') {
+                            $cardBorderClass = 'border-emerald-300';
+                            $cardBgClass = 'bg-emerald-50';
+                            $approvalBadgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 inline-flex items-center gap-1"><i class="fas fa-check-circle"></i> All Approved</span>';
+                        } elseif ($areaApprovalState === 'rejected') {
+                            $cardBorderClass = 'border-red-300';
+                            $cardBgClass = 'bg-red-50';
+                            $approvalBadgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-100 text-red-800 inline-flex items-center gap-1"><i class="fas fa-times-circle"></i> Rejected</span>';
+                        } elseif ($areaApprovalState === 'pending') {
+                            $cardBorderClass = 'border-amber-300';
+                            $cardBgClass = 'bg-amber-50';
+                            $approvalBadgeHtml = '<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 inline-flex items-center gap-1"><i class="fas fa-hourglass-half"></i> Pending Review</span>';
+                        }
+
+                        // Build approver badges HTML
+                        $approverBadgesHtml = '';
+                        if (!empty($allApprovers)) {
+                            $approverBadgesHtml .= '<div class="flex flex-wrap gap-1.5 mt-2">';
+                            foreach ($allApprovers as $apr) {
+                                $rec = $areaApprovalMap[$apr['id']] ?? null;
+                                $aStatus = $rec ? $rec['status'] : 'not_requested';
+
+                                if ($aStatus === 'approved') {
+                                    $bClasses = 'bg-emerald-100 text-emerald-800';
+                                    $bIcon = 'fa-check-circle';
+                                    $bTitle = htmlspecialchars($apr['full_name']) . ': Approved';
+                                } elseif ($aStatus === 'rejected') {
+                                    $bClasses = 'bg-red-100 text-red-800';
+                                    $bIcon = 'fa-times-circle';
+                                    $bTitle = htmlspecialchars($apr['full_name']) . ': Rejected';
+                                    if ($rec['comment'])
+                                        $bTitle .= ' — ' . htmlspecialchars($rec['comment']);
+                                } elseif ($aStatus === 'pending') {
+                                    $bClasses = 'bg-amber-100 text-amber-800';
+                                    $bIcon = 'fa-hourglass-half';
+                                    $bTitle = htmlspecialchars($apr['full_name']) . ': Pending';
+                                } else {
+                                    $bClasses = 'bg-[#F5F5F5] text-muted';
+                                    $bIcon = 'fa-minus-circle';
+                                    $bTitle = htmlspecialchars($apr['full_name']) . ': Not requested';
+                                }
+
+                                $shortName = explode(' ', $apr['full_name'])[0]; // First name only
+                                $approverBadgesHtml .= '<span title="' . $bTitle . '" class="inline-flex items-center gap-1 ' . $bClasses . ' px-2 py-0.5 rounded-full text-[11px] font-bold">';
+                                $approverBadgesHtml .= '<i class="fas ' . $bIcon . ' text-[10px]"></i> ' . htmlspecialchars($shortName);
+                                $approverBadgesHtml .= '</span>';
+                            }
+                            $approverBadgesHtml .= '</div>';
+                        }
+
+                        // Check if this area (no unit) has an active revision
+                        $areaRevKey = $area . '||null';
+                        $areaActiveRev = $activeRevMap[$areaRevKey] ?? null;
+                        ?>
+
+                        <?php if ($areaActiveRev): ?>
+                            <div class="bg-amber-50 border border-amber-300 rounded-lg px-3.5 py-2 flex items-center gap-2 flex-wrap text-[12px] font-semibold text-amber-800">
+                                <i class="fas fa-redo"></i>
+                                Revision #<?= $areaActiveRev['revision_number'] ?> Pending
+                                <span class="font-normal"><?= date('M d, Y', strtotime($areaActiveRev['created_at'])) ?></span>
+                                <span class="font-normal italic"><?= htmlspecialchars(mb_strimwidth($areaActiveRev['reason'], 0, 60, '...')) ?></span>
                             </div>
-                            <div>
-                                <div class="area-name"><?= htmlspecialchars($area) ?></div>
-                                <div class="area-meta">
-                                    &nbsp;
-                                    <?php if ($fileCount > 0): ?>
-                                        <span class="badge badge-files"><i class="fas fa-file"></i> <?= $fileCount ?> file(s)</span>
-                                    <?php endif; ?>
-                                    <?php if ($approvalBadge): ?>
-                                        &nbsp;<?= $approvalBadge ?>
-                                    <?php endif; ?>
+                        <?php endif; ?>
+
+                        <a href="<?= $url ?>"
+                            class="flex items-center justify-between gap-3 px-5 py-4 border rounded-lg transition hover:border-ink hover:bg-[#F5F5F5] <?= $areaActiveRev ? 'border-amber-300 bg-amber-50' : $cardBorderClass . ' ' . $cardBgClass ?>">
+                            <div class="flex items-center gap-3">
+                                <div class="w-11 h-11 bg-[#F5F5F5] border border-line rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-layer-group text-soft"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[15px] font-bold"><?= htmlspecialchars($area) ?></div>
+                                    <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                        <?php if ($fileCount > 0): ?>
+                                            <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#F5F5F5] border border-line text-soft inline-flex items-center gap-1">
+                                                <i class="fas fa-file"></i> <?= $fileCount ?> file(s)
+                                            </span>
+                                        <?php endif; ?>
+                                        <?= $approvalBadgeHtml ?>
+                                    </div>
                                     <?= $approverBadgesHtml ?>
                                 </div>
                             </div>
-                        </div>
-                        <i class="fas fa-chevron-right" style="color:#9ca3af;"></i>
-                    </a>
-                <?php endforeach; ?>
+                            <i class="fas fa-chevron-right text-muted flex-shrink-0"></i>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
             </div>
         <?php endif; ?>
+
     </div>
 </body>
 

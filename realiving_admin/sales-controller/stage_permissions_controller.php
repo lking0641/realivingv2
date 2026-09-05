@@ -18,6 +18,8 @@ $adminsStmt = $conn->prepare("
 ");
 $adminsStmt->execute();
 $admins = $adminsStmt->get_result();
+$adminRows = $admins->fetch_all(MYSQLI_ASSOC);
+$totalAdmins = count($adminRows);
 
 // Define all stages
 $all_stages = [
@@ -40,6 +42,7 @@ $all_stages = [
     'BILLING',
     'Handover'
 ];
+$totalStages = count($all_stages);
 
 // Fetch stages already assigned to roles
 $roleAssignedStages = [];
@@ -53,601 +56,278 @@ $roleStagesResult = $roleStagesStmt->get_result();
 while ($row = $roleStagesResult->fetch_assoc()) {
     $roleAssignedStages[$row['stage_name']] = $row['role'];
 }
+
+// Distinct roles present, for the filter dropdown
+$distinctRoles = [];
+foreach ($adminRows as $a) {
+    if (!in_array($a['role'], $distinctRoles))
+        $distinctRoles[] = $a['role'];
+}
+sort($distinctRoles);
+
+function initials($name)
+{
+    $parts = preg_split('/\s+/', trim($name));
+    $out = '';
+    foreach (array_slice($parts, 0, 2) as $p) {
+        if ($p !== '')
+            $out .= mb_strtoupper(mb_substr($p, 0, 1));
+    }
+    return $out ?: '?';
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stage Permissions Controller</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-       
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        body {
+            font-family: 'Inter', sans-serif;
         }
 
-        .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 40px;
-            border-radius: 16px;
-            color: white;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
-        }
-
-        .page-header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .page-header p {
-            opacity: 0.9;
-            font-size: 16px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .admins-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-            gap: 20px;
-        }
-
-        .admin-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .admin-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-
-        .admin-card-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 20px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .admin-info h3 {
-            font-size: 18px;
-            margin-bottom: 5px;
-        }
-
-        .admin-info .email {
-            font-size: 12px;
-            opacity: 0.9;
-        }
-
-        .admin-stats {
-            text-align: right;
-        }
-
-        .admin-stats .count {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .admin-stats .label {
-            font-size: 11px;
-            opacity: 0.9;
-            text-transform: uppercase;
-        }
-
-        .admin-card-body {
-            padding: 20px;
-        }
-
-        .role-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            background: #e9ecef;
-            color: #495057;
-            margin-bottom: 15px;
-        }
-
-        .permissions-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .permissions-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 0;
-            border-radius: 16px;
-            max-width: 900px;
-            width: 90%;
-            max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 25px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .close-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            padding: 30px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .admin-info-section {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-
-        .admin-info-section h3 {
-            color: #3b1f0f;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .info-row {
-            display: grid;
-            grid-template-columns: 120px 1fr;
-            padding: 8px 0;
-            font-size: 14px;
-        }
-
-        .info-row .label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .info-row .value {
-            color: #111;
-            font-weight: 600;
-        }
-
-        .permissions-section {
-            margin-top: 20px;
-        }
-
-        .permissions-section h3 {
-            color: #3b1f0f;
-            margin-bottom: 20px;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .quick-action-btn {
-            padding: 8px 16px;
-            border: 2px solid #8a5a44;
-            background: white;
-            color: #8a5a44;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        .quick-action-btn:hover {
-            background: #8a5a44;
-            color: white;
-        }
-
-        .stages-list {
-            display: grid;
-            gap: 12px;
-        }
-
-        .stage-permission-item {
-            background: #f9f9f9;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
-
-        .stage-permission-item:hover {
-            border-color: #8a5a44;
-            background: #fff;
-        }
-
-        .stage-permission-item.disabled {
-            opacity: 0.5;
-            background: #f5f5f5;
-        }
-
-        .stage-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .stage-number {
-            width: 35px;
-            height: 35px;
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .stage-name {
-            font-size: 14px;
-            font-weight: 500;
-            color: #111;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 30px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .3s;
-            border-radius: 30px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(30px);
-        }
-
-        .modal-footer {
-            padding: 20px 30px;
-            background: #f9f9f9;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .save-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .save-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(16,185,129,0.3);
-        }
-
-        .cancel-btn {
-            background: #6b7280;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .cancel-btn:hover {
-            background: #4b5563;
-        }
-
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 16px 24px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: none;
-            align-items: center;
-            gap: 12px;
-            z-index: 2000;
-            animation: slideIn 0.3s ease;
-        }
-
-        .toast.show {
-            display: flex;
-        }
-
-        .toast.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .toast.error {
-            border-left: 4px solid #ef4444;
-        }
-
-        @keyframes slideIn {
+        @keyframes admFade {
             from {
-                transform: translateX(400px);
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .adm-fade {
+            animation: admFade .35s ease both;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(.96);
                 opacity: 0;
             }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #permissionsModal.flex .modal-box {
+            animation: popIn .2s ease both;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateX(20px);
+                opacity: 0;
+            }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
             }
         }
 
-        .search-box {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        #toast.show {
+            animation: toastIn .25s ease both;
         }
 
-        .search-box input {
-            width: 100%;
-            padding: 12px 20px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
+        @media (prefers-reduced-motion: reduce) {
 
-        .search-box input:focus {
-            outline: none;
-            border-color: #8a5a44;
+            .adm-fade,
+            #permissionsModal.flex .modal-box,
+            #toast.show {
+                animation: none;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="page-header">
-            <h1><i class="fas fa-shield-alt"></i> Stage Permissions Controller</h1>
-            <p>Manage which project stages each admin can update for their clients</p>
-        </div>
 
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 Search admins by name or email...">
-        </div>
+<body class="min-h-screen bg-[#F5F5F5] text-[#0B0B0B]">
+    <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-16">
 
-        <div class="admins-grid" id="adminsGrid">
-            <?php while ($admin = $admins->fetch_assoc()): ?>
-                <div class="admin-card" data-search="<?= strtolower($admin['full_name'] . ' ' . $admin['email']) ?>">
-                    <div class="admin-card-header">
-                        <div class="admin-info">
-                            <h3><?= htmlspecialchars($admin['full_name']) ?></h3>
-                            <div class="email"><?= htmlspecialchars($admin['email']) ?></div>
-                        </div>
-                        <div class="admin-stats">
-                            <div class="count"><?= $admin['client_count'] ?></div>
-                            <div class="label">Clients</div>
-                        </div>
+        <!-- Header -->
+        <div class="bg-[#0B0B0B] rounded-xl p-6 sm:p-7 text-white mb-6 adm-fade">
+            <div class="flex items-start justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-11 h-11 rounded-[9px] bg-white/10 border border-white/15 flex items-center justify-center text-[17px] flex-shrink-0">
+                        <i class="fas fa-shield-alt"></i>
                     </div>
-                    <div class="admin-card-body">
-                        <div class="role-badge">
-                            <i class="fas fa-user-tag"></i> <?= htmlspecialchars($admin['role']) ?>
-                        </div>
-                        <button class="permissions-btn" 
-    data-id="<?= $admin['id'] ?>"
-    data-name="<?= htmlspecialchars($admin['full_name'], ENT_QUOTES) ?>"
-    data-email="<?= htmlspecialchars($admin['email'], ENT_QUOTES) ?>"
-    data-role="<?= htmlspecialchars($admin['role'], ENT_QUOTES) ?>"
-    data-count="<?= $admin['client_count'] ?>"
-    onclick="openPermissionsModal(this.dataset.id, this.dataset.name, this.dataset.email, this.dataset.role, this.dataset.count)">
-    <i class="fas fa-cog"></i>
-    Manage Stage Permissions
-</button>
-                            <i class="fas fa-cog"></i>
-                            Manage Stage Permissions
-                        </button>
+                    <div>
+                        <div class="text-[11px] font-semibold uppercase tracking-[1.5px] text-white/50 mb-0.5">Access
+                            Control</div>
+                        <div class="text-[19px] font-bold tracking-tight">Stage Permissions Controller</div>
+                        <div class="text-[12.5px] text-white/60 mt-0.5">Manage which project stages each admin can
+                            update for their clients.</div>
                     </div>
                 </div>
-            <?php endwhile; ?>
+                <div class="flex gap-6">
+                    <div class="text-right">
+                        <div class="text-xl font-bold font-mono"><?= $totalAdmins ?></div>
+                        <div class="text-[10px] uppercase tracking-wide text-white/45">Admins</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-xl font-bold font-mono"><?= $totalStages ?></div>
+                        <div class="text-[10px] uppercase tracking-wide text-white/45">Stages</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search + filter bar -->
+        <div class="bg-white border border-[#E2E2E2] rounded-[10px] p-3.5 mb-6 flex flex-col sm:flex-row gap-3 adm-fade">
+            <div class="relative flex-1">
+                <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-[#9A9A9A] text-sm"></i>
+                <input type="text" id="searchInput" placeholder="Search admins by name or email..."
+                    class="w-full pl-10 pr-4 py-2.5 border border-[#E2E2E2] rounded-md text-sm focus:outline-none focus:border-[#0B0B0B] transition-colors">
+            </div>
+            <select id="roleFilter"
+                class="border border-[#E2E2E2] rounded-md text-sm px-3.5 py-2.5 focus:outline-none focus:border-[#0B0B0B] transition-colors bg-white">
+                <option value="">All roles</option>
+                <?php foreach ($distinctRoles as $r): ?>
+                    <option value="<?= htmlspecialchars(strtolower($r)) ?>"><?= htmlspecialchars(ucwords(str_replace('_', ' ', $r))) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <!-- Admins grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="adminsGrid">
+            <?php foreach ($adminRows as $admin): ?>
+                <div class="admin-card bg-white border border-[#E2E2E2] rounded-[10px] p-5 hover:border-[#0B0B0B] hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.25)] hover:-translate-y-0.5 transition-all adm-fade"
+                    data-search="<?= strtolower($admin['full_name'] . ' ' . $admin['email']) ?>"
+                    data-role="<?= strtolower($admin['role']) ?>">
+
+                    <div class="flex items-start gap-3 mb-4">
+                        <div
+                            class="w-11 h-11 rounded-full bg-[#F5F5F5] border border-[#E2E2E2] flex items-center justify-center text-[13px] font-bold text-[#6B6B6B] flex-shrink-0">
+                            <?= htmlspecialchars(initials($admin['full_name'])) ?>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-[15px] font-semibold truncate"><?= htmlspecialchars($admin['full_name']) ?></h3>
+                            <div class="text-xs text-[#9A9A9A] truncate"><?= htmlspecialchars($admin['email']) ?></div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-lg font-bold font-mono leading-none"><?= $admin['client_count'] ?></div>
+                            <div class="text-[9px] uppercase tracking-wide text-[#9A9A9A] mt-0.5">Clients</div>
+                        </div>
+                    </div>
+
+                    <span
+                        class="inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide bg-[#F5F5F5] text-[#6B6B6B] border border-[#E2E2E2] mb-4">
+                        <i class="fas fa-user-tag"></i> <?= htmlspecialchars(str_replace('_', ' ', $admin['role'])) ?>
+                    </span>
+
+                    <button
+                        class="w-full inline-flex items-center justify-center gap-2 bg-[#0B0B0B] text-white py-2.5 rounded-md font-semibold text-[13px] hover:bg-[#2a2a2a] transition-colors"
+                        data-id="<?= $admin['id'] ?>" data-name="<?= htmlspecialchars($admin['full_name'], ENT_QUOTES) ?>"
+                        data-email="<?= htmlspecialchars($admin['email'], ENT_QUOTES) ?>"
+                        data-role="<?= htmlspecialchars($admin['role'], ENT_QUOTES) ?>" data-count="<?= $admin['client_count'] ?>"
+                        onclick="openPermissionsModal(this.dataset.id, this.dataset.name, this.dataset.email, this.dataset.role, this.dataset.count)">
+                        <i class="fas fa-cog"></i>
+                        Manage Stage Permissions
+                    </button>
+                </div>
+            <?php endforeach; ?>
+        </div>
+
+        <div id="noResults" class="hidden text-center py-14 px-5 bg-white border-2 border-dashed border-[#E2E2E2] rounded-[10px] mt-4">
+            <i class="fas fa-user-slash text-3xl text-[#E2E2E2] mb-2.5 block"></i>
+            <div class="text-sm font-semibold mb-1">No admins match your search</div>
+            <div class="text-xs text-[#9A9A9A]">Try a different name, email, or role filter.</div>
         </div>
     </div>
 
     <!-- Permissions Modal -->
-    <div id="permissionsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>
+    <div id="permissionsModal" class="hidden fixed inset-0 bg-black/50 z-[1000] items-center justify-center p-4">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-[900px] max-h-[92vh] flex flex-col overflow-hidden">
+
+            <!-- Header -->
+            <div class="bg-[#0B0B0B] text-white px-6 sm:px-7 py-5 flex justify-between items-center flex-shrink-0">
+                <h2 class="text-lg font-bold flex items-center gap-2.5">
                     <i class="fas fa-user-shield"></i>
                     <span id="modalTitle">Stage Permissions</span>
                 </h2>
-                <button class="close-btn" onclick="closeModal()">
+                <button onclick="closeModal()"
+                    class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border-none text-white text-lg flex items-center justify-center transition-all hover:rotate-90 duration-200">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="admin-info-section">
-                    <h3><i class="fas fa-info-circle"></i> Admin Information</h3>
-                    <div class="info-row">
-                        <div class="label">Name:</div>
-                        <div class="value" id="modalAdminName"></div>
+
+            <div class="px-6 sm:px-7 py-6 overflow-y-auto flex-1">
+                <!-- Admin info -->
+                <div class="bg-[#F5F5F5] border border-[#E2E2E2] rounded-[10px] p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Name</span>
+                        <span class="font-semibold" id="modalAdminName"></span>
                     </div>
-                    <div class="info-row">
-                        <div class="label">Email:</div>
-                        <div class="value" id="modalAdminEmail"></div>
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Email</span>
+                        <span class="font-semibold" id="modalAdminEmail"></span>
                     </div>
-                    <div class="info-row">
-                        <div class="label">Role:</div>
-                        <div class="value" id="modalAdminRole"></div>
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Role</span>
+                        <span class="font-semibold" id="modalAdminRole"></span>
                     </div>
-                    <div class="info-row">
-                        <div class="label">Total Clients:</div>
-                        <div class="value" id="modalClientCount"></div>
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Total Clients</span>
+                        <span class="font-semibold" id="modalClientCount"></span>
                     </div>
                 </div>
 
-                <div class="permissions-section">
-                    <h3>
-                        <i class="fas fa-tasks"></i>
-                        Project Stage Permissions
+                <!-- Permissions -->
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3.5">
+                    <h3 class="text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-tasks text-[#6B6B6B]"></i> Project Stage Permissions
                     </h3>
-                    
-                    <div class="quick-actions">
-                        <button class="quick-action-btn" onclick="selectAll()">
-                            <i class="fas fa-check-double"></i> Select All
-                        </button>
-                        <button class="quick-action-btn" onclick="deselectAll()">
-                            <i class="fas fa-times"></i> Deselect All
-                        </button>
-                        <button class="quick-action-btn" onclick="selectFirstHalf()">
-                            <i class="fas fa-list-ol"></i> First 9 Stages
-                        </button>
-                        <button class="quick-action-btn" onclick="selectLastHalf()">
-                            <i class="fas fa-list"></i> Last 8 Stages
-                        </button>
-                    </div>
+                    <span id="selectedCounter"
+                        class="text-xs font-bold px-2.5 py-1 rounded-full bg-[#F5F5F5] border border-[#E2E2E2] text-[#6B6B6B]">0
+                        of <?= $totalStages ?> selected</span>
+                </div>
 
-                    <div class="stages-list" id="stagesList">
-                        <!-- Stages will be populated here -->
-                    </div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="selectAll()">
+                        <i class="fas fa-check-double"></i> Select All
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="deselectAll()">
+                        <i class="fas fa-times"></i> Deselect All
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="selectFirstHalf()">
+                        <i class="fas fa-list-ol"></i> First 9 Stages
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="selectLastHalf()">
+                        <i class="fas fa-list"></i> Last 9 Stages
+                    </button>
+                </div>
+
+                <div class="grid gap-2" id="stagesList">
+                    <!-- Stages will be populated here -->
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="cancel-btn" onclick="closeModal()">
+
+            <div class="px-6 sm:px-7 py-4 bg-[#F5F5F5] border-t border-[#E2E2E2] flex justify-end gap-2.5 flex-shrink-0">
+                <button onclick="closeModal()"
+                    class="bg-white text-[#6B6B6B] px-4 py-2.5 rounded-md font-semibold text-[13px] border border-[#E2E2E2] hover:bg-[#E2E2E2] transition-colors">
                     Cancel
                 </button>
-                <button class="save-btn" onclick="savePermissions()">
+                <button id="saveBtn" onclick="savePermissions()"
+                    class="inline-flex items-center gap-2 bg-[#0B0B0B] text-white px-4 py-2.5 rounded-md font-semibold text-[13px] hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-save"></i>
                     Save Permissions
                 </button>
@@ -655,110 +335,144 @@ while ($row = $roleStagesResult->fetch_assoc()) {
         </div>
     </div>
 
-    <div id="toast" class="toast">
-        <i class="fas fa-check-circle" style="font-size: 20px; color: #10b981;"></i>
-        <span id="toastMessage">Permissions saved successfully!</span>
+    <div id="toast"
+        class="hidden fixed top-5 right-5 bg-white px-5 py-4 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,.15)] items-center gap-3 z-[2000] border-l-4">
+        <i id="toastIcon" class="fas fa-check-circle text-xl text-emerald-500"></i>
+        <span id="toastMessage" class="text-sm font-medium">Permissions saved successfully!</span>
     </div>
 
     <script>
         const allStages = <?= json_encode($all_stages) ?>;
+        const totalStages = allStages.length;
         let currentAdminId = null;
 
-        // Search functionality
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
+        // Search + role filter
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleTerm = document.getElementById('roleFilter').value.toLowerCase();
             const cards = document.querySelectorAll('.admin-card');
-            
+            let visibleCount = 0;
+
             cards.forEach(card => {
                 const searchData = card.getAttribute('data-search');
-                if (searchData.includes(searchTerm)) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+                const roleData = card.getAttribute('data-role');
+                const matchesSearch = searchData.includes(searchTerm);
+                const matchesRole = !roleTerm || roleData === roleTerm;
+                const visible = matchesSearch && matchesRole;
+                card.style.display = visible ? '' : 'none';
+                if (visible) visibleCount++;
             });
-        });
+
+            document.getElementById('noResults').classList.toggle('hidden', visibleCount !== 0);
+        }
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('roleFilter').addEventListener('change', applyFilters);
+
+        function updateSelectedCounter() {
+            const checked = document.querySelectorAll('.stage-permission-item input[type="checkbox"]:checked').length;
+            document.getElementById('selectedCounter').textContent = `${checked} of ${totalStages} selected`;
+        }
 
         async function openPermissionsModal(adminId, name, email, role, clientCount) {
             currentAdminId = adminId;
-            
-            // Set admin info
-            document.getElementById('modalTitle').textContent = `Stage Permissions - ${name}`;
+
+            document.getElementById('modalTitle').textContent = `Stage Permissions — ${name}`;
             document.getElementById('modalAdminName').textContent = name;
             document.getElementById('modalAdminEmail').textContent = email;
             document.getElementById('modalAdminRole').textContent = role;
             document.getElementById('modalClientCount').textContent = clientCount;
 
-            // Fetch current permissions
-            const response = await fetch('<?= BASE_URL ?>get-stage-permissions?admin_id=' + adminId);
-            const data = await response.json();
-            
-            // Populate stages list
             const stagesList = document.getElementById('stagesList');
-            stagesList.innerHTML = '';
-            
-            allStages.forEach((stage, index) => {
-    const isEnabled = data.permissions.includes(stage);
-    const isLockedByRole = data.lockedByRole && data.lockedByRole[stage];
-    
-    const stageItem = document.createElement('div');
-    stageItem.className = 'stage-permission-item' + (isLockedByRole ? ' disabled' : '');
-    stageItem.innerHTML = `
-        <div class="stage-info">
-            <div class="stage-number">${index + 1}</div>
-            <div class="stage-name">
-                ${stage}
-                ${isLockedByRole ? `<span style="margin-left: 8px; font-size: 11px; color: #ef4444; background: #fee2e2; padding: 2px 8px; border-radius: 4px;"><i class="fas fa-lock"></i> Locked by ${isLockedByRole}</span>` : ''}
-            </div>
-        </div>
-        <label class="toggle-switch">
-            <input type="checkbox" 
-                   data-stage="${stage}" 
-                   ${isEnabled ? 'checked' : ''}
-                   ${isLockedByRole ? 'disabled' : ''}>
-            <span class="slider"></span>
-        </label>
-    `;
-    stagesList.appendChild(stageItem);
-});
+            stagesList.innerHTML = '<div class="text-center py-8 text-sm text-[#9A9A9A]"><i class="fas fa-spinner fa-spin"></i> Loading permissions...</div>';
 
-            // Show modal
-            document.getElementById('permissionsModal').classList.add('show');
+            const modal = document.getElementById('permissionsModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            let data;
+            try {
+                const response = await fetch('<?= BASE_URL ?>get-stage-permissions?admin_id=' + adminId);
+                data = await response.json();
+            } catch (e) {
+                stagesList.innerHTML = '<div class="text-center py-8 text-sm text-red-600"><i class="fas fa-exclamation-circle"></i> Failed to load permissions.</div>';
+                return;
+            }
+
+            stagesList.innerHTML = '';
+            allStages.forEach((stage, index) => {
+                const isEnabled = data.permissions.includes(stage);
+                const isLockedByRole = data.lockedByRole && data.lockedByRole[stage];
+
+                const stageItem = document.createElement('div');
+                stageItem.className = 'stage-permission-item flex items-center justify-between gap-3 border rounded-lg px-4 py-3 transition-colors ' +
+                    (isLockedByRole ? 'bg-[#F5F5F5] border-[#E2E2E2] opacity-60' : 'bg-white border-[#E2E2E2] hover:border-[#0B0B0B]');
+                stageItem.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-[#0B0B0B] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">${index + 1}</div>
+                        <div class="text-sm font-medium truncate">
+                            ${stage}
+                            ${isLockedByRole ? `<span class="ml-2 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full"><i class="fas fa-lock"></i> Locked by ${isLockedByRole}</span>` : ''}
+                        </div>
+                    </div>
+                    <label class="relative inline-block w-[46px] h-6 flex-shrink-0">
+                        <input type="checkbox" class="opacity-0 w-0 h-0 peer"
+                               data-stage="${stage}"
+                               ${isEnabled ? 'checked' : ''}
+                               ${isLockedByRole ? 'disabled' : ''}
+                               onchange="updateSelectedCounter()">
+                        <span class="absolute inset-0 bg-[#ccc] peer-checked:bg-[#0B0B0B] rounded-full cursor-pointer transition-colors duration-300 peer-disabled:cursor-not-allowed peer-disabled:opacity-60 before:content-[''] before:absolute before:h-[18px] before:w-[18px] before:left-[3px] before:bottom-[3px] before:bg-white before:rounded-full before:transition-transform before:duration-300 peer-checked:before:translate-x-[20px]"></span>
+                    </label>
+                `;
+                stagesList.appendChild(stageItem);
+            });
+
+            updateSelectedCounter();
         }
 
         function closeModal() {
-            document.getElementById('permissionsModal').classList.remove('show');
+            const modal = document.getElementById('permissionsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         function selectAll() {
-            document.querySelectorAll('.stage-permission-item input[type="checkbox"]').forEach(cb => {
+            document.querySelectorAll('.stage-permission-item input[type="checkbox"]:not(:disabled)').forEach(cb => {
                 cb.checked = true;
             });
+            updateSelectedCounter();
         }
 
         function deselectAll() {
-            document.querySelectorAll('.stage-permission-item input[type="checkbox"]').forEach(cb => {
+            document.querySelectorAll('.stage-permission-item input[type="checkbox"]:not(:disabled)').forEach(cb => {
                 cb.checked = false;
             });
+            updateSelectedCounter();
         }
 
         function selectFirstHalf() {
             const checkboxes = document.querySelectorAll('.stage-permission-item input[type="checkbox"]');
             checkboxes.forEach((cb, index) => {
-                cb.checked = index < 9;
+                if (!cb.disabled) cb.checked = index < 9;
             });
+            updateSelectedCounter();
         }
 
         function selectLastHalf() {
             const checkboxes = document.querySelectorAll('.stage-permission-item input[type="checkbox"]');
             checkboxes.forEach((cb, index) => {
-                cb.checked = index >= 9;
+                if (!cb.disabled) cb.checked = index >= 9;
             });
+            updateSelectedCounter();
         }
 
         async function savePermissions() {
             const checkboxes = document.querySelectorAll('.stage-permission-item input[type="checkbox"]:checked');
             const enabledStages = Array.from(checkboxes).map(cb => cb.dataset.stage);
+
+            const btn = document.getElementById('saveBtn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
             try {
                 const response = await fetch('<?= BASE_URL ?>save-stage-permissions', {
@@ -783,36 +497,44 @@ while ($row = $roleStagesResult->fetch_assoc()) {
             } catch (error) {
                 console.error('Error:', error);
                 showToast('An error occurred', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             }
         }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
-            const icon = toast.querySelector('i');
-            
+            const icon = document.getElementById('toastIcon');
+
             toastMessage.textContent = message;
-            toast.className = 'toast show ' + type;
-            
+            toast.classList.remove('border-emerald-500', 'border-red-500');
+
             if (type === 'error') {
-                icon.className = 'fas fa-exclamation-circle';
-                icon.style.color = '#ef4444';
+                icon.className = 'fas fa-exclamation-circle text-xl text-red-500';
+                toast.classList.add('border-red-500');
             } else {
-                icon.className = 'fas fa-check-circle';
-                icon.style.color = '#10b981';
+                icon.className = 'fas fa-check-circle text-xl text-emerald-500';
+                toast.classList.add('border-emerald-500');
             }
-            
+
+            toast.classList.remove('hidden');
+            toast.classList.add('flex', 'show');
+
             setTimeout(() => {
-                toast.classList.remove('show');
+                toast.classList.add('hidden');
+                toast.classList.remove('flex', 'show');
             }, 3000);
         }
 
         // Close modal when clicking outside
-        document.getElementById('permissionsModal').addEventListener('click', function(e) {
+        document.getElementById('permissionsModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeModal();
             }
         });
     </script>
 </body>
+
 </html>

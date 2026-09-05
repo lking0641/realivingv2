@@ -1316,6 +1316,90 @@ include $includes ['online_status'];
                   onchange="previewSignature(this)">
               </div>
 
+              <!-- Team / Digital Business Card -->
+              <div class="mb-6 border-2 border-gray-200 rounded-xl p-4">
+                <div class="flex items-center justify-between mb-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Show me on team card</label>
+                    <p class="text-xs text-gray-400 mt-1">Appears on the website's "Meet the Team" section</p>
+                  </div>
+                  <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="settings-show-card" name="show_team_card" value="1" class="sr-only peer">
+                    <div class="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-500 transition-colors"></div>
+                    <div class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-5"></div>
+                  </label>
+                </div>
+
+                <div class="mb-3">
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Position <span class="text-gray-400 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="settings-position" name="position" placeholder="e.g. Lead Interior Designer"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                    onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#e5e7eb'">
+                </div>
+
+                <div class="mb-3">
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Contact Number <span class="text-gray-400 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="settings-contact-number" name="contact_number" placeholder="0917 000 0000"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                    onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#e5e7eb'">
+                </div>
+
+                <div class="mb-3">
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Gmail <span class="text-gray-400 normal-case font-normal">(optional, can differ from login email)</span></label>
+                  <input type="email" id="settings-social-gmail" name="social_gmail" placeholder="name@gmail.com"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                    onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#e5e7eb'">
+                </div>
+
+                <div class="mb-3">
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">WeChat ID <span class="text-gray-400 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="settings-social-wechat" name="social_wechat" placeholder="WeChat ID"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                    onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#e5e7eb'">
+                </div>
+
+                <div class="mb-3">
+                  <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Viber <span class="text-gray-400 normal-case font-normal">(optional)</span></label>
+                  <input type="text" id="settings-social-viber" name="social_viber" placeholder="0917 000 0000"
+                    class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none transition-all"
+                    onfocus="this.style.borderColor='#3B82F6'" onblur="this.style.borderColor='#e5e7eb'">
+                </div>
+
+                <!-- WeChat: ID + its own QR -->
+                <div>
+                  <div class="flex items-center gap-4 mb-2">
+                    <img id="wechat-qr-preview" src="" class="w-16 h-16 rounded-lg object-cover border-2 border-gray-200 hidden">
+                    <div id="wechat-qr-preview-fallback" class="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <i class="ri-qr-code-line text-2xl text-gray-400"></i>
+                    </div>
+                    <label for="wechat-qr-upload" class="cursor-pointer text-xs font-bold px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
+                      Upload WeChat QR
+                    </label>
+                    <input type="file" id="wechat-qr-upload" name="wechat_qr_image" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="previewPlatformQr(this, 'wechat')">
+                    <button type="button" id="wechat-qr-remove" onclick="removePlatformQr('wechat')" class="hidden text-xs font-bold px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Viber: number + its own QR -->
+                <div>
+                  <div class="flex items-center gap-4 mb-2">
+                    <img id="viber-qr-preview" src="" class="w-16 h-16 rounded-lg object-cover border-2 border-gray-200 hidden">
+                    <div id="viber-qr-preview-fallback" class="w-16 h-16 rounded-lg bg-gray-100 flex items-center justify-center">
+                      <i class="ri-qr-code-line text-2xl text-gray-400"></i>
+                    </div>
+                    <label for="viber-qr-upload" class="cursor-pointer text-xs font-bold px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
+                      Upload Viber QR
+                    </label>
+                    <input type="file" id="viber-qr-upload" name="viber_qr_image" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="previewPlatformQr(this, 'viber')">
+                    <button type="button" id="viber-qr-remove" onclick="removePlatformQr('viber')" class="hidden text-xs font-bold px-3 py-2 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <!-- Google Account Link -->
               <div class="mb-6">
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Google Sign-In</label>
@@ -1841,6 +1925,43 @@ include $includes ['online_status'];
         reader.readAsDataURL(file);
       }
 
+            function previewPlatformQr(input, platform) {
+        const file = input.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById(platform + '-qr-preview').src = e.target.result;
+          document.getElementById(platform + '-qr-preview').classList.remove('hidden');
+          document.getElementById(platform + '-qr-preview-fallback').classList.add('hidden');
+          document.getElementById(platform + '-qr-remove').classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function removePlatformQr(platform) {
+        if (!confirm('Remove this QR code image?')) return;
+
+        fetch('<?php echo BASE_URL ?>delete-team-qr', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'platform=' + encodeURIComponent(platform)
+        })
+          .then(r => r.json())
+          .then(data => {
+            if (data.success) {
+              document.getElementById(platform + '-qr-preview').src = '';
+              document.getElementById(platform + '-qr-preview').classList.add('hidden');
+              document.getElementById(platform + '-qr-preview-fallback').classList.remove('hidden');
+              document.getElementById(platform + '-qr-remove').classList.add('hidden');
+              document.getElementById(platform + '-qr-upload').value = '';
+              showSettingsAlert(platform === 'wechat' ? 'WeChat QR removed.' : 'Viber QR removed.', 'success');
+            } else {
+              showSettingsAlert(data.message || 'Failed to remove QR code.', 'error');
+            }
+          })
+          .catch(() => showSettingsAlert('Server error. Please try again.', 'error'));
+      }
+
       function previewAvatar(input) {
         const file = input.files[0];
         if (!file) return;
@@ -1871,6 +1992,29 @@ include $includes ['online_status'];
               if (data.e_signature) {
                 document.getElementById('sig-preview-img').src = data.e_signature;
                 document.getElementById('sig-preview-wrap').classList.remove('hidden');
+              }
+
+              document.getElementById('settings-show-card').checked = !!Number(data.show_team_card);
+              document.getElementById('settings-position').value = data.position || '';
+              document.getElementById('settings-contact-number').value = data.contact_number || '';
+              document.getElementById('settings-social-gmail').value = data.social_gmail || '';
+              document.getElementById('settings-social-wechat').value = data.social_wechat || '';
+              document.getElementById('settings-social-viber').value = data.social_viber || '';
+              if (data.wechat_qr_image) {
+                document.getElementById('wechat-qr-preview').src = data.wechat_qr_image;
+                document.getElementById('wechat-qr-preview').classList.remove('hidden');
+                document.getElementById('wechat-qr-preview-fallback').classList.add('hidden');
+                document.getElementById('wechat-qr-remove').classList.remove('hidden');
+              } else {
+                document.getElementById('wechat-qr-remove').classList.add('hidden');
+              }
+              if (data.viber_qr_image) {
+                document.getElementById('viber-qr-preview').src = data.viber_qr_image;
+                document.getElementById('viber-qr-preview').classList.remove('hidden');
+                document.getElementById('viber-qr-preview-fallback').classList.add('hidden');
+                document.getElementById('viber-qr-remove').classList.remove('hidden');
+              } else {
+                document.getElementById('viber-qr-remove').classList.add('hidden');
               }
 
               cachedGooglePicture = data.google_picture || null;
@@ -2046,28 +2190,10 @@ include $includes ['online_status'];
               }
 
               // Update avatar everywhere — modal preview + header/mobile slots — without a page refresh.
-              // Uses the server-resolved avatar_url so this works whether a new file was
-              // uploaded OR the person just switched between Google/uploaded photo.
-              if (data.avatar_url) {
-                const bustedUrl = data.avatar_url + '?t=' + Date.now();
-
-                document.getElementById('avatar-preview').src = bustedUrl;
-                document.getElementById('avatar-preview').classList.remove('hidden');
-                document.getElementById('avatar-preview-fallback').classList.add('hidden');
-                document.getElementById('avatar-upload').value = '';
-
-                document.querySelectorAll('.js-avatar-slot').forEach(slot => {
-                  const originalContent = slot.innerHTML;
-                  const img = document.createElement('img');
-                  img.src = bustedUrl;
-                  img.className = 'w-full h-full object-cover rounded-full';
-                  img.onerror = function () {
-                    slot.innerHTML = originalContent;
-                  };
-                  slot.innerHTML = '';
-                  slot.appendChild(img);
-                });
-              }
+              // Re-fetch from the server instead of guessing the URL client-side, so we always
+              // show whatever the DB actually resolved to (avoids the "blank until refresh" bug).
+              document.getElementById('avatar-upload').value = '';
+              refreshAvatarEverywhere();
             } else {
               showSettingsAlert(data.message || 'Update failed.', 'error');
             }

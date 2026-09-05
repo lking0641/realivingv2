@@ -106,6 +106,71 @@ if (!empty($_FILES['profile_picture']['tmp_name'])) {
     $profilePicturePath = $picRelativePath; // this is what gets saved to the DB below
 }
 
+// QR code image upload (optional, image OR text — not both required)
+$qrImagePath = null;
+// Reusable helper for uploading a platform-specific QR image
+function handlePlatformQrUpload($fieldName, $id, $conn, $dbColumn) {
+    if (empty($_FILES[$fieldName]['tmp_name'])) return null;
+
+    $file = $_FILES[$fieldName];
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $mime = finfo_file($finfo, $file['tmp_name']);
+    finfo_close($finfo);
+
+    $allowedMimes = ['image/png', 'image/jpeg', 'image/webp'];
+    if (!in_array($mime, $allowedMimes)) {
+        echo json_encode(['success' => false, 'message' => ucfirst($fieldName) . ' must be PNG, JPG, or WEBP.']);
+        exit;
+    }
+    if ($file['size'] > 2 * 1024 * 1024) {
+        echo json_encode(['success' => false, 'message' => ucfirst($fieldName) . ' must be under 2MB.']);
+        exit;
+    }
+
+    $uploadDir = ROOT_PATH . 'uploads/qrcodes/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+
+    $ext = $mime === 'image/png' ? 'png' : ($mime === 'image/webp' ? 'webp' : 'jpg');
+    $relativePath = 'uploads/qrcodes/' . $fieldName . '_' . $id . '_' . time() . '.' . $ext;
+    $absolutePath = ROOT_PATH . $relativePath;
+
+    $oldStmt = $conn->prepare("SELECT $dbColumn FROM account WHERE id = ?");
+    $oldStmt->bind_param('i', $id);
+    $oldStmt->execute();
+    $oldRow = $oldStmt->get_result()->fetch_assoc();
+    if (!empty($oldRow[$dbColumn])) {
+        $oldPath = ROOT_PATH . $oldRow[$dbColumn];
+        if (file_exists($oldPath)) unlink($oldPath);
+    }
+    $oldStmt->close();
+
+    if (!move_uploaded_file($file['tmp_name'], $absolutePath)) {
+        echo json_encode(['success' => false, 'message' => 'Failed to upload ' . $fieldName . '.']);
+        exit;
+    }
+    return $relativePath;
+}
+
+$wechatQrPath = handlePlatformQrUpload('wechat_qr_image', $id, $conn, 'wechat_qr_image');
+$viberQrPath  = handlePlatformQrUpload('viber_qr_image', $id, $conn, 'viber_qr_image');
+
+// Team card fields — all optional, empty string is fine
+$showTeamCard  = isset($_POST['show_team_card']) ? 1 : 0;
+$position      = trim($_POST['position'] ?? '');
+$contactNumber = trim($_POST['contact_number'] ?? '');
+$socialGmail   = trim($_POST['social_gmail'] ?? '');
+$socialWechat  = trim($_POST['social_wechat'] ?? '');
+$socialViber   = trim($_POST['social_viber'] ?? '');
+
+// Team card fields — all optional, empty string is fine
+$showTeamCard  = isset($_POST['show_team_card']) ? 1 : 0;
+$position      = trim($_POST['position'] ?? '');
+$contactNumber = trim($_POST['contact_number'] ?? '');
+$socialGmail   = trim($_POST['social_gmail'] ?? '');
+$socialWechat  = trim($_POST['social_wechat'] ?? '');
+$socialViber   = trim($_POST['social_viber'] ?? '');
+$qrCodeText    = trim($_POST['qr_code_text'] ?? '');
+
 // Which avatar the user wants to display: 'google' or 'custom'
 $avatarSource = null;
 if (isset($_POST['avatar_source']) && in_array($_POST['avatar_source'], ['google', 'custom'])) {
@@ -185,6 +250,42 @@ if ($avatarSource) {
     $types   .= 's';
 }
 
+$fields[] = 'show_team_card = ?';
+$params[] = $showTeamCard;
+$types   .= 'i';
+
+$fields[] = 'position = ?';
+$params[] = $position;
+$types   .= 's';
+
+$fields[] = 'contact_number = ?';
+$params[] = $contactNumber;
+$types   .= 's';
+
+$fields[] = 'social_gmail = ?';
+$params[] = $socialGmail;
+$types   .= 's';
+
+$fields[] = 'social_wechat = ?';
+$params[] = $socialWechat;
+$types   .= 's';
+
+$fields[] = 'social_viber = ?';
+$params[] = $socialViber;
+$types   .= 's';
+
+if ($wechatQrPath) {
+    $fields[] = 'wechat_qr_image = ?';
+    $params[] = $wechatQrPath;
+    $types   .= 's';
+}
+
+if ($viberQrPath) {
+    $fields[] = 'viber_qr_image = ?';
+    $params[] = $viberQrPath;
+    $types   .= 's';
+}
+
 $params[] = $id;
 $types   .= 'i';
 
@@ -199,6 +300,12 @@ if ($stmt->execute()) {
     }
     if ($profilePicturePath) {
         $responseData['profile_picture'] = BASE_URL . $profilePicturePath;
+    }
+    if ($wechatQrPath) {
+        $responseData['wechat_qr_image'] = BASE_URL . $wechatQrPath;
+    }
+    if ($viberQrPath) {
+        $responseData['viber_qr_image'] = BASE_URL . $viberQrPath;
     }
 
     // Re-fetch the freshest avatar state so the response always reflects

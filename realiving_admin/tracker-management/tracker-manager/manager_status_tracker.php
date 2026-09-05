@@ -364,7 +364,6 @@ function formatAmount($amount)
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -372,648 +371,138 @@ function formatAmount($amount)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executive Status Tracker</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
-
-        .page-header {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .page-header h1 {
-            font-size: 36px;
-            color: #1a202c;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .page-header h1 i {
-            color: #8a5a44;
-        }
-
-        .page-header p {
-            color: #718096;
-            font-size: 16px;
-        }
-
-        .user-info-badge {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        /* Executive Dashboard Stats */
-        .executive-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 4px;
-            background: linear-gradient(90deg, #3b1f0f 0%, #8a5a44 100%);
-        }
-
-        .stat-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin-bottom: 15px;
-        }
-
-        .stat-icon.purple {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-        }
-
-        .stat-icon.green {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-        }
-
-        .stat-icon.blue {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-        }
-
-        .stat-icon.orange {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-        }
-
-        .stat-value {
-            font-size: 32px;
-            font-weight: 700;
-            color: #1a202c;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 13px;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 600;
-        }
-
-        .stat-subtext {
-            font-size: 12px;
-            color: #a0aec0;
-            margin-top: 8px;
-        }
-
-        /* Filter Section */
-        .filter-section {
-            background: white;
-            padding: 25px;
-            border-radius: 16px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .filter-tabs {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .filter-tab {
-            padding: 12px 30px;
-            border: 2px solid #e2e8f0;
-            border-radius: 25px;
-            background: white;
-            color: #4a5568;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .filter-tab:hover {
-            border-color: #8a5a44;
-            color: #8a5a44;
-            transform: translateY(-2px);
-        }
-
-        .filter-tab.active {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            border-color: #8a5a44;
-            color: white;
-        }
-
-        /* Projects Grid */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-            gap: 25px;
-        }
-
-        .project-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .project-card-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 25px;
-            color: white;
-        }
-
-        .project-card-header h3 {
-            font-size: 20px;
-            margin-bottom: 8px;
-        }
-
-        .project-card-header .reference {
-            font-size: 13px;
-            opacity: 0.9;
-            font-family: monospace;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .project-card-body {
-            padding: 25px;
-        }
-
-        .project-info-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #f7fafc;
-        }
-
-        .project-info-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .info-label {
-            font-size: 13px;
-            color: #718096;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .info-value {
-            font-size: 15px;
-            color: #1a202c;
-            font-weight: 600;
-        }
-
-        /* Progress Bars */
-        .progress-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #f7fafc;
-        }
-
-        .progress-item {
-            margin-bottom: 15px;
-        }
-
-        .progress-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .progress-title {
-            font-size: 12px;
-            color: #4a5568;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .progress-percentage {
-            font-size: 14px;
-            font-weight: 700;
-            color: #8a5a44;
-        }
-
-        .progress-bar-container {
-            height: 8px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b1f0f 0%, #8a5a44 100%);
-            transition: width 0.5s ease;
-            border-radius: 10px;
-        }
-
-        .progress-bar-fill.green {
-            background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-        }
-
-        /* Status Badges */
-        .status-badge {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-badge.new {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-badge.old {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .business-type-badge {
-            display: inline-block;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .business-type-badge.project {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-        }
-
-        .business-type-badge.non-project {
-            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
-            color: white;
-        }
-
-        /* Financial Summary */
-        .financial-summary {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #f7fafc;
-        }
-
-        .financial-item {
-            text-align: center;
-        }
-
-        .financial-label {
-            font-size: 10px;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 5px;
-        }
-
-        .financial-value {
-            font-size: 16px;
-            font-weight: 700;
-        }
-
-        .financial-value.total {
-            color: #3b82f6;
-        }
-
-        .financial-value.collected {
-            color: #10b981;
-        }
-
-        .financial-value.remaining {
-            color: #f59e0b;
-        }
-
-        .btn-view-details {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-view-details:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(138, 90, 68, 0.4);
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        }
-
-        .empty-state i {
-            font-size: 80px;
-            color: #cbd5e0;
-            margin-bottom: 20px;
-        }
-
-        .empty-state h3 {
-            font-size: 24px;
-            color: #4a5568;
-            margin-bottom: 10px;
-        }
-
-        .empty-state p {
-            color: #a0aec0;
-            font-size: 16px;
-        }
-
-        /* Toggle buttons */
-        .toggle-btn {
-            background: white;
-            border: 2px solid #e2e8f0;
-            padding: 10px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            color: #718096;
-            font-size: 16px;
-            transition: all 0.2s;
-        }
-
-        .toggle-btn.active {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            border-color: #3b1f0f;
-            color: white;
-        }
-
-        /* List view overrides */
-        .projects-grid.list-view {
-            display: flex !important;
-            flex-direction: column !important;
-        }
-
-        .projects-grid.list-view .project-card {
-            display: flex !important;
-            flex-direction: row !important;
-            align-items: stretch;
-        }
-
-        .projects-grid.list-view .project-card-header {
-            min-width: 300px;
-            max-width: 300px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow: visible;
-        }
-
-        .projects-grid.list-view .project-card-body {
-            flex: 1;
-            display: flex !important;
-            flex-direction: row !important;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px 20px;
-            padding: 15px 20px;
-        }
-
-        .projects-grid.list-view .project-card-body .project-info-row {
-            flex: 1 1 180px;
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .projects-grid.list-view .financial-summary {
-            flex: 1 1 250px;
-            border-top: none;
-            margin-top: 0;
-            padding-top: 0;
-        }
-
-        .projects-grid.list-view .progress-section {
-            flex: 1 1 300px;
-            border-top: none;
-            margin-top: 0;
-            padding-top: 0;
-        }
-
-        .projects-grid.list-view .btn-view-details {
-            min-width: 160px;
-            max-width: 160px;
-            align-self: center;
-            margin-top: 0;
-        }
-
-        /* Fix finished badge overflow in list view */
-        .projects-grid.list-view .project-card-header h3 {
-            font-size: 15px;
-            word-break: break-word;
-        }
-
-        .projects-grid.list-view .project-card-header .reference {
-            font-size: 11px;
-            word-break: break-all;
-        }
-
-        .projects-grid.list-view .project-card-header>div {
-            display: flex;
-            align-items: flex-start;
-            gap: 8px;
-            flex-wrap: nowrap;
-        }
-
-        .projects-grid.list-view .project-card-header>div>div:first-child {
-            min-width: 0;
-            flex: 1;
-            overflow: hidden;
-        }
-
-        .projects-grid.list-view .project-card-header>div>div:last-child {
-            flex-shrink: 0;
-            white-space: nowrap;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!--
+        This page now uses Tailwind CSS utility classes only (matching the design
+        system of all_clients_tracker_list.php: --adm-ink:#0B0B0B, --adm-bg:#F5F5F5,
+        --adm-surface:#FFFFFF, --adm-soft:#6B6B6B, --adm-muted:#9A9A9A, --adm-line:#E2E2E2).
+        Make sure this file's path is included in your tailwind.config.js "content" array
+        so the JIT compiler picks up the classes below, including the ones referenced
+        only inside the <script> block (setTab/setView toggle literal class strings).
+    -->
 </head>
 
-<body>
-    <div class="container">
-        <div class="page-header">
-            <h1>
+<body class="bg-[#F5F5F5] font-['Inter',sans-serif] text-[#0B0B0B]">
+    <div class="max-w-[1600px] mx-auto py-8 px-5">
+
+        <!-- Page header -->
+        <div class="bg-[#0B0B0B] p-10 rounded-2xl text-white mb-8 relative overflow-hidden">
+            <h1 class="text-[32px] font-bold mb-2.5 flex items-center gap-3.5 relative z-10">
                 <i class="fas fa-chart-line"></i>
                 Executive Status Tracker
             </h1>
-            <p>Comprehensive overview of all projects and their progress</p>
+            <p class="opacity-90 text-base relative z-10">Comprehensive overview of all projects and their progress
+            </p>
 
-            <div class="user-info-badge">
+            <div
+                class="inline-flex items-center gap-2.5 bg-white/[0.08] border border-white/[0.18] px-5 py-2.5 rounded-full mt-4 relative z-10">
                 <i class="fas fa-user-shield"></i>
                 <span><?= htmlspecialchars($userInfo['full_name']) ?></span>
-                <span style="opacity: 0.7;">•</span>
-                <span style="text-transform: capitalize;"><?= str_replace('_', ' ', $userInfo['role']) ?></span>
+                <span class="opacity-70">•</span>
+                <span class="capitalize"><?= str_replace('_', ' ', $userInfo['role']) ?></span>
             </div>
         </div>
 
         <!-- Executive Statistics -->
-        <div class="executive-stats" id="statsRow">
-            <div class="stat-card">
-                <div class="stat-icon purple"><i class="fas fa-briefcase"></i></div>
-                <div class="stat-value" id="stat-total"><?= $total_clients ?></div>
-                <div class="stat-label">Total Projects</div>
-                <div class="stat-subtext" id="stat-breakdown">
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-5 mb-8" id="statsRow">
+            <div
+                class="bg-white p-6 rounded-xl border border-[#E2E2E2] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.25)]">
+                <div class="w-[50px] h-[50px] bg-[#0B0B0B] rounded-xl flex items-center justify-center text-white text-2xl mb-4">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <div class="text-[28px] font-bold text-[#0B0B0B]" id="stat-total"><?= $total_clients ?></div>
+                <div class="text-xs text-[#666] uppercase tracking-wide">Total Projects</div>
+                <div class="text-xs text-[#9A9A9A] mt-2" id="stat-breakdown">
                     <?= $project_count ?> Project • <?= $non_project_count ?> Individual
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon blue"><i class="fas fa-dollar-sign"></i></div>
-                <div class="stat-value" id="stat-value"><?= formatAmount($total_project_value) ?></div>
-                <div class="stat-label">Total Project Value</div>
-                <div class="stat-subtext">Across all active projects</div>
+
+            <div
+                class="bg-white p-6 rounded-xl border border-[#E2E2E2] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.25)]">
+                <div class="w-[50px] h-[50px] bg-[#0B0B0B] rounded-xl flex items-center justify-center text-white text-2xl mb-4">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="text-[28px] font-bold text-[#0B0B0B]" id="stat-value"><?= formatAmount($total_project_value) ?></div>
+                <div class="text-xs text-[#666] uppercase tracking-wide">Total Project Value</div>
+                <div class="text-xs text-[#9A9A9A] mt-2">Across all active projects</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-money-bill-wave"></i></div>
-                <div class="stat-value" id="stat-collected"><?= formatAmount($total_collected) ?></div>
-                <div class="stat-label">Total Collected</div>
-                <div class="stat-subtext" id="stat-collected-pct">
+
+            <div
+                class="bg-white p-6 rounded-xl border border-[#E2E2E2] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.25)]">
+                <div class="w-[50px] h-[50px] bg-[#0B0B0B] rounded-xl flex items-center justify-center text-white text-2xl mb-4">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="text-[28px] font-bold text-[#0B0B0B]" id="stat-collected"><?= formatAmount($total_collected) ?></div>
+                <div class="text-xs text-[#666] uppercase tracking-wide">Total Collected</div>
+                <div class="text-xs text-[#9A9A9A] mt-2" id="stat-collected-pct">
                     <?= $total_project_value > 0 ? number_format(($total_collected / $total_project_value) * 100, 1) : 0 ?>%
                     of total value
                 </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon orange"><i class="fas fa-hourglass-half"></i></div>
-                <div class="stat-value" id="stat-balance"><?= formatAmount($total_project_value - $total_collected) ?>
+
+            <div
+                class="bg-white p-6 rounded-xl border border-[#E2E2E2] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.25)]">
+                <div class="w-[50px] h-[50px] bg-[#0B0B0B] rounded-xl flex items-center justify-center text-white text-2xl mb-4">
+                    <i class="fas fa-hourglass-half"></i>
                 </div>
-                <div class="stat-label">Outstanding Balance</div>
-                <div class="stat-subtext">Pending collections</div>
+                <div class="text-[28px] font-bold text-[#0B0B0B]" id="stat-balance">
+                    <?= formatAmount($total_project_value - $total_collected) ?>
+                </div>
+                <div class="text-xs text-[#666] uppercase tracking-wide">Outstanding Balance</div>
+                <div class="text-xs text-[#9A9A9A] mt-2">Pending collections</div>
             </div>
-            <div class="stat-card" style="border-top-color:#10b981 !important;">
-                <div class="stat-icon green"><i class="fas fa-check-double"></i></div>
-                <div class="stat-value" style="color:#065f46;"><?= count($finishedClients) ?></div>
-                <div class="stat-label">Finished Projects</div>
-                <div class="stat-subtext">All stages completed</div>
+
+            <div
+                class="bg-white p-6 rounded-xl border border-[#E2E2E2] transition-all hover:-translate-y-0.5 hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.25)]">
+                <div class="w-[50px] h-[50px] bg-emerald-700 rounded-xl flex items-center justify-center text-white text-2xl mb-4">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <div class="text-[28px] font-bold text-emerald-800"><?= count($finishedClients) ?></div>
+                <div class="text-xs text-[#666] uppercase tracking-wide">Finished Projects</div>
+                <div class="text-xs text-[#9A9A9A] mt-2">All stages completed</div>
             </div>
         </div>
 
         <!-- Filter Tabs -->
-        <div class="filter-section">
+        <div class="bg-white p-5 rounded-xl mb-5 border border-[#E2E2E2]">
             <!-- Active / Finished tabs -->
-            <div style="display:flex; gap:10px; margin-bottom:18px; flex-wrap:wrap; align-items:center;">
+            <div class="flex gap-2.5 mb-4 flex-wrap items-center">
                 <button id="tabActive" onclick="setTab('active')"
-                    style="padding:10px 24px; border-radius:25px; border:2px solid #3b1f0f; background:linear-gradient(135deg,#3b1f0f,#8a5a44); color:white; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all .2s;">
+                    class="px-6 py-2.5 rounded-full border-2 border-[#0B0B0B] bg-[#0B0B0B] text-white font-bold text-[13px] cursor-pointer inline-flex items-center gap-2 transition-all">
                     <i class="fas fa-tasks"></i> Active
-                    <span
-                        style="background:rgba(255,255,255,.25); border-radius:12px; padding:1px 8px; font-size:11px;"><?= count($clients) ?></span>
+                    <span class="bg-white/20 rounded-full px-2 py-0.5 text-[11px]"><?= count($clients) ?></span>
                 </button>
                 <button id="tabFinished" onclick="setTab('finished')"
-                    style="padding:10px 24px; border-radius:25px; border:2px solid #e2e8f0; background:white; color:#4a5568; font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; transition:all .2s;">
+                    class="px-6 py-2.5 rounded-full border-2 border-[#E2E2E2] bg-white text-[#6B6B6B] font-bold text-[13px] cursor-pointer inline-flex items-center gap-2 transition-all">
                     <i class="fas fa-check-double"></i> Finished
-                    <span
-                        style="background:#e2e8f0; border-radius:12px; padding:1px 8px; font-size:11px;"><?= count($finishedClients) ?></span>
+                    <span class="bg-[#E2E2E2] rounded-full px-2 py-0.5 text-[11px]"><?= count($finishedClients) ?></span>
                 </button>
-                <div style="width:1px; height:28px; background:#e2e8f0; margin:0 6px;"></div>
-                <a href="?business_type=all" class="filter-tab <?= $business_type_filter === 'all' ? 'active' : '' ?>">
+                <div class="w-px h-7 bg-[#E2E2E2] mx-1.5"></div>
+                <a href="?business_type=all"
+                    class="px-6 py-2.5 rounded-full border-2 font-semibold text-sm inline-flex items-center gap-2 transition-all <?= $business_type_filter === 'all' ? 'bg-[#0B0B0B] border-[#0B0B0B] text-white' : 'bg-white border-[#E2E2E2] text-[#4a5568] hover:border-[#0B0B0B] hover:text-[#0B0B0B] hover:-translate-y-0.5' ?>">
                     <i class="fas fa-globe"></i> All
                 </a>
                 <a href="?business_type=Project"
-                    class="filter-tab <?= $business_type_filter === 'Project' ? 'active' : '' ?>">
+                    class="px-6 py-2.5 rounded-full border-2 font-semibold text-sm inline-flex items-center gap-2 transition-all <?= $business_type_filter === 'Project' ? 'bg-[#0B0B0B] border-[#0B0B0B] text-white' : 'bg-white border-[#E2E2E2] text-[#4a5568] hover:border-[#0B0B0B] hover:text-[#0B0B0B] hover:-translate-y-0.5' ?>">
                     <i class="fas fa-building"></i> Project
                 </a>
                 <a href="?business_type=Non-Project"
-                    class="filter-tab <?= $business_type_filter === 'Non-Project' ? 'active' : '' ?>">
+                    class="px-6 py-2.5 rounded-full border-2 font-semibold text-sm inline-flex items-center gap-2 transition-all <?= $business_type_filter === 'Non-Project' ? 'bg-[#0B0B0B] border-[#0B0B0B] text-white' : 'bg-white border-[#E2E2E2] text-[#4a5568] hover:border-[#0B0B0B] hover:text-[#0B0B0B] hover:-translate-y-0.5' ?>">
                     <i class="fas fa-home"></i> Individual
                 </a>
             </div>
-            <div style="display: flex; justify-content: flex-end; gap: 10px;">
-                <button class="toggle-btn" id="gridBtn" onclick="setView('grid')" title="Grid View">
+            <div class="flex justify-end gap-2.5">
+                <button
+                    class="toggle-btn bg-white border-2 border-[#E2E2E2] px-3.5 py-2.5 rounded-lg cursor-pointer text-[#6B6B6B] text-base transition-all"
+                    id="gridBtn" onclick="setView('grid')" title="Grid View">
                     <i class="fas fa-th"></i>
                 </button>
-                <button class="toggle-btn active" id="listBtn" onclick="setView('list')" title="List View">
+                <button
+                    class="toggle-btn active bg-[#0B0B0B] border-2 border-[#0B0B0B] px-3.5 py-2.5 rounded-lg cursor-pointer text-white text-base transition-all"
+                    id="listBtn" onclick="setView('list')" title="List View">
                     <i class="fas fa-list"></i>
                 </button>
             </div>
@@ -1025,16 +514,16 @@ function formatAmount($amount)
             if ($totalPending > 0):
                 ?>
                 <div
-                    style="background:#fef3c7; border:2px solid #f59e0b; border-radius:16px; padding:16px 22px; margin-bottom:24px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
-                    <i class="fas fa-bell" style="color:#d97706; font-size:22px; flex-shrink:0;"></i>
+                    class="bg-amber-50 border-2 border-amber-500 rounded-xl px-6 py-4 mb-6 flex items-center gap-3.5 flex-wrap">
+                    <i class="fas fa-bell text-amber-600 text-[22px] flex-shrink-0"></i>
                     <div>
-                        <div style="font-weight:700; font-size:15px; color:#92400e;">
-                            You have <?= $totalPending ?> pending approval<?= $totalPending > 1 ? 's' : '' ?> across your
-                            projects
+                        <div class="font-bold text-[15px] text-amber-800">
+                            You have <?= $totalPending ?> pending approval<?= $totalPending > 1 ? 's' : '' ?> across
+                            your projects
                         </div>
-                        <div style="font-size:12px; color:#b45309; margin-top:3px;">
-                            Look for the <strong>bell badge</strong> on each project card below to find which ones need your
-                            attention.
+                        <div class="text-xs text-amber-700 mt-1">
+                            Look for the <strong>bell badge</strong> on each project card below to find which ones
+                            need your attention.
                         </div>
                     </div>
                 </div>
@@ -1042,120 +531,124 @@ function formatAmount($amount)
 
             <!-- Projects Grid -->
             <?php if (empty($clients)): ?>
-                <div class="empty-state">
-                    <i class="fas fa-folder-open"></i>
-                    <h3>No Projects Found</h3>
-                    <p>No projects match the selected filter criteria.</p>
+                <div class="text-center py-16 px-5 bg-white rounded-xl border border-[#E2E2E2]">
+                    <i class="fas fa-folder-open text-[64px] text-[#d1d5db] mb-5"></i>
+                    <h3 class="text-xl text-[#666] mb-2.5">No Projects Found</h3>
+                    <p class="text-[#999]">No projects match the selected filter criteria.</p>
                 </div>
             <?php else: ?>
-                <div class="projects-grid" id="projectsGrid">
+                <div class="clients-grid grid grid-cols-1 gap-5" id="projectsGrid">
                     <?php foreach ($clients as $client): ?>
-                        <div class="project-card"
+                        <div class="client-card bg-white rounded-xl overflow-hidden border-2 border-[#E2E2E2] transition-all cursor-pointer hover:-translate-y-1 hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.3)] hover:border-[#0B0B0B] flex flex-col"
                             onclick="window.location.href='<?= BASE_URL ?>manager-project-detail?client_id=<?= $client['id'] ?>'">
-                            <div class="project-card-header"
-                                style="<?= $client['pending_approvals'] > 0 ? 'background:linear-gradient(135deg,#92400e,#d97706);' : '' ?>">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
-                                    <div>
-                                        <h3><?= htmlspecialchars($client['clientname']) ?></h3>
-                                        <div class="reference">
+
+                            <div class="card-header p-5 text-white flex-shrink-0 <?= $client['pending_approvals'] > 0 ? 'bg-gradient-to-br from-amber-800 to-amber-600' : 'bg-[#0B0B0B]' ?>">
+                                <div class="flex justify-between items-start gap-2.5">
+                                    <div class="min-w-0 flex-1">
+                                        <h3 class="text-lg font-semibold truncate"><?= htmlspecialchars($client['clientname']) ?></h3>
+                                        <div class="text-xs opacity-90 font-mono flex items-center gap-1 mt-1">
                                             <i class="fas fa-hashtag"></i>
                                             <?= htmlspecialchars($client['reference_number']) ?>
                                         </div>
                                     </div>
                                     <?php if ($client['pending_approvals'] > 0): ?>
                                         <div
-                                            style="background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:4px 10px; display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; white-space:nowrap; flex-shrink:0;">
-                                            <i class="fas fa-bell" style="flex-shrink:0;"></i>
+                                            class="bg-black/20 border border-white/40 rounded-full px-2.5 py-1 inline-flex items-center gap-1 text-[11px] font-bold whitespace-nowrap flex-shrink-0">
+                                            <i class="fas fa-bell flex-shrink-0"></i>
                                             <span><?= $client['pending_approvals'] ?></span>
                                         </div>
                                     <?php endif; ?>
                                 </div>
                             </div>
 
-                            <div class="project-card-body">
-                                <div class="project-info-row">
-                                    <span class="info-label">Project Name</span>
-                                    <span class="info-value"><?= htmlspecialchars($client['nameproject']) ?></span>
+                            <div class="card-body p-5 flex flex-col gap-3">
+                                <div class="flex justify-between items-center pb-3 border-b border-[#f7fafc]">
+                                    <span class="text-[13px] text-[#718096] font-semibold uppercase tracking-wide">Project Name</span>
+                                    <span class="text-[15px] text-[#0B0B0B] font-semibold"><?= htmlspecialchars($client['nameproject']) ?></span>
                                 </div>
 
-                                <div class="project-info-row">
-                                    <span class="info-label">Type</span>
+                                <div class="flex justify-between items-center pb-3 border-b border-[#f7fafc]">
+                                    <span class="text-[13px] text-[#718096] font-semibold uppercase tracking-wide">Type</span>
                                     <span
-                                        class="business-type-badge <?= strtolower(str_replace('-', '-', $client['business_type'])) ?>">
+                                        class="px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide <?= $client['business_type'] === 'Non-Project' ? 'bg-pink-100 text-pink-700' : 'bg-[#0B0B0B] text-white' ?>">
                                         <?= $client['business_type'] === 'Non-Project' ? 'Individual' : htmlspecialchars($client['business_type']) ?>
                                     </span>
                                 </div>
 
-                                <div class="project-info-row">
-                                    <span class="info-label">Status</span>
-                                    <span class="status-badge <?= $client['status'] === 'New Client' ? 'new' : 'old' ?>">
+                                <div class="flex justify-between items-center pb-3 border-b border-[#f7fafc]">
+                                    <span class="text-[13px] text-[#718096] font-semibold uppercase tracking-wide">Status</span>
+                                    <span
+                                        class="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide <?= $client['status'] === 'New Client' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800' ?>">
                                         <?= htmlspecialchars($client['status']) ?>
                                     </span>
                                 </div>
 
-                                <div class="project-info-row">
-                                    <span class="info-label">Sale/Designer Representative</span>
-                                    <span class="info-value">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[13px] text-[#718096] font-semibold uppercase tracking-wide">Sale/Designer Rep.</span>
+                                    <span class="text-[15px] text-[#0B0B0B] font-semibold">
                                         <?= htmlspecialchars($client['admin_name'] ?? 'Unassigned') ?>
                                     </span>
                                 </div>
 
                                 <!-- Financial Summary -->
-                                <div class="financial-summary">
-                                    <div class="financial-item">
-                                        <div class="financial-label">Total Value</div>
-                                        <div class="financial-value total">
+                                <div class="grid grid-cols-3 gap-3.5 pt-3.5 border-t-2 border-[#f7fafc]">
+                                    <div class="text-center">
+                                        <div class="text-[10px] text-[#718096] uppercase tracking-wide mb-1">Total Value</div>
+                                        <div class="text-base font-bold text-blue-600">
                                             ₱<?= number_format($client['total_project_cost'] ?? 0, 0) ?>
                                         </div>
                                     </div>
-                                    <div class="financial-item">
-                                        <div class="financial-label">Collected</div>
-                                        <div class="financial-value collected">
+                                    <div class="text-center">
+                                        <div class="text-[10px] text-[#718096] uppercase tracking-wide mb-1">Collected</div>
+                                        <div class="text-base font-bold text-emerald-600">
                                             ₱<?= number_format($client['payment_progress']['total_paid_amount'] ?? 0, 0) ?>
                                         </div>
                                     </div>
-                                    <div class="financial-item">
-                                        <div class="financial-label">Balance</div>
-                                        <div class="financial-value remaining">
+                                    <div class="text-center">
+                                        <div class="text-[10px] text-[#718096] uppercase tracking-wide mb-1">Balance</div>
+                                        <div class="text-base font-bold text-amber-500">
                                             ₱<?= number_format($client['remaining_balance'] ?? 0, 0) ?>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Progress Tracking -->
-                                <div class="progress-section">
-                                    <div class="progress-item">
-                                        <div class="progress-header">
-                                            <span class="progress-title">
+                                <div class="pt-3.5 border-t-2 border-[#f7fafc] flex flex-col gap-3.5">
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-xs text-[#4a5568] font-semibold uppercase tracking-wide">
                                                 <i class="fas fa-tasks"></i> Project Completion
                                             </span>
-                                            <span class="progress-percentage">
+                                            <span class="text-sm font-bold text-[#0B0B0B]">
                                                 <?= number_format($client['completion_percentage'], 1) ?>%
                                             </span>
                                         </div>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar-fill"
+                                        <div class="h-2 bg-[#E2E2E2] rounded-full overflow-hidden">
+                                            <div class="h-full bg-[#0B0B0B] rounded-full transition-all"
                                                 style="width: <?= $client['completion_percentage'] ?>%"></div>
                                         </div>
                                     </div>
 
-                                    <div class="progress-item">
-                                        <div class="progress-header">
-                                            <span class="progress-title">
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-xs text-[#4a5568] font-semibold uppercase tracking-wide">
                                                 <i class="fas fa-money-check-alt"></i> Payment Progress
                                             </span>
-                                            <span class="progress-percentage">
+                                            <span class="text-sm font-bold text-emerald-600">
                                                 <?= number_format($client['payment_percentage'], 1) ?>%
                                             </span>
                                         </div>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar-fill green"
+                                        <div class="h-2 bg-[#E2E2E2] rounded-full overflow-hidden">
+                                            <div class="h-full bg-emerald-500 rounded-full transition-all"
                                                 style="width: <?= $client['payment_percentage'] ?>%"></div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <button class="btn-view-details"
+                            <div class="card-footer px-4 py-4 bg-[#f9f9f9] border-t border-[#E2E2E2] flex-shrink-0">
+                                <button
+                                    class="w-full py-3 px-3 bg-[#0B0B0B] text-white border-none rounded-lg font-bold text-[13px] cursor-pointer transition-all flex items-center justify-center gap-1.5 whitespace-nowrap hover:-translate-y-0.5 hover:shadow-lg"
                                     onclick="event.stopPropagation(); window.location.href='<?= BASE_URL ?>manager-project-detail?client_id=<?= $client['id'] ?>'">
                                     <i class="fas fa-eye"></i>
                                     View Detailed Status
@@ -1168,95 +661,98 @@ function formatAmount($amount)
         </div><!-- end active-content -->
 
         <!-- Finished projects grid (hidden by default) -->
-        <div id="finishedGridWrapper" style="display:none;">
+        <div id="finishedGridWrapper" class="hidden">
             <?php if (empty($finishedClients)): ?>
-                <div class="empty-state">
-                    <i class="fas fa-check-double"></i>
-                    <h3>No Finished Projects</h3>
-                    <p>No projects have been marked as finished yet.</p>
+                <div class="text-center py-16 px-5 bg-white rounded-xl border border-[#E2E2E2]">
+                    <i class="fas fa-check-double text-[64px] text-[#d1d5db] mb-5"></i>
+                    <h3 class="text-xl text-[#666] mb-2.5">No Finished Projects</h3>
+                    <p class="text-[#999]">No projects have been marked as finished yet.</p>
                 </div>
             <?php else: ?>
-                <div class="projects-grid" id="finishedProjectsGrid">
+                <div class="clients-grid grid grid-cols-1 gap-5" id="finishedProjectsGrid">
                     <?php foreach ($finishedClients as $client): ?>
-                        <div class="project-card"
-                            onclick="window.location.href='<?= BASE_URL ?>manager-project-detail?client_id=<?= $client['id'] ?>'"
-                            style="border:2px solid #6ee7b7;">
-                            <div class="project-card-header" style="background:linear-gradient(135deg,#065f46,#10b981);">
-                                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px;">
+                        <div class="client-card bg-white rounded-xl overflow-hidden border-2 border-emerald-300 transition-all cursor-pointer hover:-translate-y-1 hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.3)] flex flex-col"
+                            onclick="window.location.href='<?= BASE_URL ?>manager-project-detail?client_id=<?= $client['id'] ?>'">
+                            <div class="card-header p-5 text-white flex-shrink-0 bg-gradient-to-br from-emerald-800 to-emerald-500">
+                                <div class="flex justify-between items-start gap-2.5">
                                     <div>
-                                        <h3><?= htmlspecialchars($client['clientname']) ?></h3>
-                                        <div class="reference">
+                                        <h3 class="text-lg font-semibold"><?= htmlspecialchars($client['clientname']) ?></h3>
+                                        <div class="text-xs opacity-90 font-mono flex items-center gap-1 mt-1">
                                             <i class="fas fa-hashtag"></i> <?= htmlspecialchars($client['reference_number']) ?>
                                         </div>
                                     </div>
                                     <div
-                                        style="background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); border-radius:20px; padding:4px 10px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; flex-shrink:0;">
+                                        class="bg-white/20 border border-white/40 rounded-full px-2.5 py-1 text-[11px] font-bold inline-flex items-center gap-1 flex-shrink-0">
                                         <i class="fas fa-check-double"></i> Finished
                                     </div>
                                 </div>
                             </div>
-                            <div class="project-card-body">
-                                <div class="project-info-row">
-                                    <span class="info-label">Project Name</span>
-                                    <span class="info-value"><?= htmlspecialchars($client['nameproject']) ?></span>
+                            <div class="card-body p-5 flex flex-col gap-3">
+                                <div class="flex justify-between items-center pb-3 border-b border-[#f7fafc]">
+                                    <span class="text-[13px] text-[#718096] font-semibold uppercase tracking-wide">Project Name</span>
+                                    <span class="text-[15px] text-[#0B0B0B] font-semibold"><?= htmlspecialchars($client['nameproject']) ?></span>
                                 </div>
-                                <div class="project-info-row">
-                                    <span class="info-label">Type</span>
+                                <div class="flex justify-between items-center pb-3 border-b border-[#f7fafc]">
+                                    <span class="text-[13px] text-[#718096] font-semibold uppercase tracking-wide">Type</span>
                                     <span
-                                        class="business-type-badge <?= $client['business_type'] === 'Non-Project' ? 'non-project' : 'project' ?>">
+                                        class="px-3.5 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide <?= $client['business_type'] === 'Non-Project' ? 'bg-pink-100 text-pink-700' : 'bg-[#0B0B0B] text-white' ?>">
                                         <?= $client['business_type'] === 'Non-Project' ? 'Individual' : htmlspecialchars($client['business_type']) ?>
                                     </span>
                                 </div>
-                                <div class="project-info-row">
-                                    <span class="info-label">Project Manager</span>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[13px] text-[#718096] font-semibold uppercase tracking-wide">Project Manager</span>
                                     <span
-                                        class="info-value"><?= htmlspecialchars($client['admin_name'] ?? 'Unassigned') ?></span>
+                                        class="text-[15px] text-[#0B0B0B] font-semibold"><?= htmlspecialchars($client['admin_name'] ?? 'Unassigned') ?></span>
                                 </div>
-                                <div class="financial-summary">
-                                    <div class="financial-item">
-                                        <div class="financial-label">Total Value</div>
-                                        <div class="financial-value total">
+                                <div class="grid grid-cols-3 gap-3.5 pt-3.5 border-t-2 border-[#f7fafc]">
+                                    <div class="text-center">
+                                        <div class="text-[10px] text-[#718096] uppercase tracking-wide mb-1">Total Value</div>
+                                        <div class="text-base font-bold text-blue-600">
                                             ₱<?= number_format($client['total_project_cost'] ?? 0, 0) ?></div>
                                     </div>
-                                    <div class="financial-item">
-                                        <div class="financial-label">Collected</div>
-                                        <div class="financial-value collected">
+                                    <div class="text-center">
+                                        <div class="text-[10px] text-[#718096] uppercase tracking-wide mb-1">Collected</div>
+                                        <div class="text-base font-bold text-emerald-600">
                                             ₱<?= number_format($client['payment_progress']['total_paid_amount'] ?? 0, 0) ?>
                                         </div>
                                     </div>
-                                    <div class="financial-item">
-                                        <div class="financial-label">Balance</div>
-                                        <div class="financial-value remaining">
+                                    <div class="text-center">
+                                        <div class="text-[10px] text-[#718096] uppercase tracking-wide mb-1">Balance</div>
+                                        <div class="text-base font-bold text-amber-500">
                                             ₱<?= number_format($client['remaining_balance'] ?? 0, 0) ?></div>
                                     </div>
                                 </div>
-                                <div class="progress-section">
-                                    <div class="progress-item">
-                                        <div class="progress-header">
-                                            <span class="progress-title"><i class="fas fa-tasks"></i> Project Completion</span>
-                                            <span class="progress-percentage"
-                                                style="color:#059669;"><?= number_format($client['completion_percentage'], 1) ?>%</span>
+                                <div class="pt-3.5 border-t-2 border-[#f7fafc] flex flex-col gap-3.5">
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-xs text-[#4a5568] font-semibold uppercase tracking-wide"><i
+                                                    class="fas fa-tasks"></i> Project Completion</span>
+                                            <span
+                                                class="text-sm font-bold text-emerald-600"><?= number_format($client['completion_percentage'], 1) ?>%</span>
                                         </div>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar-fill"
-                                                style="width:<?= $client['completion_percentage'] ?>%; background:linear-gradient(90deg,#065f46,#10b981);">
-                                            </div>
+                                        <div class="h-2 bg-[#E2E2E2] rounded-full overflow-hidden">
+                                            <div class="h-full bg-gradient-to-r from-emerald-800 to-emerald-500 rounded-full transition-all"
+                                                style="width:<?= $client['completion_percentage'] ?>%"></div>
                                         </div>
                                     </div>
-                                    <div class="progress-item">
-                                        <div class="progress-header">
-                                            <span class="progress-title"><i class="fas fa-money-check-alt"></i> Payment
-                                                Progress</span>
-                                            <span class="progress-percentage"
-                                                style="color:#059669;"><?= number_format($client['payment_percentage'], 1) ?>%</span>
+                                    <div>
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-xs text-[#4a5568] font-semibold uppercase tracking-wide"><i
+                                                    class="fas fa-money-check-alt"></i> Payment Progress</span>
+                                            <span
+                                                class="text-sm font-bold text-emerald-600"><?= number_format($client['payment_percentage'], 1) ?>%</span>
                                         </div>
-                                        <div class="progress-bar-container">
-                                            <div class="progress-bar-fill green"
-                                                style="width:<?= $client['payment_percentage'] ?>%;"></div>
+                                        <div class="h-2 bg-[#E2E2E2] rounded-full overflow-hidden">
+                                            <div class="h-full bg-emerald-500 rounded-full transition-all"
+                                                style="width:<?= $client['payment_percentage'] ?>%"></div>
                                         </div>
                                     </div>
                                 </div>
-                                <button class="btn-view-details" style="background:linear-gradient(135deg,#065f46,#10b981);"
+                            </div>
+
+                            <div class="card-footer px-4 py-4 bg-[#f9f9f9] border-t border-emerald-200 flex-shrink-0">
+                                <button
+                                    class="w-full py-3 px-3 bg-gradient-to-br from-emerald-800 to-emerald-500 text-white border-none rounded-lg font-bold text-[13px] cursor-pointer transition-all flex items-center justify-center gap-1.5 whitespace-nowrap hover:-translate-y-0.5 hover:shadow-lg"
                                     onclick="event.stopPropagation(); window.location.href='<?= BASE_URL ?>manager-project-detail?client_id=<?= $client['id'] ?>'">
                                     <i class="fas fa-eye"></i> View Detailed Status
                                 </button>
@@ -1268,6 +764,86 @@ function formatAmount($amount)
         </div>
 
     </div>
+
+    <style>
+        /* List view overrides — kept as plain CSS since Tailwind's arbitrary
+           selectors can't easily express ":not(.list-view) .foo" combinators.
+           Everything else on this page is Tailwind utility classes. */
+        .clients-grid.list-view {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        .clients-grid.list-view .client-card {
+            flex-direction: row !important;
+            align-items: stretch;
+        }
+
+        .clients-grid.list-view .card-header {
+            min-width: 300px;
+            max-width: 300px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .clients-grid.list-view .card-body {
+            flex: 1;
+            flex-direction: row !important;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 20px;
+        }
+
+        .clients-grid.list-view .card-body>div:not(.grid):not(.border-t-2) {
+            flex: 1 1 180px;
+            border-bottom: none !important;
+            padding-bottom: 0 !important;
+        }
+
+        .clients-grid.list-view .card-body .grid.grid-cols-3 {
+            flex: 1 1 250px;
+            border-top: none !important;
+            padding-top: 0 !important;
+        }
+
+        .clients-grid.list-view .card-body>div.border-t-2:last-of-type {
+            flex: 1 1 300px;
+            border-top: none !important;
+            padding-top: 0 !important;
+        }
+
+        .clients-grid.list-view .card-footer {
+            min-width: 230px;
+            max-width: 230px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top: none;
+            border-left: 1px solid #E2E2E2;
+        }
+
+        @media (max-width: 768px) {
+            .clients-grid.list-view .client-card {
+                flex-direction: column !important;
+            }
+
+            .clients-grid.list-view .card-header {
+                min-width: unset !important;
+                max-width: unset !important;
+            }
+
+            .clients-grid.list-view .card-footer {
+                min-width: unset !important;
+                max-width: unset !important;
+                border-left: none;
+                border-top: 1px solid #E2E2E2;
+            }
+        }
+    </style>
+
     <script>
         // Stat data from PHP
         const statsData = {
@@ -1301,6 +877,11 @@ function formatAmount($amount)
 
         let currentTab = 'active';
 
+        const TAB_ACTIVE_ON = ['bg-[#0B0B0B]', 'border-[#0B0B0B]', 'text-white'];
+        const TAB_ACTIVE_OFF = ['bg-white', 'border-[#E2E2E2]', 'text-[#6B6B6B]'];
+        const TAB_FINISHED_ON = ['bg-gradient-to-br', 'from-emerald-800', 'to-emerald-500', 'border-emerald-800', 'text-white'];
+        const TAB_FINISHED_OFF = ['bg-white', 'border-[#E2E2E2]', 'text-[#6B6B6B]'];
+
         function setTab(tab) {
             currentTab = tab;
             const finishedWrapper = document.getElementById('finishedGridWrapper');
@@ -1310,26 +891,25 @@ function formatAmount($amount)
             document.querySelectorAll('.active-content').forEach(el => {
                 el.style.display = tab === 'active' ? '' : 'none';
             });
-            if (finishedWrapper) finishedWrapper.style.display = tab === 'finished' ? '' : 'none';
+            if (finishedWrapper) finishedWrapper.classList.toggle('hidden', tab !== 'finished');
 
             if (tab === 'active') {
-                tabActive.style.background = 'linear-gradient(135deg,#3b1f0f,#8a5a44)';
-                tabActive.style.color = 'white';
-                tabActive.style.borderColor = '#3b1f0f';
-                tabFinished.style.background = 'white';
-                tabFinished.style.color = '#4a5568';
-                tabFinished.style.borderColor = '#e2e8f0';
+                tabActive.classList.remove(...TAB_ACTIVE_OFF);
+                tabActive.classList.add(...TAB_ACTIVE_ON);
+                tabFinished.classList.remove(...TAB_FINISHED_ON);
+                tabFinished.classList.add(...TAB_FINISHED_OFF);
             } else {
-                tabFinished.style.background = 'linear-gradient(135deg,#065f46,#10b981)';
-                tabFinished.style.color = 'white';
-                tabFinished.style.borderColor = '#065f46';
-                tabActive.style.background = 'white';
-                tabActive.style.color = '#4a5568';
-                tabActive.style.borderColor = '#e2e8f0';
+                tabFinished.classList.remove(...TAB_FINISHED_OFF);
+                tabFinished.classList.add(...TAB_FINISHED_ON);
+                tabActive.classList.remove(...TAB_ACTIVE_ON);
+                tabActive.classList.add(...TAB_ACTIVE_OFF);
             }
 
             updateStats(tab);
         }
+
+        const TOGGLE_ON = ['bg-[#0B0B0B]', 'border-[#0B0B0B]', 'text-white'];
+        const TOGGLE_OFF = ['bg-white', 'border-[#E2E2E2]', 'text-[#6B6B6B]'];
 
         function setView(type) {
             const grids = [document.getElementById('projectsGrid'), document.getElementById('finishedProjectsGrid')];
@@ -1343,11 +923,15 @@ function formatAmount($amount)
             });
 
             if (type === 'list') {
-                listBtn.classList.add('active');
-                gridBtn.classList.remove('active');
+                listBtn.classList.remove(...TOGGLE_OFF);
+                listBtn.classList.add(...TOGGLE_ON);
+                gridBtn.classList.remove(...TOGGLE_ON);
+                gridBtn.classList.add(...TOGGLE_OFF);
             } else {
-                gridBtn.classList.add('active');
-                listBtn.classList.remove('active');
+                gridBtn.classList.remove(...TOGGLE_OFF);
+                gridBtn.classList.add(...TOGGLE_ON);
+                listBtn.classList.remove(...TOGGLE_ON);
+                listBtn.classList.add(...TOGGLE_OFF);
             }
         }
 

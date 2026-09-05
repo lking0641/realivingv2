@@ -7,63 +7,85 @@
 <!-- ═══════════════════════════════════════════════════════════════
      E-SIGN MODAL
 ════════════════════════════════════════════════════════════════ -->
-<div id="esignModal" class="modal-overlay">
-    <div class="modal-box" style="max-width:960px; width:98%; padding:20px; max-height:95vh; display:flex; flex-direction:column; gap:14px;">
+<style>
+    @keyframes esignPopIn {
+        from { transform: scale(.96); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+    }
+    #esignModal.flex .esign-box {
+        animation: esignPopIn .2s ease both;
+    }
+</style>
+
+<div id="esignModal" class="hidden fixed inset-0 bg-black/50 z-[1000] items-center justify-center p-4">
+    <div class="esign-box bg-white rounded-2xl shadow-2xl w-full max-w-[960px] max-h-[95vh] p-5 flex flex-col gap-3.5">
 
         <!-- Header -->
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-shrink:0;">
+        <div class="flex justify-between items-start flex-shrink-0">
             <div>
-                <div class="modal-title"><i class="fas fa-file-signature" style="color:#3b1f0f;"></i> Approve File</div>
-                <div class="modal-sub" style="margin:2px 0 0;">Optionally place your e-signature on the PDF before approving.</div>
+                <div class="text-[17px] font-bold text-[#0B0B0B] flex items-center gap-2">
+                    <i class="fas fa-file-signature"></i> Approve File
+                </div>
+                <div class="text-[13px] text-[#6B6B6B] mt-0.5">Optionally place your e-signature on the PDF before
+                    approving.</div>
             </div>
-            <button onclick="closeEsignModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#9c7b6a;padding:4px 8px;flex-shrink:0;">
+            <button onclick="closeEsignModal()"
+                class="bg-transparent border-none cursor-pointer text-xl text-[#9A9A9A] hover:text-[#0B0B0B] px-2 py-1 flex-shrink-0 transition-colors">
                 <i class="fas fa-times"></i>
             </button>
         </div>
 
         <!-- Toggle -->
-        <div style="display:flex; align-items:center; gap:12px; background:#faf8f5; border:1px solid #e2d9ce; border-radius:10px; padding:12px 16px; flex-shrink:0;">
-            <label style="margin:0; flex:1; font-size:13px; font-weight:700; color:#5c4033; cursor:pointer; display:flex; align-items:center; gap:8px;" for="esignToggle">
-                <i class="fas fa-pen-nib" style="color:#7a4528;"></i>
+        <div
+            class="flex items-center gap-3 bg-[#F5F5F5] border border-[#E2E2E2] rounded-[10px] px-4 py-3 flex-shrink-0">
+            <label for="esignToggle"
+                class="flex-1 text-[13px] font-bold text-[#0B0B0B] cursor-pointer flex items-center gap-2 m-0">
+                <i class="fas fa-pen-nib text-[#6B6B6B]"></i>
                 Add my E-Signature to this PDF
             </label>
             <!-- Toggle switch -->
-            <div style="position:relative; width:44px; height:24px; flex-shrink:0;">
-                <input type="checkbox" id="esignToggle" style="opacity:0;width:0;height:0;position:absolute;"
-                       onchange="onEsignToggle(this.checked)">
+            <div class="relative w-11 h-6 flex-shrink-0">
+                <input type="checkbox" id="esignToggle" class="opacity-0 w-0 h-0 absolute"
+                    onchange="onEsignToggle(this.checked)">
                 <div id="toggleSlider" onclick="document.getElementById('esignToggle').click();"
-                     style="position:absolute;inset:0;background:#ccc;border-radius:24px;cursor:pointer;transition:.3s;">
-                    <div id="toggleThumb" style="position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.3s;box-shadow:0 1px 3px rgba(0,0,0,.2);"></div>
+                    class="absolute inset-0 bg-[#ccc] rounded-full cursor-pointer transition-colors duration-300">
+                    <div id="toggleThumb"
+                        class="absolute w-[18px] h-[18px] bg-white rounded-full top-[3px] left-[3px] shadow-[0_1px_3px_rgba(0,0,0,.2)] transition-transform duration-300">
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- PDF Viewer iframe (shown when toggle ON) -->
-        <div id="esignIframeWrap" style="display:none; flex:1; min-height:420px; border-radius:10px; overflow:hidden; border:2px solid #e2d9ce; flex-shrink:0;">
-            <iframe id="esignIframe"
-                    src=""
-                    style="width:100%; height:100%; min-height:420px; border:none; display:block;"
-                    title="PDF E-Signature Viewer">
+        <div id="esignIframeWrap"
+            class="hidden flex-1 min-h-[420px] rounded-[10px] overflow-hidden border-2 border-[#E2E2E2] flex-shrink-0">
+            <iframe id="esignIframe" src="" class="w-full h-full min-h-[420px] border-none block"
+                title="PDF E-Signature Viewer">
             </iframe>
         </div>
 
         <!-- Status bar — shows after placement confirmed -->
-        <div id="esignStatusBar" style="display:none; background:#d1fae5; border:1px solid #a7f3d0; border-radius:8px; padding:10px 16px; align-items:center; gap:10px; flex-shrink:0;">
-            <i class="fas fa-check-circle" style="color:#065f46;"></i>
-            <span style="font-size:13px; color:#065f46; font-weight:600; flex:1;">
+        <div id="esignStatusBar"
+            class="hidden bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-2.5 items-center gap-2.5 flex-shrink-0">
+            <i class="fas fa-check-circle text-emerald-700"></i>
+            <span class="text-[13px] text-emerald-700 font-semibold flex-1">
                 Signature placed on page <strong id="esignPlacedPage">1</strong>. Click "Confirm Approval" to proceed.
             </span>
-            <button class="btn" style="background:#fff;color:#065f46;border:1px solid #a7f3d0;font-size:11px;" onclick="resetEsignPlacement()">
+            <button
+                class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                onclick="resetEsignPlacement()">
                 <i class="fas fa-redo"></i> Reposition
             </button>
         </div>
 
         <!-- Action buttons -->
-        <div style="display:flex; justify-content:flex-end; gap:8px; flex-shrink:0;">
-            <button class="btn-cancel" onclick="closeEsignModal()">Cancel</button>
-            <button id="esignSubmitBtn" class="btn-submit"
-                    onclick="submitApproval()"
-                    style="background:linear-gradient(135deg,#3b1f0f,#7a4528);">
+        <div class="flex justify-end gap-2 flex-shrink-0">
+            <button onclick="closeEsignModal()"
+                class="bg-[#F5F5F5] text-[#6B6B6B] px-4 py-2 rounded-md cursor-pointer font-semibold text-[13px] hover:bg-[#E2E2E2] transition-colors border border-[#E2E2E2]">
+                Cancel
+            </button>
+            <button id="esignSubmitBtn" onclick="submitApproval()"
+                class="inline-flex items-center gap-2 bg-[#0B0B0B] text-white px-4 py-2 rounded-md cursor-pointer font-semibold text-[13px] hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 <i class="fas fa-check-circle"></i> Confirm Approval
             </button>
         </div>
@@ -85,17 +107,21 @@ function approveFile(approvalId) {
     _signX = null; _signY = null; _signPage = 1;
 
     // Reset UI
-    document.getElementById('esignToggle').checked    = false;
-    document.getElementById('esignIframeWrap').style.display = 'none';
-    document.getElementById('esignStatusBar').style.display  = 'none';
-    document.getElementById('toggleSlider').style.background = '#ccc';
-    document.getElementById('toggleThumb').style.transform   = 'translateX(0)';
+    document.getElementById('esignToggle').checked = false;
+    document.getElementById('esignIframeWrap').classList.add('hidden');
+    document.getElementById('esignStatusBar').classList.add('hidden');
+    document.getElementById('esignStatusBar').classList.remove('flex');
+    document.getElementById('toggleSlider').classList.remove('bg-[#0B0B0B]');
+    document.getElementById('toggleSlider').classList.add('bg-[#ccc]');
+    document.getElementById('toggleThumb').style.transform = 'translateX(0)';
 
     const btn = document.getElementById('esignSubmitBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Approval';
 
-    document.getElementById('esignModal').classList.add('show');
+    const modal = document.getElementById('esignModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
 }
 
 // ── Toggle e-sign section ─────────────────────────────────────────
@@ -105,9 +131,10 @@ function onEsignToggle(checked) {
     const wrap   = document.getElementById('esignIframeWrap');
 
     if (checked) {
-        slider.style.background    = '#3b1f0f';
-        thumb.style.transform      = 'translateX(20px)';
-        wrap.style.display         = 'block';
+        slider.classList.remove('bg-[#ccc]');
+        slider.classList.add('bg-[#0B0B0B]');
+        thumb.style.transform = 'translateX(20px)';
+        wrap.classList.remove('hidden');
 
         // Load iframe with PDF viewer
         const iframe = document.getElementById('esignIframe');
@@ -115,13 +142,16 @@ function onEsignToggle(checked) {
 
         // Reset placement
         _signX = null; _signY = null;
-        document.getElementById('esignStatusBar').style.display = 'none';
+        document.getElementById('esignStatusBar').classList.add('hidden');
+        document.getElementById('esignStatusBar').classList.remove('flex');
     } else {
-        slider.style.background = '#ccc';
-        thumb.style.transform   = 'translateX(0)';
-        wrap.style.display      = 'none';
+        slider.classList.remove('bg-[#0B0B0B]');
+        slider.classList.add('bg-[#ccc]');
+        thumb.style.transform = 'translateX(0)';
+        wrap.classList.add('hidden');
         _signX = null; _signY = null;
-        document.getElementById('esignStatusBar').style.display = 'none';
+        document.getElementById('esignStatusBar').classList.add('hidden');
+        document.getElementById('esignStatusBar').classList.remove('flex');
     }
 }
 
@@ -136,23 +166,25 @@ function receiveEsignPlacement(data) {
     // Show status bar
     const bar = document.getElementById('esignStatusBar');
     document.getElementById('esignPlacedPage').textContent = _signPage;
-    bar.style.display = 'flex';
+    bar.classList.remove('hidden');
+    bar.classList.add('flex');
 
     // Scroll modal to bottom so user sees Confirm button
-    const modalBox = document.querySelector('#esignModal .modal-box');
+    const modalBox = document.querySelector('#esignModal .esign-box');
     if (modalBox) modalBox.scrollTop = modalBox.scrollHeight;
 }
 
 // ── Close iframe viewer from iframe ──────────────────────────────
 function closeEsignViewer() {
-    document.getElementById('esignToggle').checked    = false;
+    document.getElementById('esignToggle').checked = false;
     onEsignToggle(false);
 }
 
 // ── Reset placement ───────────────────────────────────────────────
 function resetEsignPlacement() {
     _signX = null; _signY = null;
-    document.getElementById('esignStatusBar').style.display = 'none';
+    document.getElementById('esignStatusBar').classList.add('hidden');
+    document.getElementById('esignStatusBar').classList.remove('flex');
     // Reload iframe
     const iframe = document.getElementById('esignIframe');
     iframe.src   = '<?= BASE_URL ?>esign-pdf-viewer?approval_id=' + _currentApprovalId;
@@ -207,7 +239,9 @@ async function submitApproval() {
 
 // ── Close modal ───────────────────────────────────────────────────
 function closeEsignModal() {
-    document.getElementById('esignModal').classList.remove('show');
+    const modal = document.getElementById('esignModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
     _currentApprovalId = null;
     _signX = null; _signY = null;
     // Unload iframe to stop PDF.js
@@ -218,4 +252,4 @@ function closeEsignModal() {
 document.getElementById('esignModal').addEventListener('click', function(e) {
     if (e.target === this) closeEsignModal();
 });
-</script>   
+</script>

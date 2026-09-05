@@ -42,6 +42,7 @@ $all_stages = [
     'BILLING',
     'Handover'
 ];
+$totalStages = count($all_stages);
 
 // Fetch stages already assigned to individual sales users
 $salesAssignedStages = [];
@@ -82,647 +83,274 @@ foreach ($roles as $role_key => $role_name) {
     $result = $countStmt->get_result()->fetch_assoc();
     $roleStats[$role_key] = $result['count'];
 }
+
+// Role descriptions
+$descriptions = [
+    'general_manager' => 'Oversees all operations and has strategic oversight',
+    'operational_manager' => 'Manages day-to-day operations and project execution',
+    'designer' => 'Creates design concepts and visual layouts',
+    'technical_designer' => 'Handles technical drawings and specifications',
+    'accounting' => 'Manages financial transactions and billing',
+    'project_coordinator' => 'Handles the timeline and purchasing',
+];
+
+// Role icons
+$icons = [
+    'general_manager' => 'fa-user-tie',
+    'operational_manager' => 'fa-tasks',
+    'designer' => 'fa-pencil-ruler',
+    'technical_designer' => 'fa-drafting-compass',
+    'accounting' => 'fa-calculator',
+    'project_coordinator' => 'fa-calculator',
+];
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Role Permissions Controller</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        body {
+            font-family: 'Inter', sans-serif;
         }
 
-        .page-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 40px;
-            border-radius: 16px;
-            color: white;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .page-header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.05)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
-        }
-
-        .page-header h1 {
-            font-size: 32px;
-            margin-bottom: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .page-header p {
-            opacity: 0.9;
-            font-size: 16px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .info-banner {
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            padding: 15px 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-            position: relative;
-            z-index: 1;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-banner i {
-            font-size: 20px;
-        }
-
-        .roles-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-        }
-
-        .role-card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .role-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            border-color: #8a5a44;
-        }
-
-        .role-card-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            padding: 25px;
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .role-info h3 {
-            font-size: 20px;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .role-key {
-            font-size: 12px;
-            opacity: 0.8;
-            font-family: monospace;
-            background: rgba(255,255,255,0.2);
-            padding: 3px 8px;
-            border-radius: 4px;
-        }
-
-        .role-stats {
-            text-align: right;
-        }
-
-        .role-stats .count {
-            font-size: 32px;
-            font-weight: bold;
-            line-height: 1;
-        }
-
-        .role-stats .label {
-            font-size: 11px;
-            opacity: 0.9;
-            text-transform: uppercase;
-            margin-top: 5px;
-        }
-
-        .role-card-body {
-            padding: 25px;
-        }
-
-        .role-description {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .permissions-btn {
-            width: 100%;
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .permissions-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal.show {
-            display: flex;
-        }
-
-        .modal-content {
-            background-color: white;
-            padding: 0;
-            border-radius: 16px;
-            max-width: 900px;
-            width: 90%;
-            max-height: 90vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            padding: 25px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-header h2 {
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .close-btn {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .close-btn:hover {
-            background: rgba(255,255,255,0.3);
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            padding: 30px;
-            overflow-y: auto;
-            flex: 1;
-        }
-
-        .role-info-section {
-            background: #f9f9f9;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-        }
-
-        .role-info-section h3 {
-            color: #3b1f0f;
-            margin-bottom: 15px;
-            font-size: 18px;
-        }
-
-        .info-row {
-            display: grid;
-            grid-template-columns: 140px 1fr;
-            padding: 8px 0;
-            font-size: 14px;
-        }
-
-        .info-row .label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .info-row .value {
-            color: #111;
-            font-weight: 600;
-        }
-
-        .permissions-section h3 {
-            color: #3b1f0f;
-            margin-bottom: 20px;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .quick-actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .quick-action-btn {
-            padding: 8px 16px;
-            border: 2px solid #8a5a44;
-            background: white;
-            color: #8a5a44;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .quick-action-btn:hover {
-            background: #8a5a44;
-            color: white;
-        }
-
-        .stages-list {
-            display: grid;
-            gap: 12px;
-        }
-
-        .stage-permission-item {
-            background: #f9f9f9;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-        }
-
-        .stage-permission-item:hover {
-            border-color: #8a5a44;
-            background: #fff;
-        }
-
-        .stage-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .stage-number {
-            width: 35px;
-            height: 35px;
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-        }
-
-        .stage-name {
-            font-size: 14px;
-            font-weight: 500;
-            color: #111;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 60px;
-            height: 30px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .3s;
-            border-radius: 30px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background: linear-gradient(135deg, #3b1f0f 0%, #8a5a44 100%);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(30px);
-        }
-
-        .modal-footer {
-            padding: 20px 30px;
-            background: #f9f9f9;
-            border-top: 1px solid #e9ecef;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-
-        .save-btn {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .save-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(16,185,129,0.3);
-        }
-
-        .cancel-btn {
-            background: #6b7280;
-            color: white;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-
-        .cancel-btn:hover {
-            background: #4b5563;
-        }
-
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 16px 24px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: none;
-            align-items: center;
-            gap: 12px;
-            z-index: 2000;
-            animation: slideIn 0.3s ease;
-        }
-
-        .toast.show {
-            display: flex;
-        }
-
-        .toast.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .toast.error {
-            border-left: 4px solid #ef4444;
-        }
-
-        @keyframes slideIn {
+        @keyframes admFade {
             from {
-                transform: translateX(400px);
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .adm-fade {
+            animation: admFade .35s ease both;
+        }
+
+        @keyframes popIn {
+            from {
+                transform: scale(.96);
                 opacity: 0;
             }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        #permissionsModal.flex .modal-box {
+            animation: popIn .2s ease both;
+        }
+
+        @keyframes toastIn {
+            from {
+                transform: translateX(20px);
+                opacity: 0;
+            }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
             }
         }
 
-        .role-icon {
-            font-size: 24px;
+        #toast.show {
+            animation: toastIn .25s ease both;
         }
 
-        .last-updated {
-            background: rgba(255,255,255,0.1);
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 12px;
-            margin-top: 10px;
+        @media (prefers-reduced-motion: reduce) {
+
+            .adm-fade,
+            #permissionsModal.flex .modal-box,
+            #toast.show {
+                animation: none;
+            }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="page-header">
-            <h1><i class="fas fa-users-cog"></i> Role-Based Permissions Controller</h1>
-            <p>Manage project stage permissions by role (Sales users manage their own permissions individually)</p>
-            <div class="info-banner">
-                <i class="fas fa-info-circle"></i>
+
+<body class="min-h-screen bg-[#F5F5F5] text-[#0B0B0B]">
+    <div class="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-16">
+
+        <!-- Header -->
+        <div class="bg-[#0B0B0B] rounded-xl p-6 sm:p-7 text-white mb-4 adm-fade">
+            <div class="flex items-center gap-4">
+                <div
+                    class="w-11 h-11 rounded-[9px] bg-white/10 border border-white/15 flex items-center justify-center text-[17px] flex-shrink-0">
+                    <i class="fas fa-users-cog"></i>
+                </div>
                 <div>
-                    <strong>Note:</strong> Sales role is excluded from this controller. 
-                    Sales users have individual stage permissions managed through the 
-                    <a href="stage-permissions-controller" style="color: white; text-decoration: underline;">Stage Permissions Controller</a>.
+                    <div class="text-[11px] font-semibold uppercase tracking-[1.5px] text-white/50 mb-0.5">Access
+                        Control</div>
+                    <div class="text-[19px] font-bold tracking-tight">Role-Based Permissions Controller</div>
+                    <div class="text-[12.5px] text-white/60 mt-0.5">Manage project stage permissions by role. Sales
+                        users manage their own permissions individually.</div>
                 </div>
             </div>
         </div>
 
-        <div class="roles-grid">
+        <!-- Info banner -->
+        <div class="bg-white border border-[#E2E2E2] rounded-[10px] px-4 py-3.5 mb-6 flex items-start gap-3 adm-fade">
+            <i class="fas fa-info-circle text-[#6B6B6B] mt-0.5"></i>
+            <div class="text-[13px] text-[#6B6B6B]">
+                <strong class="text-[#0B0B0B]">Note:</strong> Sales role is excluded from this controller. Sales
+                users have individual stage permissions managed through the
+                <a href="stage-permissions-controller" class="text-[#0B0B0B] font-semibold underline underline-offset-2">Stage
+                    Permissions Controller</a>.
+            </div>
+        </div>
+
+        <!-- Roles grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <?php foreach ($roles as $role_key => $role_name): ?>
                 <?php
-                    // Fetch last updated info
-                    $lastUpdateStmt = $conn->prepare("
+                $lastUpdateStmt = $conn->prepare("
                         SELECT updated_at, updated_by_name 
                         FROM role_stage_permissions 
                         WHERE role = ? 
                         ORDER BY updated_at DESC 
                         LIMIT 1
                     ");
-                    $lastUpdateStmt->bind_param("s", $role_key);
-                    $lastUpdateStmt->execute();
-                    $lastUpdate = $lastUpdateStmt->get_result()->fetch_assoc();
-                    
-                    // Role descriptions
-                    $descriptions = [
-                        'general_manager' => 'Oversees all operations and has strategic oversight',
-                        'operational_manager' => 'Manages day-to-day operations and project execution',
-                        'designer' => 'Creates design concepts and visual layouts',
-                        'technical_designer' => 'Handles technical drawings and specifications',
-                        'accounting' => 'Manages financial transactions and billing',
-                        'project_coordinator' => 'Handles the timeline and purchasing',
-                    ];
-                    
-                    // Role icons
-                    $icons = [
-                        'general_manager' => 'fa-user-tie',
-                        'operational_manager' => 'fa-tasks',
-                        'designer' => 'fa-pencil-ruler',
-                        'technical_designer' => 'fa-drafting-compass',
-                        'accounting' => 'fa-calculator',
-                        'project_coordinator' => 'fa-calculator',
-                    ];
+                $lastUpdateStmt->bind_param("s", $role_key);
+                $lastUpdateStmt->execute();
+                $lastUpdate = $lastUpdateStmt->get_result()->fetch_assoc();
                 ?>
-                <div class="role-card">
-                    <div class="role-card-header">
-                        <div class="role-info">
-                            <h3>
-                                <i class="fas <?= $icons[$role_key] ?> role-icon"></i>
-                                <?= htmlspecialchars($role_name) ?>
-                            </h3>
-                            <div class="role-key"><?= htmlspecialchars($role_key) ?></div>
+                <div
+                    class="bg-white border border-[#E2E2E2] rounded-[10px] p-5 flex flex-col hover:border-[#0B0B0B] hover:shadow-[0_10px_26px_-16px_rgba(11,11,11,0.25)] hover:-translate-y-0.5 transition-all adm-fade">
+
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div
+                                class="w-11 h-11 rounded-[9px] bg-[#F5F5F5] border border-[#E2E2E2] flex items-center justify-center text-lg text-[#0B0B0B] flex-shrink-0">
+                                <i class="fas <?= $icons[$role_key] ?>"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <h3 class="text-[15px] font-semibold truncate"><?= htmlspecialchars($role_name) ?></h3>
+                                <div class="text-[11px] font-mono text-[#9A9A9A] truncate"><?= htmlspecialchars($role_key) ?>
+                                </div>
+                            </div>
                         </div>
-                        <div class="role-stats">
-                            <div class="count"><?= $roleStats[$role_key] ?></div>
-                            <div class="label">Users</div>
+                        <div class="text-right flex-shrink-0">
+                            <div class="text-2xl font-bold font-mono leading-none"><?= $roleStats[$role_key] ?></div>
+                            <div class="text-[9px] uppercase tracking-wide text-[#9A9A9A] mt-1">Users</div>
                         </div>
                     </div>
-                    <div class="role-card-body">
-                        <div class="role-description">
-                            <?= htmlspecialchars($descriptions[$role_key]) ?>
-                        </div>
-                        <?php if ($lastUpdate): ?>
-                        <div class="last-updated" style="background: #f0f0f0; color: #666; padding: 8px 12px; border-radius: 6px; font-size: 11px; margin-bottom: 15px;">
-                            <i class="fas fa-clock"></i> 
-                            Last updated by <strong><?= htmlspecialchars($lastUpdate['updated_by_name']) ?></strong>
+
+                    <p class="text-[13px] text-[#6B6B6B] leading-relaxed mb-4 flex-1">
+                        <?= htmlspecialchars($descriptions[$role_key]) ?>
+                    </p>
+
+                    <?php if ($lastUpdate): ?>
+                        <div class="bg-[#F5F5F5] border border-[#E2E2E2] rounded-md px-3 py-2 text-[11px] text-[#6B6B6B] mb-4">
+                            <i class="fas fa-clock"></i>
+                            Last updated by <strong class="text-[#0B0B0B]"><?= htmlspecialchars($lastUpdate['updated_by_name']) ?></strong>
                             on <?= date('M d, Y - g:i A', strtotime($lastUpdate['updated_at'])) ?>
                         </div>
-                        <?php endif; ?>
-                        <button class="permissions-btn" onclick="openPermissionsModal('<?= $role_key ?>', '<?= htmlspecialchars($role_name) ?>', <?= $roleStats[$role_key] ?>)">
-                            <i class="fas fa-cog"></i>
-                            Configure Permissions
-                        </button>
-                    </div>
+                    <?php endif; ?>
+
+                    <button
+                        class="w-full inline-flex items-center justify-center gap-2 bg-[#0B0B0B] text-white py-2.5 rounded-md font-semibold text-[13px] hover:bg-[#2a2a2a] transition-colors"
+                        onclick="openPermissionsModal('<?= $role_key ?>', '<?= htmlspecialchars($role_name, ENT_QUOTES) ?>', <?= $roleStats[$role_key] ?>)">
+                        <i class="fas fa-cog"></i>
+                        Configure Permissions
+                    </button>
                 </div>
             <?php endforeach; ?>
         </div>
     </div>
 
     <!-- Permissions Modal -->
-    <div id="permissionsModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>
+    <div id="permissionsModal" class="hidden fixed inset-0 bg-black/50 z-[1000] items-center justify-center p-4">
+        <div class="modal-box bg-white rounded-2xl shadow-2xl w-full max-w-[900px] max-h-[92vh] flex flex-col overflow-hidden">
+
+            <!-- Header -->
+            <div class="bg-[#0B0B0B] text-white px-6 sm:px-7 py-5 flex justify-between items-center flex-shrink-0">
+                <h2 class="text-lg font-bold flex items-center gap-2.5">
                     <i class="fas fa-shield-alt"></i>
                     <span id="modalTitle">Role Permissions</span>
                 </h2>
-                <button class="close-btn" onclick="closeModal()">
+                <button onclick="closeModal()"
+                    class="w-9 h-9 rounded-full bg-white/10 hover:bg-white/20 border-none text-white text-lg flex items-center justify-center transition-all hover:rotate-90 duration-200">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="role-info-section">
-                    <h3><i class="fas fa-info-circle"></i> Role Information</h3>
-                    <div class="info-row">
-                        <div class="label">Role Name:</div>
-                        <div class="value" id="modalRoleName"></div>
+
+            <div class="px-6 sm:px-7 py-6 overflow-y-auto flex-1">
+                <!-- Role info -->
+                <div class="bg-[#F5F5F5] border border-[#E2E2E2] rounded-[10px] p-5 mb-6 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Role Name</span>
+                        <span class="font-semibold" id="modalRoleName"></span>
                     </div>
-                    <div class="info-row">
-                        <div class="label">Role Key:</div>
-                        <div class="value" style="font-family: monospace;" id="modalRoleKey"></div>
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Role Key</span>
+                        <span class="font-semibold font-mono text-xs" id="modalRoleKey"></span>
                     </div>
-                    <div class="info-row">
-                        <div class="label">Total Users:</div>
-                        <div class="value" id="modalUserCount"></div>
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Total Users</span>
+                        <span class="font-semibold" id="modalUserCount"></span>
                     </div>
-                    <div class="info-row">
-                        <div class="label">Configuring As:</div>
-                        <div class="value"><?= htmlspecialchars($currentAdmin['full_name']) ?></div>
+                    <div class="flex items-center justify-between sm:justify-start sm:gap-3 py-1.5 text-sm">
+                        <span class="text-[#9A9A9A] font-medium">Configuring As</span>
+                        <span class="font-semibold"><?= htmlspecialchars($currentAdmin['full_name']) ?></span>
                     </div>
                 </div>
 
-                <div class="permissions-section">
-                    <h3>
-                        <i class="fas fa-tasks"></i>
-                        Project Stage Permissions
+                <!-- Permissions -->
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-3.5">
+                    <h3 class="text-sm font-bold flex items-center gap-2">
+                        <i class="fas fa-tasks text-[#6B6B6B]"></i> Project Stage Permissions
                     </h3>
-                    
-                    <div class="quick-actions">
-                        <button class="quick-action-btn" onclick="selectAll()">
-                            <i class="fas fa-check-double"></i> Select All
-                        </button>
-                        <button class="quick-action-btn" onclick="deselectAll()">
-                            <i class="fas fa-times"></i> Deselect All
-                        </button>
-                        <button class="quick-action-btn" onclick="selectFirstHalf()">
-                            <i class="fas fa-list-ol"></i> First 9 Stages
-                        </button>
-                        <button class="quick-action-btn" onclick="selectLastHalf()">
-                            <i class="fas fa-list"></i> Last 8 Stages
-                        </button>
-                    </div>
+                    <span id="selectedCounter"
+                        class="text-xs font-bold px-2.5 py-1 rounded-full bg-white border border-[#E2E2E2] text-[#6B6B6B]">0
+                        of <?= $totalStages ?> selected</span>
+                </div>
 
-                    <div class="stages-list" id="stagesList">
-                        <!-- Stages will be populated here -->
-                    </div>
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="selectAll()">
+                        <i class="fas fa-check-double"></i> Select All
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="deselectAll()">
+                        <i class="fas fa-times"></i> Deselect All
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="selectFirstHalf()">
+                        <i class="fas fa-list-ol"></i> First 9 Stages
+                    </button>
+                    <button
+                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border border-[#E2E2E2] text-[#6B6B6B] hover:border-[#0B0B0B] hover:text-[#0B0B0B] transition-colors"
+                        onclick="selectLastHalf()">
+                        <i class="fas fa-list"></i> Last 9 Stages
+                    </button>
+                </div>
+
+                <div class="grid gap-2" id="stagesList">
+                    <!-- Stages will be populated here -->
                 </div>
             </div>
-            <div class="modal-footer">
-                <button class="cancel-btn" onclick="closeModal()">
+
+            <div class="px-6 sm:px-7 py-4 bg-[#F5F5F5] border-t border-[#E2E2E2] flex justify-end gap-2.5 flex-shrink-0">
+                <button onclick="closeModal()"
+                    class="bg-white text-[#6B6B6B] px-4 py-2.5 rounded-md font-semibold text-[13px] border border-[#E2E2E2] hover:bg-[#E2E2E2] transition-colors">
                     Cancel
                 </button>
-                <button class="save-btn" onclick="savePermissions()">
+                <button id="saveBtn" onclick="savePermissions()"
+                    class="inline-flex items-center gap-2 bg-[#0B0B0B] text-white px-4 py-2.5 rounded-md font-semibold text-[13px] hover:bg-[#2a2a2a] transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                     <i class="fas fa-save"></i>
                     Save Role Permissions
                 </button>
@@ -730,107 +358,134 @@ foreach ($roles as $role_key => $role_name) {
         </div>
     </div>
 
-    <div id="toast" class="toast">
-        <i class="fas fa-check-circle" style="font-size: 20px; color: #10b981;"></i>
-        <span id="toastMessage">Permissions saved successfully!</span>
+    <div id="toast"
+        class="hidden fixed top-5 right-5 bg-white px-5 py-4 rounded-lg shadow-[0_4px_12px_rgba(0,0,0,.15)] items-center gap-3 z-[2000] border-l-4">
+        <i id="toastIcon" class="fas fa-check-circle text-xl text-emerald-500"></i>
+        <span id="toastMessage" class="text-sm font-medium">Permissions saved successfully!</span>
     </div>
 
     <script>
         const allStages = <?= json_encode($all_stages) ?>;
+        const totalStages = allStages.length;
         let currentRole = null;
+
+        function updateSelectedCounter() {
+            const checked = document.querySelectorAll('.stage-permission-item input[type="checkbox"]:checked').length;
+            document.getElementById('selectedCounter').textContent = `${checked} of ${totalStages} selected`;
+        }
 
         async function openPermissionsModal(roleKey, roleName, userCount) {
             currentRole = roleKey;
-            
-            // Set role info
-            document.getElementById('modalTitle').textContent = `${roleName} - Stage Permissions`;
+
+            document.getElementById('modalTitle').textContent = `${roleName} — Stage Permissions`;
             document.getElementById('modalRoleName').textContent = roleName;
             document.getElementById('modalRoleKey').textContent = roleKey;
             document.getElementById('modalUserCount').textContent = userCount;
 
-            // Fetch current permissions
-            const response = await fetch('get-role-permissions?role=' + encodeURIComponent(roleKey));
-            const data = await response.json();
-            
-            // Populate stages list
             const stagesList = document.getElementById('stagesList');
-            stagesList.innerHTML = '';
-            
-            allStages.forEach((stage, index) => {
-    const isEnabled = data.permissions.includes(stage);
-    const isLockedBySales = data.lockedBySales && data.lockedBySales[stage];
-    const isLockedByOtherRole = data.lockedByOtherRole && data.lockedByOtherRole[stage];
-    
-    let lockMessage = '';
-    let isLocked = false;
-    
-    if (isLockedBySales) {
-        isLocked = true;
-        const usersList = isLockedBySales.join(', ');
-        lockMessage = `<span style="margin-left: 8px; font-size: 11px; color: #ef4444; background: #fee2e2; padding: 2px 8px; border-radius: 4px;"><i class="fas fa-lock"></i> Locked by Sales: ${usersList}</span>`;
-    } else if (isLockedByOtherRole) {
-        isLocked = true;
-        lockMessage = `<span style="margin-left: 8px; font-size: 11px; color: #ef4444; background: #fee2e2; padding: 2px 8px; border-radius: 4px;"><i class="fas fa-lock"></i> Locked by ${isLockedByOtherRole}</span>`;
-    }
-    
-    const stageItem = document.createElement('div');
-    stageItem.className = 'stage-permission-item' + (isLocked ? ' disabled' : '');
-    stageItem.innerHTML = `
-        <div class="stage-info">
-            <div class="stage-number">${index + 1}</div>
-            <div class="stage-name">
-                ${stage}
-                ${lockMessage}
-            </div>
-        </div>
-        <label class="toggle-switch">
-            <input type="checkbox" 
-                   data-stage="${stage}" 
-                   ${isEnabled ? 'checked' : ''}
-                   ${isLocked ? 'disabled' : ''}>
-            <span class="slider"></span>
-        </label>
-    `;
-    stagesList.appendChild(stageItem);
-});
+            stagesList.innerHTML = '<div class="text-center py-8 text-sm text-[#9A9A9A]"><i class="fas fa-spinner fa-spin"></i> Loading permissions...</div>';
 
-            // Show modal
-            document.getElementById('permissionsModal').classList.add('show');
+            const modal = document.getElementById('permissionsModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            let data;
+            try {
+                const response = await fetch('get-role-permissions?role=' + encodeURIComponent(roleKey));
+                data = await response.json();
+            } catch (e) {
+                stagesList.innerHTML = '<div class="text-center py-8 text-sm text-red-600"><i class="fas fa-exclamation-circle"></i> Failed to load permissions.</div>';
+                return;
+            }
+
+            stagesList.innerHTML = '';
+            allStages.forEach((stage, index) => {
+                const isEnabled = data.permissions.includes(stage);
+                const isLockedBySales = data.lockedBySales && data.lockedBySales[stage];
+                const isLockedByOtherRole = data.lockedByOtherRole && data.lockedByOtherRole[stage];
+
+                let lockMessage = '';
+                let isLocked = false;
+
+                if (isLockedBySales) {
+                    isLocked = true;
+                    const usersList = isLockedBySales.join(', ');
+                    lockMessage = `<span class="ml-2 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full"><i class="fas fa-lock"></i> Locked by Sales: ${usersList}</span>`;
+                } else if (isLockedByOtherRole) {
+                    isLocked = true;
+                    lockMessage = `<span class="ml-2 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full"><i class="fas fa-lock"></i> Locked by ${isLockedByOtherRole}</span>`;
+                }
+
+                const stageItem = document.createElement('div');
+                stageItem.className = 'stage-permission-item flex items-center justify-between gap-3 border rounded-lg px-4 py-3 transition-colors ' +
+                    (isLocked ? 'bg-[#F5F5F5] border-[#E2E2E2] opacity-60' : 'bg-white border-[#E2E2E2] hover:border-[#0B0B0B]');
+                stageItem.innerHTML = `
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <div class="w-8 h-8 rounded-full bg-[#0B0B0B] text-white flex items-center justify-center font-bold text-xs flex-shrink-0">${index + 1}</div>
+                        <div class="text-sm font-medium truncate">
+                            ${stage}
+                            ${lockMessage}
+                        </div>
+                    </div>
+                    <label class="relative inline-block w-[46px] h-6 flex-shrink-0">
+                        <input type="checkbox" class="opacity-0 w-0 h-0 peer"
+                               data-stage="${stage}"
+                               ${isEnabled ? 'checked' : ''}
+                               ${isLocked ? 'disabled' : ''}
+                               onchange="updateSelectedCounter()">
+                        <span class="absolute inset-0 bg-[#ccc] peer-checked:bg-[#0B0B0B] rounded-full cursor-pointer transition-colors duration-300 peer-disabled:cursor-not-allowed peer-disabled:opacity-60 before:content-[''] before:absolute before:h-[18px] before:w-[18px] before:left-[3px] before:bottom-[3px] before:bg-white before:rounded-full before:transition-transform before:duration-300 peer-checked:before:translate-x-[20px]"></span>
+                    </label>
+                `;
+                stagesList.appendChild(stageItem);
+            });
+
+            updateSelectedCounter();
         }
 
         function closeModal() {
-            document.getElementById('permissionsModal').classList.remove('show');
+            const modal = document.getElementById('permissionsModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
         }
 
         function selectAll() {
-            document.querySelectorAll('.stage-permission-item input[type="checkbox"]').forEach(cb => {
+            document.querySelectorAll('.stage-permission-item input[type="checkbox"]:not(:disabled)').forEach(cb => {
                 cb.checked = true;
             });
+            updateSelectedCounter();
         }
 
         function deselectAll() {
-            document.querySelectorAll('.stage-permission-item input[type="checkbox"]').forEach(cb => {
+            document.querySelectorAll('.stage-permission-item input[type="checkbox"]:not(:disabled)').forEach(cb => {
                 cb.checked = false;
             });
+            updateSelectedCounter();
         }
 
         function selectFirstHalf() {
             const checkboxes = document.querySelectorAll('.stage-permission-item input[type="checkbox"]');
             checkboxes.forEach((cb, index) => {
-                cb.checked = index < 9;
+                if (!cb.disabled) cb.checked = index < 9;
             });
+            updateSelectedCounter();
         }
 
         function selectLastHalf() {
             const checkboxes = document.querySelectorAll('.stage-permission-item input[type="checkbox"]');
             checkboxes.forEach((cb, index) => {
-                cb.checked = index >= 9;
+                if (!cb.disabled) cb.checked = index >= 9;
             });
+            updateSelectedCounter();
         }
 
         async function savePermissions() {
             const checkboxes = document.querySelectorAll('.stage-permission-item input[type="checkbox"]:checked');
             const enabledStages = Array.from(checkboxes).map(cb => cb.dataset.stage);
+
+            const btn = document.getElementById('saveBtn');
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
             try {
                 const response = await fetch('save-role-permissions', {
@@ -853,40 +508,49 @@ foreach ($roles as $role_key => $role_name) {
                     setTimeout(() => location.reload(), 1500);
                 } else {
                     showToast('Failed to save permissions: ' + result.error, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
                 }
             } catch (error) {
                 console.error('Error:', error);
                 showToast('An error occurred', 'error');
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             }
         }
 
         function showToast(message, type = 'success') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
-            const icon = toast.querySelector('i');
-            
+            const icon = document.getElementById('toastIcon');
+
             toastMessage.textContent = message;
-            toast.className = 'toast show ' + type;
-            
+            toast.classList.remove('border-emerald-500', 'border-red-500');
+
             if (type === 'error') {
-                icon.className = 'fas fa-exclamation-circle';
-                icon.style.color = '#ef4444';
+                icon.className = 'fas fa-exclamation-circle text-xl text-red-500';
+                toast.classList.add('border-red-500');
             } else {
-                icon.className = 'fas fa-check-circle';
-                icon.style.color = '#10b981';
+                icon.className = 'fas fa-check-circle text-xl text-emerald-500';
+                toast.classList.add('border-emerald-500');
             }
-            
+
+            toast.classList.remove('hidden');
+            toast.classList.add('flex', 'show');
+
             setTimeout(() => {
-                toast.classList.remove('show');
+                toast.classList.add('hidden');
+                toast.classList.remove('flex', 'show');
             }, 3000);
         }
 
         // Close modal when clicking outside
-        document.getElementById('permissionsModal').addEventListener('click', function(e) {
+        document.getElementById('permissionsModal').addEventListener('click', function (e) {
             if (e.target === this) {
                 closeModal();
             }
         });
     </script>
 </body>
+
 </html>

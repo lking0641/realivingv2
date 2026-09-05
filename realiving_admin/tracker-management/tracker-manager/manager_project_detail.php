@@ -1,6 +1,6 @@
 <?php
 // manager_project_detail.php
-include $includes ['mainbody'];
+include $includes['mainbody'];
 
 $allowedRoles = ['general_manager', 'operational_manager', 'superadmin', 'sales'];
 
@@ -82,6 +82,7 @@ if ($isNonProject) {
         return $s !== 'Samples Submitted TDS/SDS';
     }));
 }
+$total_stages = count($stages);
 
 // Progress counts
 $pending_count = $ongoing_count = $done_count = 0;
@@ -93,7 +94,7 @@ foreach ($trackerData as $d) {
     elseif ($d['status'] === 'Done')
         $done_count++;
 }
-$completion_pct = (count($stages) > 0) ? ($done_count / count($stages)) * 100 : 0;
+$completion_pct = ($total_stages > 0) ? ($done_count / $total_stages) * 100 : 0;
 
 // Payments
 $pStmt = $conn->prepare("SELECT * FROM payment_schedule WHERE client_id = ? ORDER BY id");
@@ -441,1038 +442,107 @@ if (in_array($admin_role, ['general_manager', 'operational_manager', 'superadmin
     $siteVisitPendingCount = (int) $svStmt->get_result()->fetch_row()[0];
     $myPendingTotal += $siteVisitPendingCount;
 }
-?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Dashboard — <?= htmlspecialchars($client['clientname']) ?></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
-    <style>
-        :root {
-            --bg: #f0ebe4;
-            --surface: #faf8f5;
-            --border: #e2d9ce;
-            --brown-dk: #3b1f0f;
-            --brown-md: #7a4528;
-            --brown-lt: #c49a78;
-            --brown-pale: #ecddd0;
-            --text-dk: #1c1007;
-            --text-md: #5c4033;
-            --text-lt: #9c7b6a;
-            --pending: #f59e0b;
-            --ongoing: #3b82f6;
-            --done: #10b981;
-            --radius: 10px;
-            --shadow: 0 1px 3px rgba(59, 31, 15, .08), 0 4px 16px rgba(59, 31, 15, .06);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: var(--bg);
-            font-family: 'DM Sans', sans-serif;
-            color: var(--text-dk);
-            min-height: 100vh;
-        }
-
-        .page {
-            max-width: 960px;
-            margin: 0 auto;
-            padding: 32px 20px 60px;
-        }
-
-        /* Back */
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--brown-md);
-            text-decoration: none;
-            margin-bottom: 24px;
-            transition: color .2s;
-        }
-
-        .back-link:hover {
-            color: var(--brown-dk);
-        }
-
-        /* ── Client hero card ── */
-        .hero {
-            background: var(--brown-dk);
-            border-radius: 16px;
-            padding: 30px 32px;
-            color: #fff;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at top right, rgba(196, 154, 120, .22) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .hero-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 14px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-name {
-            font-size: 21px;
-            font-weight: 700;
-            letter-spacing: -.3px;
-            margin-bottom: 3px;
-        }
-
-        .hero-project {
-            font-size: 13px;
-            opacity: .7;
-        }
-
-        .viewer-chip {
-            background: rgba(255, 255, 255, .12);
-            border: 1px solid rgba(255, 255, 255, .18);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .role-pill {
-            background: rgba(255, 255, 255, .15);
-            border-radius: 10px;
-            padding: 2px 8px;
-            font-size: 10px;
-            text-transform: capitalize;
-            letter-spacing: .3px;
-        }
-
-        .hero-pills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 18px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hpill {
-            background: rgba(255, 255, 255, .09);
-            border: 1px solid rgba(255, 255, 255, .14);
-            border-radius: 8px;
-            padding: 8px 14px;
-        }
-
-        .hpill-label {
-            font-size: 9px;
-            opacity: .55;
-            text-transform: uppercase;
-            letter-spacing: .7px;
-            margin-bottom: 3px;
-        }
-
-        .hpill-value {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        /* ── Action banner (pending approvals) ── */
-        .action-banner {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: var(--radius);
-            padding: 14px 18px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .action-banner i {
-            color: #f59e0b;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-
-        .action-banner-text {
-            font-size: 13px;
-            font-weight: 600;
-            color: #92400e;
-        }
-
-        .action-banner-text span {
-            font-size: 12px;
-            font-weight: 400;
-            color: #b45309;
-            display: block;
-            margin-top: 2px;
-        }
-
-        /* ── Stats row ── */
-        .stats-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .stat-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 20px 24px;
-            box-shadow: var(--shadow);
-        }
-
-        .stat-title {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .6px;
-            color: var(--text-lt);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .stat-pct {
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--brown-dk);
-            font-family: 'DM Mono', monospace;
-        }
-
-        .prog-track {
-            height: 6px;
-            background: var(--border);
-            border-radius: 99px;
-            overflow: hidden;
-            margin: 10px 0 12px;
-        }
-
-        .prog-fill {
-            height: 100%;
-            border-radius: 99px;
-            transition: width .6s ease;
-        }
-
-        .fill-brown {
-            background: linear-gradient(90deg, var(--brown-dk), var(--brown-lt));
-        }
-
-        .fill-green {
-            background: linear-gradient(90deg, #059669, #10b981);
-        }
-
-        .mini-stats {
-            display: flex;
-            gap: 14px;
-            flex-wrap: wrap;
-        }
-
-        .mini-stat {
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-md);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .dot-p {
-            background: var(--pending);
-        }
-
-        .dot-o {
-            background: var(--ongoing);
-        }
-
-        .dot-d {
-            background: var(--done);
-        }
-
-        .dot-g {
-            background: #10b981;
-        }
-
-        .dot-a {
-            background: #f59e0b;
-        }
-
-        /* ── Section header ── */
-        .sec-hdr {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
-
-        .sec-hdr h2 {
-            font-size: 16px;
-            font-weight: 700;
-            color: var(--brown-dk);
-            white-space: nowrap;
-        }
-
-        .sec-hdr::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* ── Timeline ── */
-        .timeline {
-            position: relative;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 27px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, var(--brown-lt), var(--border));
-            border-radius: 2px;
-        }
-
-        .tl-row {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 10px;
-            position: relative;
-        }
-
-        .tl-node {
-            flex-shrink: 0;
-            width: 56px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            padding-top: 10px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .node {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
-            border: 2px solid var(--border);
-            background: var(--surface);
-            flex-shrink: 0;
-        }
-
-        .node.pending {
-            background: #fffbeb;
-            border-color: var(--pending);
-            color: var(--pending);
-        }
-
-        .node.ongoing {
-            background: #eff6ff;
-            border-color: var(--ongoing);
-            color: var(--ongoing);
-        }
-
-        .node.done {
-            background: #f0fdf4;
-            border-color: var(--done);
-            color: var(--done);
-        }
-
-        /* ── Stage card ── */
-        .tl-card {
-            flex: 1;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px 16px;
-            box-shadow: var(--shadow);
-            transition: box-shadow .2s;
-        }
-
-        .tl-card:hover {
-            box-shadow: 0 4px 20px rgba(59, 31, 15, .11);
-        }
-
-        .tl-card.pending {
-            border-left: 3px solid var(--pending);
-        }
-
-        .tl-card.ongoing {
-            border-left: 3px solid var(--ongoing);
-        }
-
-        .tl-card.done {
-            border-left: 3px solid var(--done);
-        }
-
-        .card-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 7px;
-        }
-
-        .card-left {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            flex: 1;
-            min-width: 0;
-            flex-wrap: wrap;
-        }
-
-        .snum {
-            font-family: 'DM Mono', monospace;
-            font-size: 10px;
-            color: var(--text-lt);
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            padding: 2px 6px;
-            flex-shrink: 0;
-        }
-
-        .sname {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-dk);
-            line-height: 1.3;
-        }
-
-        .card-right {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-            flex-shrink: 0;
-        }
-
-        /* status badge */
-        .sbadge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-        }
-
-        .sbadge.pending {
-            background: #fffbeb;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
-
-        .sbadge.ongoing {
-            background: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-
-        .sbadge.done {
-            background: #f0fdf4;
-            color: #065f46;
-            border: 1px solid #6ee7b7;
-        }
-
-        /* type badge */
-        .tbadge {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .3px;
-            padding: 2px 8px;
-            border-radius: 20px;
-        }
-
-        .tb-approval {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
-
-        .tb-upload {
-            background: #ede9fe;
-            color: #5b21b6;
-            border: 1px solid #ddd6fe;
-        }
-
-        .tb-auto {
-            background: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-        }
-
-        /* card meta */
-        .cmeta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            font-size: 11px;
-            color: var(--text-lt);
-            margin-top: 5px;
-        }
-
-        .cmeta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* assigned chips */
-        .chip-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-top: 7px;
-        }
-
-        .chip {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 2px 9px;
-            font-size: 11px;
-            color: var(--text-md);
-            font-weight: 500;
-        }
-
-        /* approval preview inside card */
-        .ap-preview {
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-        }
-
-        .ap-preview-label {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: var(--text-lt);
-            margin-bottom: 5px;
-        }
-
-        .apbadge {
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .apbadge.approved {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-        }
-
-        .apbadge.rejected {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-        }
-
-        .apbadge.pending {
-            background: #f3f4f6;
-            color: #9ca3af;
-            border: 1px solid #e5e7eb;
-        }
-
-        /* file chip link */
-        .file-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 7px;
-            padding: 5px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-md);
-            text-decoration: none;
-            transition: all .2s;
-        }
-
-        .file-chip:hover {
-            background: var(--brown-pale);
-            border-color: var(--brown-lt);
-            color: var(--brown-dk);
-        }
-
-        .file-chip .needs-review {
-            background: #f59e0b;
-            color: #fff;
-            border-radius: 99px;
-            padding: 1px 7px;
-            font-size: 10px;
-            font-weight: 700;
-        }
-
-        /* open button */
-        .btn-open {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 11px;
-            background: var(--brown-dk);
-            color: #fff;
-            border-radius: 7px;
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all .2s;
-        }
-
-        .btn-open:hover {
-            background: var(--brown-md);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 10px rgba(59, 31, 15, .22);
-        }
-
-        /* ── Payment cards ── */
-        .pay-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 15px 18px;
-            margin-bottom: 10px;
-            box-shadow: var(--shadow);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 14px;
-            transition: box-shadow .2s;
-        }
-
-        .pay-card:hover {
-            box-shadow: 0 4px 16px rgba(59, 31, 15, .1);
-        }
-
-        .pay-card.paid {
-            border-left: 3px solid var(--done);
-        }
-
-        .pay-card.pending {
-            border-left: 3px solid var(--pending);
-        }
-
-        .pay-type {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .pay-pct {
-            font-size: 11px;
-            color: var(--text-lt);
-            margin-top: 2px;
-        }
-
-        .pay-date {
-            font-size: 11px;
-            color: var(--text-lt);
-            margin-top: 3px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .pay-amt {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--brown-dk);
-            font-family: 'DM Mono', monospace;
-            flex-shrink: 0;
-        }
-
-        .pstatus {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-top: 5px;
-        }
-
-        .pstatus.paid {
-            background: #f0fdf4;
-            color: #065f46;
-            border: 1px solid #6ee7b7;
-        }
-
-        .pstatus.pending {
-            background: #fffbeb;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
-
-        /* ── Client Detail Modal ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            background: rgba(0, 0, 0, 0.5);
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal-box {
-            background: white;
-            border-radius: 14px;
-            padding: 28px;
-            max-width: 580px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-            animation: modalIn .2s ease;
-        }
-
-        @keyframes modalIn {
-            from {
-                transform: scale(0.95);
-                opacity: 0
+// ── Reusable Tailwind button classes (same design system as unified_project_tracker.php
+//    and manager_status_tracker.php) ──
+$BTN_PRIMARY = "inline-flex items-center gap-2 bg-black text-white px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-neutral-800 hover:-translate-y-0.5 active:translate-y-0 transition-all";
+$BTN_PRIMARY_SM = "inline-flex items-center gap-1.5 bg-black text-white px-3 py-1.5 rounded-md text-[11px] font-bold shadow-sm hover:bg-neutral-800 hover:-translate-y-0.5 active:translate-y-0 transition-all";
+$BTN_AMBER_SM = "inline-flex items-center gap-1.5 bg-gradient-to-br from-amber-600 to-amber-500 text-white px-3 py-1.5 rounded-md text-[11px] font-bold shadow-sm hover:-translate-y-0.5 active:translate-y-0 transition-all";
+$BTN_GHOST_SM = "inline-flex items-center gap-1.5 bg-white border-2 border-neutral-200 text-neutral-600 px-3 py-1.5 rounded-md text-[11px] font-bold hover:border-black hover:text-black transition-all";
+$BTN_WHITE_ON_DARK = "inline-flex items-center gap-2 bg-white text-black px-4 py-2 rounded-lg text-xs font-bold shadow-sm hover:bg-neutral-100 hover:-translate-y-0.5 active:translate-y-0 transition-all";
+
+// ══════════════════════════════════════════════════════════════════════
+// Single-pass per-stage computation. Everything the old vertical timeline
+// computed inside its foreach is computed ONCE here and stored in
+// $stageRender[$idx], then rendered twice below (master list + detail
+// panel) — same pattern unified_project_tracker.php uses for its split
+// master/detail view, but without re-running every query a second time.
+// ══════════════════════════════════════════════════════════════════════
+$stageRender = [];
+foreach ($stages as $idx => $stage) {
+    $stageData = $trackerData[$stage] ?? null;
+    $isApproval = in_array($stage, $approvalStages);
+    $isFileUpload = in_array($stage, $fileUploadStages);
+    $isAuto = in_array($stage, $autoStages);
+    $isAccounting = ($stage === 'Accounting (Order Processing)');
+    $updated_at = $stageData['updated_at'] ?? null;
+    $updatedBy = $stageData['updated_by_name'] ?? null;
+    $assigned = $stageData['assigned_people'] ?? [];
+    $status = $stageData ? $stageData['status'] : 'Pending';
+    $dpPct = null;
+    $dpAmt = null;
+
+    // Auto-tracked overrides
+    if ($stage === 'Downpayment') {
+        $dpS = $conn->prepare("SELECT status FROM payment_schedule WHERE client_id=? AND payment_type LIKE '%Down%' LIMIT 1");
+        $dpS->bind_param("i", $client_id);
+        $dpS->execute();
+        $dpR = $dpS->get_result()->fetch_assoc();
+        $status = ($dpR && $dpR['status'] === 'Paid') ? 'Done' : 'Pending';
+        $dpPct = ($client['business_type'] === 'Non-Project') ? 50 : 30;
+        $dpAmt = ($client['total_project_cost'] ?? 0) * ($dpPct / 100);
+    } elseif ($stage === 'BILLING') {
+        $bS = $conn->prepare("SELECT COUNT(*) AS total,SUM(CASE WHEN status='Paid' THEN 1 ELSE 0 END) AS paid FROM payment_schedule WHERE client_id=? AND payment_type NOT LIKE '%Down Payment%'");
+        $bS->bind_param("i", $client_id);
+        $bS->execute();
+        $bR = $bS->get_result()->fetch_assoc();
+        $dpC = $conn->prepare("SELECT COUNT(*) AS dp FROM payment_schedule WHERE client_id=? AND payment_type LIKE '%Down Payment%' AND status='Paid'");
+        $dpC->bind_param("i", $client_id);
+        $dpC->execute();
+        $dpPaid = $dpC->get_result()->fetch_assoc()['dp'] > 0;
+        $hasCollections = $bR['total'] > 0;
+        $allCollectionsPaid = $hasCollections && $bR['paid'] == $bR['total'];
+        // For Project type: also require installation to be 100% complete before marking Done
+        $instAllDone = true;
+        if (($client['business_type'] ?? '') === 'Project') {
+            $instStmt = $conn->prepare("SELECT CASE WHEN COUNT(*)=0 THEN 0 WHEN COUNT(*)=SUM(CASE WHEN installation_status='Done' THEN 1 ELSE 0 END) THEN 1 ELSE 0 END AS all_done FROM (SELECT installation_status FROM quotation_entries WHERE client_id=? UNION ALL SELECT installation_status FROM quotation_fixed_sizes WHERE client_id=?) x");
+            $instStmt->bind_param("ii", $client_id, $client_id);
+            $instStmt->execute();
+            $instAllDone = (bool) ($instStmt->get_result()->fetch_assoc()['all_done'] ?? false);
+        }
+        if ($allCollectionsPaid && $instAllDone)
+            $status = 'Done';
+        elseif ($bR['paid'] > 0 || $dpPaid)
+            $status = 'Ongoing';
+        else
+            $status = 'Pending';
+    } elseif (in_array($stage, ['Fabrication', 'Delivery', 'Installation'])) {
+        $col = strtolower($stage) . '_status';
+        $iS = $conn->prepare("SELECT CASE WHEN COUNT(*)=0 THEN 'Pending' WHEN COUNT(*)=SUM(CASE WHEN $col='Done' THEN 1 ELSE 0 END) THEN 'Done' WHEN SUM(CASE WHEN $col IN('Ongoing','Incomplete','Punchlist') THEN 1 ELSE 0 END)>0 THEN 'Ongoing' ELSE 'Pending' END AS s FROM (SELECT $col FROM quotation_entries WHERE client_id=? UNION ALL SELECT $col FROM quotation_fixed_sizes WHERE client_id=?) x");
+        $iS->bind_param("ii", $client_id, $client_id);
+        $iS->execute();
+        $status = $iS->get_result()->fetch_assoc()['s'] ?? 'Pending';
+    }
+
+    $sc = strtolower($status);
+    $icon = getStageIcon($stage);
+    $preview = $isApproval ? ($approvalPreviews[$stage] ?? null) : null;
+
+    // For GM/OM: only count files where step1 is done AND other GM/OM hasn't already approved
+    if ($isApproval && in_array($admin_role, ['general_manager', 'operational_manager']) && isset($trackerData[$stage])) {
+        $gmOmPreviewStages2 = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)', 'Production Data Submittals'];
+        $step1MapInline = [
+            'Rough Estimation' => ['designer'],
+            'Samples Submitted TDS/SDS' => ['designer', 'technical_designer'],
+            'Quotation' => ['designer'],
+            'Bill of Materials (BOM)' => ['technical_designer'],
+            'Purchase Order (Submit to accounting)' => ['accounting'],
+            'Production Data Submittals' => ['technical_designer'],
+        ];
+        if (in_array($stage, $gmOmPreviewStages2)) {
+            $otherRoleInline = ($admin_role === 'general_manager') ? 'operational_manager' : 'general_manager';
+            $s1RolesInline = $step1MapInline[$stage] ?? [];
+            $s1ClausesInline = '';
+            foreach ($s1RolesInline as $s1ri) {
+                $s1ClausesInline .= "
+              AND EXISTS (
+                  SELECT 1 FROM stage_approval_reviews sar_s1
+                  WHERE sar_s1.approval_id = sa.id
+                    AND sar_s1.reviewer_role = '{$s1ri}'
+                    AND sar_s1.review_status = 'approved'
+              )";
             }
-
-            to {
-                transform: scale(1);
-                opacity: 1
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 18px;
-            padding-bottom: 14px;
-            border-bottom: 2px solid #f3f4f6;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: #3b1f0f;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .modal-close {
-            font-size: 20px;
-            color: #9ca3af;
-            background: none;
-            border: none;
-            cursor: pointer;
-            line-height: 1;
-            padding: 4px;
-        }
-
-        .modal-close:hover {
-            color: #374151;
-        }
-
-        .modal-row {
-            display: grid;
-            grid-template-columns: 160px 1fr;
-            padding: 10px 0;
-            border-bottom: 1px solid #f3f4f6;
-            align-items: start;
-            gap: 10px;
-        }
-
-        .modal-row:last-child {
-            border-bottom: none;
-        }
-
-        .modal-row-label {
-            font-weight: 600;
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .modal-row-value {
-            color: #111;
-            font-size: 13px;
-        }
-
-        @media(max-width:640px) {
-            .stats-row {
-                grid-template-columns: 1fr;
-            }
-
-            .timeline::before {
-                left: 19px;
-            }
-
-            .tl-node {
-                width: 40px;
-            }
-
-            .node {
-                width: 28px;
-                height: 28px;
-                font-size: 11px;
-            }
-        }
-    </style>
-</head>
-
-<body>
-    <div class="page">
-
-        <a href="manager-status-tracker" class="back-link"><i class="fas fa-arrow-left"></i> Back to Status
-            Tracker</a>
-
-        <!-- Hero -->
-        <div class="hero">
-            <div class="hero-top">
-                <div>
-                    <div class="hero-name"><?= htmlspecialchars($client['clientname']) ?></div>
-                    <div class="hero-project"><?= htmlspecialchars($client['nameproject']) ?></div>
-                </div>
-                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end;">
-                    <button onclick="document.getElementById('clientDetailModal').classList.add('open')" style="background:white; color:#3b1f0f; padding:8px 16px; border:none; border-radius:8px;
-           cursor:pointer; font-weight:700; font-size:13px; display:inline-flex;
-           align-items:center; gap:7px; transition:all 0.2s; flex-shrink:0;">
-                        <i class="fas fa-info-circle"></i> View Details
-                    </button>
-                    <div class="viewer-chip">
-                        <i class="fas fa-user-shield"></i>
-                        <?= htmlspecialchars($userInfo['full_name']) ?>
-                        <span class="role-pill"><?= str_replace('_', ' ', $admin_role) ?></span>
-                    </div>
-                </div><!-- /viewer wrapper -->
-            </div><!-- closes hero-top -->
-            <div class="hero-pills">
-                <div class="hpill">
-                    <div class="hpill-label">Reference</div>
-                    <div class="hpill-value"><?= htmlspecialchars($client['reference_number']) ?></div>
-                </div>
-                <div class="hpill">
-                    <div class="hpill-label">Type</div>
-                    <div class="hpill-value"><?= htmlspecialchars($business_type_label) ?></div>
-                </div>
-                <div class="hpill">
-                    <div class="hpill-label">Assigned To</div>
-                    <div class="hpill-value"><?= htmlspecialchars($client['admin_name'] ?? 'Unassigned') ?></div>
-                </div>
-                <div class="hpill">
-                    <div class="hpill-label">Total Cost</div>
-                    <div class="hpill-value">₱<?= number_format($client['total_project_cost'] ?? 0, 2) ?></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Action banner — approval stages -->
-        <?php if ($myPendingTotal > 0): ?>
-            <div class="action-banner">
-                <i class="fas fa-exclamation-circle"></i>
-                <div class="action-banner-text">
-                    You have <?= $myPendingTotal ?> file<?= $myPendingTotal !== 1 ? 's' : '' ?> waiting for your approval.
-                    <span>Click the <strong>"Files"</strong> chip on the relevant stage below to review and approve or
-                        reject.</span>
-                </div>
-            </div>
-        <?php endif; ?>
-
-        <!-- Action banner — 2D/3D Layout pending -->
-        <?php if ($layoutPendingCount > 0): ?>
-            <div
-                style="background:#fef3c7; border:1px solid #fde68a; border-radius:var(--radius); padding:14px 18px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                <div style="display:flex; align-items:center; gap:12px;">
-                    <i class="fas fa-bell" style="color:#d97706; font-size:18px; flex-shrink:0;"></i>
-                    <div>
-                        <div style="font-size:13px; font-weight:700; color:#92400e;">
-                            <?= $layoutPendingCount ?> pending 2D/3D Layout
-                            approval<?= $layoutPendingCount > 1 ? 's' : '' ?> waiting for your review
-                        </div>
-                        <div style="font-size:12px; color:#b45309; margin-top:2px;">
-                            The designer has requested your approval on layout attachments.
-                        </div>
-                    </div>
-                </div>
-                <a href="designer-2d3d-layout?client_id=<?= $client_id ?>&back=manager_detail"
-                    style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:8px 16px; border-radius:7px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:6px; white-space:nowrap; flex-shrink:0;">
-                    <i class="fas fa-arrow-right"></i> Go to 2D/3D Layout
-                </a>
-            </div>
-        <?php endif; ?>
-
-        <!-- Stats -->
-        <div class="stats-row">
-            <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-tasks"></i> Project Completion</div>
-                <div class="stat-pct"><?= number_format($completion_pct, 1) ?>%</div>
-                <div class="prog-track">
-                    <div class="prog-fill fill-brown" style="width:<?= $completion_pct ?>%"></div>
-                </div>
-                <div class="mini-stats">
-                    <span class="mini-stat"><span class="dot dot-p"></span><?= $pending_count ?> Pending</span>
-                    <span class="mini-stat"><span class="dot dot-o"></span><?= $ongoing_count ?> Ongoing</span>
-                    <span class="mini-stat"><span class="dot dot-d"></span><?= $done_count ?> Done</span>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-title"><i class="fas fa-money-bill-wave"></i> Payment Progress</div>
-                <div class="stat-pct"><?= number_format($pay_pct, 1) ?>%</div>
-                <div class="prog-track">
-                    <div class="prog-fill fill-green" style="width:<?= $pay_pct ?>%"></div>
-                </div>
-                <div class="mini-stats">
-                    <span class="mini-stat"><span class="dot dot-g"></span>₱<?= number_format($total_paid, 0) ?>
-                        Collected</span>
-                    <span class="mini-stat"><span
-                            class="dot dot-a"></span>₱<?= number_format($client['remaining_balance'] ?? 0, 0) ?>
-                        Balance</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Timeline -->
-        <div class="sec-hdr">
-            <h2><i class="fas fa-stream"></i> Project Stages</h2>
-        </div>
-        <div class="timeline">
-            <?php foreach ($stages as $idx => $stage):
-                $stageData = $trackerData[$stage] ?? null;
-                $isApproval = in_array($stage, $approvalStages);
-                $isFileUpload = in_array($stage, $fileUploadStages);
-                $isAuto = in_array($stage, $autoStages);
-                $isAccounting = ($stage === 'Accounting (Order Processing)');
-                $updated_at = $stageData['updated_at'] ?? null;
-                $updatedBy = $stageData['updated_by_name'] ?? null;
-                $assigned = $stageData['assigned_people'] ?? [];
-                $status = $stageData ? $stageData['status'] : 'Pending';
-
-                // Auto-tracked overrides
-                if ($stage === 'Downpayment') {
-                    $dpS = $conn->prepare("SELECT status FROM payment_schedule WHERE client_id=? AND payment_type LIKE '%Down%' LIMIT 1");
-                    $dpS->bind_param("i", $client_id);
-                    $dpS->execute();
-                    $dpR = $dpS->get_result()->fetch_assoc();
-                    $status = ($dpR && $dpR['status'] === 'Paid') ? 'Done' : 'Pending';
-                    $dpPct = ($client['business_type'] === 'Non-Project') ? 50 : 30;
-                    $dpAmt = ($client['total_project_cost'] ?? 0) * ($dpPct / 100);
-                } elseif ($stage === 'BILLING') {
-                    $bS = $conn->prepare("SELECT COUNT(*) AS total,SUM(CASE WHEN status='Paid' THEN 1 ELSE 0 END) AS paid FROM payment_schedule WHERE client_id=? AND payment_type NOT LIKE '%Down Payment%'");
-                    $bS->bind_param("i", $client_id);
-                    $bS->execute();
-                    $bR = $bS->get_result()->fetch_assoc();
-                    $dpC = $conn->prepare("SELECT COUNT(*) AS dp FROM payment_schedule WHERE client_id=? AND payment_type LIKE '%Down Payment%' AND status='Paid'");
-                    $dpC->bind_param("i", $client_id);
-                    $dpC->execute();
-                    $dpPaid = $dpC->get_result()->fetch_assoc()['dp'] > 0;
-                    $hasCollections = $bR['total'] > 0;
-                    $allCollectionsPaid = $hasCollections && $bR['paid'] == $bR['total'];
-                    // For Project type: also require installation to be 100% complete before marking Done
-                    $instAllDone = true;
-                    if (($client['business_type'] ?? '') === 'Project') {
-                        $instStmt = $conn->prepare("SELECT CASE WHEN COUNT(*)=0 THEN 0 WHEN COUNT(*)=SUM(CASE WHEN installation_status='Done' THEN 1 ELSE 0 END) THEN 1 ELSE 0 END AS all_done FROM (SELECT installation_status FROM quotation_entries WHERE client_id=? UNION ALL SELECT installation_status FROM quotation_fixed_sizes WHERE client_id=?) x");
-                        $instStmt->bind_param("ii", $client_id, $client_id);
-                        $instStmt->execute();
-                        $instAllDone = (bool) ($instStmt->get_result()->fetch_assoc()['all_done'] ?? false);
-                    }
-                    if ($allCollectionsPaid && $instAllDone)
-                        $status = 'Done';
-                    elseif ($bR['paid'] > 0 || $dpPaid)
-                        $status = 'Ongoing';
-                    else
-                        $status = 'Pending';
-                } elseif (in_array($stage, ['Fabrication', 'Delivery', 'Installation'])) {
-                    $col = strtolower($stage) . '_status';
-                    $iS = $conn->prepare("SELECT CASE WHEN COUNT(*)=0 THEN 'Pending' WHEN COUNT(*)=SUM(CASE WHEN $col='Done' THEN 1 ELSE 0 END) THEN 'Done' WHEN SUM(CASE WHEN $col IN('Ongoing','Incomplete','Punchlist') THEN 1 ELSE 0 END)>0 THEN 'Ongoing' ELSE 'Pending' END AS s FROM (SELECT $col FROM quotation_entries WHERE client_id=? UNION ALL SELECT $col FROM quotation_fixed_sizes WHERE client_id=?) x");
-                    $iS->bind_param("ii", $client_id, $client_id);
-                    $iS->execute();
-                    $status = $iS->get_result()->fetch_assoc()['s'] ?? 'Pending';
-                }
-
-                $sc = strtolower($status);
-                $icon = getStageIcon($stage);
-                $preview = $isApproval ? ($approvalPreviews[$stage] ?? null) : null;
-                // For GM/OM: only count files where step1 is done AND other GM/OM hasn't already approved
-                if ($isApproval && in_array($admin_role, ['general_manager', 'operational_manager']) && isset($trackerData[$stage])) {
-                    $gmOmPreviewStages2 = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)', 'Production Data Submittals'];
-                    $step1MapInline = [
-                        'Rough Estimation' => ['designer'],
-                        'Samples Submitted TDS/SDS' => ['designer', 'technical_designer'],
-                        'Quotation' => ['designer'],
-                        'Bill of Materials (BOM)' => ['technical_designer'],
-                        'Purchase Order (Submit to accounting)' => ['accounting'],
-                        'Production Data Submittals' => ['technical_designer'],
-                    ];
-                    if (in_array($stage, $gmOmPreviewStages2)) {
-                        $otherRoleInline = ($admin_role === 'general_manager') ? 'operational_manager' : 'general_manager';
-                        $s1RolesInline = $step1MapInline[$stage] ?? [];
-                        $s1ClausesInline = '';
-                        foreach ($s1RolesInline as $s1ri) {
-                            $s1ClausesInline .= "
-                  AND EXISTS (
-                      SELECT 1 FROM stage_approval_reviews sar_s1
-                      WHERE sar_s1.approval_id = sa.id
-                        AND sar_s1.reviewer_role = '{$s1ri}'
-                        AND sar_s1.review_status = 'approved'
-                  )";
-                        }
-                        $pfc = $conn->prepare("
+            $pfc = $conn->prepare("
                 SELECT COUNT(*) FROM stage_approvals sa
                 WHERE sa.stage_id = ?
                   AND sa.approval_status = 'pending'
@@ -1487,292 +557,651 @@ if (in_array($admin_role, ['general_manager', 'operational_manager', 'superadmin
                   )
                   {$s1ClausesInline}
             ");
-                        $pfcStageId = $stageData['id'] ?? 0;
-                        $pfc->bind_param("iss", $pfcStageId, $admin_role, $otherRoleInline);
-                        $pfc->execute();
-                        $pendingFiles = (int) $pfc->get_result()->fetch_row()[0];
-                    } else {
-                        $pendingFiles = $isApproval ? ($pendingApprovalCounts[$stage] ?? 0) : 0;
-                    }
-                } else {
-                    $pendingFiles = $isApproval ? ($pendingApprovalCounts[$stage] ?? 0) : 0;
-                }
-                $canApproveThis = $isApproval ? canApprove($stage, $admin_role, $isHead, $approvalStageRoles) : false;
-                $fileCount = ($stageData && ($isApproval || $isFileUpload || $isAccounting)) ? getFileCount($conn, $stageData['id']) : 0;
-                $filesLink = "manager-stage-files?client_id={$client_id}&stage_id=" . ($stageData['id'] ?? 0) . "&stage=" . urlencode($stage);
+            $pfcStageId = $stageData['id'] ?? 0;
+            $pfc->bind_param("iss", $pfcStageId, $admin_role, $otherRoleInline);
+            $pfc->execute();
+            $pendingFiles = (int) $pfc->get_result()->fetch_row()[0];
+        } else {
+            $pendingFiles = $isApproval ? ($pendingApprovalCounts[$stage] ?? 0) : 0;
+        }
+    } else {
+        $pendingFiles = $isApproval ? ($pendingApprovalCounts[$stage] ?? 0) : 0;
+    }
 
-                // Navigation links
-                $openLink = null;
-                if ($stage === '2D / 3D Layout')
-                    $openLink = BASE_URL . "designer-2d3d-layout?client_id={$client_id}&back=manager_detail";
-                elseif (in_array($stage, ['Fabrication', 'Delivery', 'Installation']))
-                    $openLink = BASE_URL . "item-tracker?client_id={$client_id}&stage=" . urlencode($stage) . "&view_only=1&came_from=manager";
-                elseif ($stage === 'BILLING' || $stage === 'Downpayment')
-                    $openLink = BASE_URL . "payment-tracker?client_id={$client_id}&view_only=1";
-                ?>
-                <div class="tl-row">
-                    <div class="tl-node">
-                        <div class="node <?= $sc ?>"><i class="fas <?= $icon ?>"></i></div>
+    $canApproveThis = $isApproval ? canApprove($stage, $admin_role, $isHead, $approvalStageRoles) : false;
+    $fileCount = ($stageData && ($isApproval || $isFileUpload || $isAccounting)) ? getFileCount($conn, $stageData['id']) : 0;
+    $filesLink = "manager-stage-files?client_id={$client_id}&stage_id=" . ($stageData['id'] ?? 0) . "&stage=" . urlencode($stage);
+
+    // Navigation links
+    $openLink = null;
+    if ($stage === '2D / 3D Layout')
+        $openLink = BASE_URL . "designer-2d3d-layout?client_id={$client_id}&back=manager_detail";
+    elseif (in_array($stage, ['Fabrication', 'Delivery', 'Installation']))
+        $openLink = BASE_URL . "item-tracker?client_id={$client_id}&stage=" . urlencode($stage) . "&view_only=1&came_from=manager";
+    elseif ($stage === 'BILLING' || $stage === 'Downpayment')
+        $openLink = BASE_URL . "payment-tracker?client_id={$client_id}&view_only=1";
+
+    // Tailwind status color sets — same convention as unified_project_tracker.php
+    $statusColors = [
+        'pending' => [
+            'node' => 'bg-white text-neutral-300 border-2 border-neutral-200',
+            'left' => 'border-l-neutral-200',
+            'chip' => 'bg-neutral-100 text-neutral-500 border-neutral-300',
+            'text' => 'text-neutral-400',
+        ],
+        'ongoing' => [
+            'node' => 'bg-blue-600 text-white shadow-md ring-4 ring-blue-100',
+            'left' => 'border-l-blue-500',
+            'chip' => 'bg-blue-600 text-white border-blue-600',
+            'text' => 'text-blue-600',
+        ],
+        'done' => [
+            'node' => 'bg-emerald-500 text-white shadow-sm',
+            'left' => 'border-l-emerald-300',
+            'chip' => 'bg-emerald-50 text-emerald-600 border-emerald-200',
+            'text' => 'text-emerald-500',
+        ],
+    ];
+    $scSet = $statusColors[$sc] ?? $statusColors['pending'];
+
+    $highlightRing = ($stage === '2D / 3D Layout' && $layoutPendingCount > 0)
+        || ($stage === 'Site Visit' && $siteVisitPendingCount > 0 && in_array($admin_role, ['general_manager', 'operational_manager', 'superadmin']));
+
+    $stageRender[$idx] = [
+        'stage' => $stage,
+        'stageData' => $stageData,
+        'isApproval' => $isApproval,
+        'isFileUpload' => $isFileUpload,
+        'isAuto' => $isAuto,
+        'isAccounting' => $isAccounting,
+        'updated_at' => $updated_at,
+        'updatedBy' => $updatedBy,
+        'assigned' => $assigned,
+        'status' => $status,
+        'sc' => $sc,
+        'icon' => $icon,
+        'preview' => $preview,
+        'pendingFiles' => $pendingFiles,
+        'canApproveThis' => $canApproveThis,
+        'fileCount' => $fileCount,
+        'filesLink' => $filesLink,
+        'openLink' => $openLink,
+        'scSet' => $scSet,
+        'highlightRing' => $highlightRing,
+        'dpPct' => $dpPct,
+        'dpAmt' => $dpAmt,
+    ];
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Dashboard — <?= htmlspecialchars($client['clientname']) ?></title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <!-- Tailwind is compiled via your npm build (output.css) — same design system as
+         unified_project_tracker.php and manager_status_tracker.php. -->
+    <style>
+        /* Thin styled scrollbar for the master list panel — same as unified_project_tracker.php */
+        #masterListScroll::-webkit-scrollbar { width: 6px; }
+        #masterListScroll::-webkit-scrollbar-track { background: transparent; }
+        #masterListScroll::-webkit-scrollbar-thumb { background: #d4d4d4; border-radius: 999px; }
+        #masterListScroll::-webkit-scrollbar-thumb:hover { background: #a3a3a3; }
+
+        @keyframes fadeInPanel {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stage-detail-panel:not(.hidden) { animation: fadeInPanel .18s ease-out; }
+    </style>
+</head>
+
+<body class="bg-neutral-100 font-['Inter'] text-black min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 pb-16">
+
+        <a href="manager-status-tracker"
+            class="inline-flex items-center gap-2 text-sm font-semibold text-neutral-500 hover:text-black transition mb-6">
+            <i class="fas fa-arrow-left"></i> Back to Status Tracker
+        </a>
+
+        <!-- Hero -->
+        <div class="bg-black rounded-2xl p-7 sm:p-8 text-white mb-6 relative overflow-hidden">
+            <div
+                class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,.08)_0%,transparent_65%)] pointer-events-none">
+            </div>
+            <div class="flex justify-between items-start flex-wrap gap-4 relative z-10">
+                <div>
+                    <div class="text-xl sm:text-2xl font-bold tracking-tight"><?= htmlspecialchars($client['clientname']) ?></div>
+                    <div class="text-sm text-white/70 mt-0.5"><?= htmlspecialchars($client['nameproject']) ?></div>
+                </div>
+                <div class="flex items-center gap-2.5 flex-wrap justify-end">
+                    <button onclick="document.getElementById('clientDetailModal').classList.remove('hidden'); document.getElementById('clientDetailModal').classList.add('flex');"
+                        class="<?= $BTN_WHITE_ON_DARK ?>">
+                        <i class="fas fa-info-circle"></i> View Details
+                    </button>
+                    <div
+                        class="bg-white/10 border border-white/20 rounded-full px-3.5 py-1.5 text-xs font-semibold flex items-center gap-2 flex-shrink-0">
+                        <i class="fas fa-user-shield"></i>
+                        <?= htmlspecialchars($userInfo['full_name']) ?>
+                        <span
+                            class="bg-white/15 rounded px-2 py-0.5 text-[11px] capitalize"><?= str_replace('_', ' ', $admin_role) ?></span>
                     </div>
-                    <div class="tl-card <?= $sc ?>" <?= ($stage === '2D / 3D Layout' && $layoutPendingCount > 0) ? 'style="border-color:#f59e0b; box-shadow:0 0 0 2px #fcd34d55;"' : '' ?>     <?= ($stage === 'Site Visit' && $siteVisitPendingCount > 0 && in_array($admin_role, ['general_manager', 'operational_manager', 'superadmin'])) ? 'style="border-color:#f59e0b; box-shadow:0 0 0 2px #fcd34d55;"' : '' ?>>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-2.5 mt-6 relative z-10">
+                <div class="bg-white/10 border border-white/15 rounded-lg px-3.5 py-2 text-xs min-w-[110px]">
+                    <div class="opacity-60 text-[10px] uppercase tracking-wide mb-0.5">Reference</div>
+                    <div class="font-semibold break-all"><?= htmlspecialchars($client['reference_number']) ?></div>
+                </div>
+                <div class="bg-white/10 border border-white/15 rounded-lg px-3.5 py-2 text-xs min-w-[110px]">
+                    <div class="opacity-60 text-[10px] uppercase tracking-wide mb-0.5">Type</div>
+                    <div class="font-semibold"><?= htmlspecialchars($business_type_label) ?></div>
+                </div>
+                <div class="bg-white/10 border border-white/15 rounded-lg px-3.5 py-2 text-xs min-w-[110px]">
+                    <div class="opacity-60 text-[10px] uppercase tracking-wide mb-0.5">Assigned To</div>
+                    <div class="font-semibold"><?= htmlspecialchars($client['admin_name'] ?? 'Unassigned') ?></div>
+                </div>
+                <div class="bg-white/10 border border-white/15 rounded-lg px-3.5 py-2 text-xs min-w-[110px]">
+                    <div class="opacity-60 text-[10px] uppercase tracking-wide mb-0.5">Total Cost</div>
+                    <div class="font-semibold">₱<?= number_format($client['total_project_cost'] ?? 0, 2) ?></div>
+                </div>
+            </div>
+        </div>
 
-                        <!-- Top -->
-                        <div class="card-top">
-                            <div class="card-left">
-                                <span class="snum"><?= str_pad($idx + 1, 2, '0', STR_PAD_LEFT) ?></span>
-                                <span class="sname"><?= htmlspecialchars($stage) ?></span>
-                                <?php if ($stage === '2D / 3D Layout'): ?>
-                                    <span
-                                        style="background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px 8px;font-size:10px;font-weight:600;color:var(--text-md);">
-                                        <i class="fas fa-sync-alt"></i> Rev <?= $current_revision ?>
+        <!-- Action banner — approval stages -->
+        <?php if ($myPendingTotal > 0): ?>
+            <div
+                class="bg-amber-50 border-2 border-amber-400 rounded-xl px-5 py-3.5 mb-4 flex items-center gap-3.5 flex-wrap">
+                <i class="fas fa-exclamation-circle text-amber-600 text-xl flex-shrink-0"></i>
+                <div>
+                    <div class="font-bold text-sm text-amber-800">
+                        You have <?= $myPendingTotal ?> file<?= $myPendingTotal !== 1 ? 's' : '' ?> waiting for your approval.
+                    </div>
+                    <div class="text-xs text-amber-600 mt-0.5">
+                        Select the relevant stage below and click <strong>"Files"</strong> to review and approve or reject.
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Action banner — 2D/3D Layout pending -->
+        <?php if ($layoutPendingCount > 0): ?>
+            <div
+                class="bg-amber-50 border-2 border-amber-400 rounded-xl px-5 py-3.5 mb-4 flex items-center justify-between gap-3.5 flex-wrap">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-bell text-amber-600 text-xl flex-shrink-0"></i>
+                    <div>
+                        <div class="font-bold text-sm text-amber-800">
+                            <?= $layoutPendingCount ?> pending 2D/3D Layout approval<?= $layoutPendingCount > 1 ? 's' : '' ?>
+                            waiting for your review
+                        </div>
+                        <div class="text-xs text-amber-600 mt-0.5">
+                            The designer has requested your approval on layout attachments.
+                        </div>
+                    </div>
+                </div>
+                <a href="designer-2d3d-layout?client_id=<?= $client_id ?>&back=manager_detail"
+                    class="<?= $BTN_PRIMARY ?> !bg-amber-600 hover:!bg-amber-700 flex-shrink-0">
+                    <i class="fas fa-arrow-right"></i> Go to 2D/3D Layout
+                </a>
+            </div>
+        <?php endif; ?>
+
+        <!-- ══════════════ Split Master–Detail Stage Viewer ══════════════ -->
+        <div class="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-5 items-start">
+
+            <!-- ── MASTER: stage list ── -->
+            <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm lg:sticky lg:top-6 overflow-hidden">
+                <div class="px-4 sm:px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wide text-neutral-500">Stages</span>
+                    <span class="text-[11px] font-mono font-bold text-neutral-400"><?= $total_stages ?></span>
+                </div>
+                <div id="masterListScroll" class="max-h-[70vh] overflow-y-auto p-2.5 flex flex-col gap-1.5">
+                    <?php foreach ($stageRender as $idx => $r): ?>
+                        <div id="master-item-<?= $idx ?>" data-idx="<?= $idx ?>" data-status="<?= htmlspecialchars($r['status']) ?>"
+                            onclick="selectStage(<?= $idx ?>)"
+                            class="master-item flex items-center gap-3 px-3 py-2.5 rounded-xl border border-neutral-200 bg-white cursor-pointer transition-all hover:border-neutral-300">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center text-[11px] flex-shrink-0 <?= $r['scSet']['node'] ?>">
+                                <?php if ($r['status'] === 'Done'): ?>
+                                    <i class="fas fa-check"></i>
+                                <?php elseif ($r['status'] === 'Ongoing'): ?>
+                                    <i class="fas fa-circle-notch fa-spin"></i>
+                                <?php else: ?>
+                                    <i class="fas <?= $r['icon'] ?> text-[10px]"></i>
+                                <?php endif; ?>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <div class="master-label text-[13px] font-bold text-black truncate flex items-center gap-1.5">
+                                    <?= htmlspecialchars($r['stage']) ?>
+                                    <?php if ($r['highlightRing']): ?>
+                                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 flex-shrink-0"></span>
+                                    <?php endif; ?>
+                                    <?php if ($r['isApproval'] && $r['pendingFiles'] > 0): ?>
+                                        <span class="bg-amber-500 text-white rounded-full px-1.5 text-[9px] font-bold flex-shrink-0"><?= $r['pendingFiles'] ?></span>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="master-sub text-[10px] font-semibold uppercase tracking-wide <?= $r['scSet']['text'] ?>">
+                                    <?= htmlspecialchars($r['status']) ?>
+                                </div>
+                            </div>
+                            <i class="master-chevron fas fa-chevron-right text-[9px] text-neutral-300 flex-shrink-0"></i>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+
+            <!-- ── DETAIL: selected stage ── -->
+            <div id="detailPanelWrap">
+
+                <!-- Project overview -->
+                <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden mb-3">
+                    <div class="flex items-center flex-wrap gap-y-4 gap-x-6 px-5 sm:px-7 py-5">
+                        <div class="flex items-center gap-2.5 pr-6 mr-2 border-r border-neutral-100 flex-shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-neutral-900 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-layer-group text-white text-[11px]"></i>
+                            </div>
+                            <div>
+                                <div class="text-[13px] font-bold text-black leading-tight">Project overview</div>
+                                <div class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wide"><?= $total_stages ?> stages total</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-6 sm:gap-8 flex-1 justify-between sm:justify-start">
+                            <div class="flex items-center gap-3 group">
+                                <div class="relative w-12 h-12 rounded-full bg-neutral-50 border border-neutral-200 flex items-center justify-center text-[16px] font-bold text-neutral-700 transition-transform group-hover:scale-105">
+                                    <?= $pending_count ?>
+                                </div>
+                                <div>
+                                    <div class="text-[12px] font-bold text-black leading-tight">Pending</div>
+                                    <div class="text-[10px] text-neutral-400">Not started</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 group">
+                                <div class="relative w-12 h-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-[16px] font-bold text-blue-600 transition-transform group-hover:scale-105">
+                                    <?= $ongoing_count ?>
+                                </div>
+                                <div>
+                                    <div class="text-[12px] font-bold text-black leading-tight">Ongoing</div>
+                                    <div class="text-[10px] text-neutral-400">In progress</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 group">
+                                <div class="relative w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-[16px] font-bold text-emerald-600 transition-transform group-hover:scale-105">
+                                    <?= $done_count ?>
+                                </div>
+                                <div>
+                                    <div class="text-[12px] font-bold text-black leading-tight">Done</div>
+                                    <div class="text-[10px] text-neutral-400">Completed</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5 flex-shrink-0 ml-auto">
+                            <span class="text-[18px] font-bold text-black font-mono"><?= number_format($completion_pct, 0) ?>%</span>
+                            <div class="w-20 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-neutral-900 rounded-full transition-all duration-500" style="width:<?= $completion_pct ?>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment overview -->
+                <div class="bg-white border border-neutral-200 rounded-2xl shadow-sm overflow-hidden mb-5">
+                    <div class="flex items-center flex-wrap gap-y-4 gap-x-6 px-5 sm:px-7 py-5">
+                        <div class="flex items-center gap-2.5 pr-6 mr-2 border-r border-neutral-100 flex-shrink-0">
+                            <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-money-bill-wave text-white text-[11px]"></i>
+                            </div>
+                            <div>
+                                <div class="text-[13px] font-bold text-black leading-tight">Payment overview</div>
+                                <div class="text-[10px] text-neutral-400 font-semibold uppercase tracking-wide">Total ₱<?= number_format($client['total_project_cost'] ?? 0, 0) ?></div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-6 sm:gap-8 flex-1 justify-between sm:justify-start">
+                            <div class="flex items-center gap-3 group">
+                                <div class="relative w-12 h-12 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center transition-transform group-hover:scale-105">
+                                    <i class="fas fa-check text-emerald-600 text-[15px]"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[12px] font-bold text-black leading-tight">₱<?= number_format($total_paid, 0) ?></div>
+                                    <div class="text-[10px] text-neutral-400">Collected</div>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 group">
+                                <div class="relative w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center transition-transform group-hover:scale-105">
+                                    <i class="fas fa-clock text-amber-600 text-[15px]"></i>
+                                </div>
+                                <div>
+                                    <div class="text-[12px] font-bold text-black leading-tight">₱<?= number_format($client['remaining_balance'] ?? 0, 0) ?></div>
+                                    <div class="text-[10px] text-neutral-400">Balance</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2.5 flex-shrink-0 ml-auto">
+                            <span class="text-[18px] font-bold text-black font-mono"><?= number_format($pay_pct, 0) ?>%</span>
+                            <div class="w-20 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" style="width:<?= $pay_pct ?>%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <?php foreach ($stageRender as $idx => $r):
+                    $stage = $r['stage'];
+                    $stageData = $r['stageData'];
+                    $status = $r['status'];
+                    $scSet = $r['scSet'];
+                    ?>
+                    <div id="stage-detail-<?= $idx ?>" class="stage-detail-panel <?= $idx === 0 ? '' : 'hidden' ?>">
+                        <div class="bg-white border border-neutral-200 rounded-2xl p-5 sm:p-7 shadow-sm border-l-4 <?= $scSet['left'] ?> <?= $r['highlightRing'] ? 'ring-2 ring-amber-300' : '' ?>">
+
+                            <!-- Top row -->
+                            <div class="flex justify-between items-start gap-3 mb-3 flex-wrap">
+                                <div class="flex items-center gap-3 flex-1 min-w-0 flex-wrap">
+                                    <div class="w-10 h-10 rounded-full flex items-center justify-center text-sm flex-shrink-0 <?= $scSet['node'] ?>">
+                                        <?php if ($status === 'Done'): ?>
+                                            <i class="fas fa-check"></i>
+                                        <?php elseif ($status === 'Ongoing'): ?>
+                                            <i class="fas fa-circle-notch fa-spin text-[13px]"></i>
+                                        <?php else: ?>
+                                            <i class="fas <?= $r['icon'] ?> text-[13px]"></i>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <span class="font-mono text-[10px] font-semibold text-neutral-400 bg-neutral-100 border border-neutral-200 rounded px-1.5 py-0.5">
+                                                <?= str_pad($idx + 1, 2, '0', STR_PAD_LEFT) ?>
+                                            </span>
+                                            <span class="text-base sm:text-lg font-bold text-black"><?= htmlspecialchars($stage) ?></span>
+                                            <?php if ($stage === '2D / 3D Layout'): ?>
+                                                <span class="text-[10px] font-bold uppercase tracking-wide bg-neutral-100 text-neutral-600 border border-neutral-300 rounded-full px-2 py-0.5">
+                                                    <i class="fas fa-sync-alt"></i> Rev <?= $current_revision ?>
+                                                </span>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="inline-flex items-center gap-1.5 border rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide <?= $scSet['chip'] ?> flex-shrink-0">
+                                    <?php if ($status === 'Done'): ?><i class="fas fa-check"></i>
+                                    <?php elseif ($status === 'Ongoing'): ?><i class="fas fa-circle-notch fa-spin"></i>
+                                    <?php else: ?><i class="fas fa-clock"></i>
+                                    <?php endif; ?>
+                                    <?= $status ?>
+                                </span>
+                            </div>
+
+                            <?php if ($r['openLink']): ?>
+                                <a href="<?= $r['openLink'] ?>"
+                                    class="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold text-[13px] rounded-lg px-4 py-3 mb-3 transition-all">
+                                    <i class="fas fa-arrow-right"></i> Open <?= htmlspecialchars($stage) ?> Page
+                                </a>
+                            <?php endif; ?>
+
+                            <?php if ($stage === 'Site Visit'): ?>
+                                <a href="manager-site-visit-approval?client_id=<?= $client_id ?>"
+                                    class="w-full flex items-center justify-center gap-2 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 text-black font-bold text-[13px] rounded-lg px-4 py-3 mb-3 transition-all">
+                                    <i class="fas fa-clipboard-check"></i> Review Site Visit
+                                </a>
+                            <?php endif; ?>
+
+                            <!-- Type badges -->
+                            <div class="flex gap-1.5 flex-wrap mb-3">
+                                <?php if ($stage === 'Production Data Submittals'): ?>
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-sky-100 text-sky-800 border border-sky-300 rounded-full px-2 py-0.5">
+                                        <i class="fas fa-bolt"></i> Auto-Tracked
+                                    </span>
+                                <?php endif; ?>
+                                <?php if ($r['isApproval']): ?>
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-amber-100 text-amber-800 border border-amber-300 rounded-full px-2 py-0.5 inline-flex items-center gap-1">
+                                        <i class="fas fa-stamp"></i> Approval Required
+                                        <?php if ($r['pendingFiles'] > 0): ?>
+                                            <span class="bg-amber-500 text-white rounded-full px-1.5 py-0 text-[9px] ml-0.5"><?= $r['pendingFiles'] ?> pending</span>
+                                        <?php endif; ?>
+                                    </span>
+                                <?php elseif ($r['isFileUpload']): ?>
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-violet-100 text-violet-800 border border-violet-300 rounded-full px-2 py-0.5">
+                                        <i class="fas fa-file-upload"></i> File Upload
+                                    </span>
+                                <?php elseif ($r['isAuto']): ?>
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-sky-100 text-sky-800 border border-sky-300 rounded-full px-2 py-0.5">
+                                        <i class="fas fa-bolt"></i> Auto-Tracked
+                                    </span>
+                                <?php elseif ($r['isAccounting']): ?>
+                                    <span class="text-[10px] font-bold uppercase tracking-wide bg-sky-100 text-sky-800 border border-sky-300 rounded-full px-2 py-0.5">
+                                        <i class="fas fa-receipt"></i> Delivery Receipt
                                     </span>
                                 <?php endif; ?>
                             </div>
-                            <div class="card-right">
-                                <span class="sbadge <?= $sc ?>">
-                                    <?php if ($status === 'Done'): ?><i
-                                            class="fas fa-check"></i><?php elseif ($status === 'Ongoing'): ?><i
-                                            class="fas fa-circle-notch fa-spin"></i><?php else: ?><i
-                                            class="fas fa-clock"></i><?php endif; ?>
-                                    <?= $status ?>
-                                </span>
-                                <?php if ($openLink): ?>
-                                    <a href="<?= $openLink ?>" class="btn-open"><i class="fas fa-arrow-right"></i> Open</a>
+
+                            <!-- Meta -->
+                            <div class="flex flex-wrap gap-3.5 text-[11px] text-neutral-400 pb-3 border-b border-neutral-100">
+                                <?php if ($r['updated_at']): ?>
+                                    <span class="flex items-center gap-1"><i class="fas fa-clock"></i> <?= date('M d, Y · g:i A', strtotime($r['updated_at'])) ?></span>
                                 <?php endif; ?>
-                                <?php if ($stage === 'Site Visit'): ?>
-                                    <a href="manager-site-visit-approval?client_id=<?= $client_id ?>"
-                                        class="btn-open">
+                                <?php if ($r['updatedBy']): ?>
+                                    <span class="flex items-center gap-1"><i class="fas fa-user-edit"></i> <?= htmlspecialchars($r['updatedBy']) ?></span>
+                                <?php endif; ?>
+                                <?php if ($stage === 'Downpayment'): ?>
+                                    <span class="flex items-center gap-1"><i class="fas fa-coins"></i> <?= $r['dpPct'] ?>% — ₱<?= number_format($r['dpAmt'], 2) ?></span>
+                                <?php endif; ?>
+                                <?php if ($stage === 'Site Visit' && $designer1): ?>
+                                    <span class="flex items-center gap-1"><i class="fas fa-pencil-ruler"></i>
+                                        <?= htmlspecialchars($designer1) ?><?= $designer2 ? ' & ' . htmlspecialchars($designer2) : '' ?></span>
+                                <?php endif; ?>
+                            </div>
+
+                            <!-- Payment Schedule — shown right on the payment stage it belongs to,
+                                 instead of one long list at the bottom of the page. -->
+                            <?php if (in_array($stage, ['Downpayment', 'BILLING'])): ?>
+                                <div class="mt-4 pt-4 border-t border-neutral-100">
+                                    <div class="text-[10px] font-bold uppercase tracking-wide text-neutral-400 mb-2.5 flex items-center gap-1.5">
+                                        <i class="fas fa-money-check-alt"></i> Payment Schedule
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <?php
+                                        $payments->data_seek(0);
+                                        $rowsShown = 0;
+                                        while ($pay = $payments->fetch_assoc()):
+                                            $isDownRow = stripos($pay['payment_type'], 'Down') !== false;
+                                            if ($stage === 'Downpayment' && !$isDownRow)
+                                                continue;
+                                            if ($stage === 'BILLING' && $isDownRow)
+                                                continue;
+                                            $rowsShown++;
+                                            $pc = strtolower($pay['status']);
+                                            $isPaid = $pc === 'paid';
+                                            ?>
+                                            <div class="flex justify-between items-center gap-3 flex-wrap bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3">
+                                                <div>
+                                                    <div class="text-[13px] font-semibold text-black"><?= htmlspecialchars($pay['payment_type']) ?></div>
+                                                    <div class="text-[10px] text-neutral-400 mt-0.5"><?= number_format($pay['percentage'], 1) ?>% of project total</div>
+                                                    <?php if ($pay['payment_date']): ?>
+                                                        <div class="text-[10px] text-neutral-400 mt-1 flex items-center gap-1">
+                                                            <i class="fas fa-check-circle text-emerald-500"></i> Paid <?= date('M d, Y', strtotime($pay['payment_date'])) ?>
+                                                        </div>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <div class="flex flex-col items-end gap-1">
+                                                    <div class="text-sm font-bold text-black font-mono">₱<?= number_format($pay['amount'], 2) ?></div>
+                                                    <span class="inline-flex items-center gap-1 border rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide <?= $isPaid ? 'bg-emerald-50 text-emerald-700 border-emerald-300' : 'bg-amber-50 text-amber-700 border-amber-300' ?>">
+                                                        <?= $isPaid ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-clock"></i>' ?>
+                                                        <?= htmlspecialchars($pay['status']) ?>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        <?php endwhile; ?>
+                                        <?php if ($rowsShown === 0): ?>
+                                            <div class="text-[12px] text-neutral-400 italic">No payment rows for this stage yet.</div>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($stage === 'Site Visit' && $siteVisitPendingCount > 0 && in_array($admin_role, ['general_manager', 'operational_manager', 'superadmin'])): ?>
+                                <div class="bg-amber-50 border-2 border-amber-400 rounded-lg px-3.5 py-2.5 mt-3 flex items-center justify-between gap-3 flex-wrap">
+                                    <div class="flex items-center gap-2.5">
+                                        <i class="fas fa-bell text-amber-600 text-base flex-shrink-0"></i>
+                                        <div>
+                                            <div class="font-bold text-[13px] text-amber-800">
+                                                <?= $siteVisitPendingCount ?> site visit<?= $siteVisitPendingCount > 1 ? 's' : '' ?> waiting for your approval
+                                            </div>
+                                            <div class="text-[11px] text-amber-600 mt-0.5">
+                                                Click Review to approve or reject the submitted site visit.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <a href="manager-site-visit-approval?client_id=<?= $client_id ?>" class="<?= $BTN_AMBER_SM ?> flex-shrink-0">
                                         <i class="fas fa-clipboard-check"></i> Review
                                     </a>
-                                <?php endif; ?>
-                            </div>
-                        </div>
-
-                        <!-- Type badges -->
-                        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:7px;">
-                            <?php if ($stage === 'Production Data Submittals'): ?>
-                                <span class="tbadge tb-auto"><i class="fas fa-bolt"></i> Auto-Tracked</span>
-                            <?php endif; ?>
-                            <?php if ($isApproval): ?>
-                                <span class="tbadge tb-approval">
-                                    <i class="fas fa-stamp"></i> Approval Required
-                                    <?php if ($pendingFiles > 0): ?><span
-                                            style="background:#f59e0b;color:#fff;border-radius:99px;padding:1px 6px;margin-left:4px;font-size:9px;"><?= $pendingFiles ?>
-                                            pending</span><?php endif; ?>
-                                </span>
-                            <?php elseif ($isFileUpload): ?><span class="tbadge tb-upload"><i
-                                        class="fas fa-file-upload"></i>
-                                    File Upload</span>
-                            <?php elseif ($isAuto): ?><span class="tbadge tb-auto"><i class="fas fa-bolt"></i>
-                                    Auto-Tracked</span>
-                            <?php elseif ($isAccounting): ?><span class="tbadge"
-                                    style="background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;"><i
-                                        class="fas fa-receipt"></i> Delivery Receipt</span>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Meta -->
-                        <div class="cmeta">
-                            <?php if ($updated_at): ?><span><i class="fas fa-clock"></i>
-                                    <?= date('M d, Y · g:i A', strtotime($updated_at)) ?></span><?php endif; ?>
-                            <?php if ($updatedBy): ?><span><i class="fas fa-user-edit"></i>
-                                    <?= htmlspecialchars($updatedBy) ?></span><?php endif; ?>
-                            <?php if ($stage === 'Downpayment'): ?><span><i class="fas fa-coins"></i> <?= $dpPct ?>% —
-                                    ₱<?= number_format($dpAmt, 2) ?></span><?php endif; ?>
-                            <?php if ($stage === 'Site Visit' && $designer1): ?>
-                                <span><i class="fas fa-pencil-ruler"></i>
-                                    <?= htmlspecialchars($designer1) ?>
-                                    <?= $designer2 ? ' & ' . htmlspecialchars($designer2) : '' ?></span>
-                            <?php endif; ?>
-                        </div>
-
-                        <?php if ($stage === 'Site Visit' && $siteVisitPendingCount > 0 && in_array($admin_role, ['general_manager', 'operational_manager', 'superadmin'])): ?>
-                            <div
-                                style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; padding:10px 14px; margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                                <div style="display:flex; align-items:center; gap:9px;">
-                                    <i class="fas fa-bell" style="color:#d97706; font-size:15px; flex-shrink:0;"></i>
-                                    <div>
-                                        <div style="font-weight:700; font-size:13px; color:#92400e;">
-                                            <?= $siteVisitPendingCount ?> site visit<?= $siteVisitPendingCount > 1 ? 's' : '' ?>
-                                            waiting for your approval
-                                        </div>
-                                        <div style="font-size:11px; color:#b45309; margin-top:1px;">
-                                            Click Review to approve or reject the submitted site visit.
-                                        </div>
-                                    </div>
                                 </div>
-                                <a href="manager-site-visit-approval?client_id=<?= $client_id ?>"
-                                    style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:6px 13px; border-radius:7px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; flex-shrink:0;">
-                                    <i class="fas fa-clipboard-check"></i> Review
-                                </a>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
 
-                        <?php if ($stage === '2D / 3D Layout' && $layoutPendingCount > 0): ?>
-                            <div
-                                style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; padding:10px 14px; margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                                <div style="display:flex; align-items:center; gap:9px;">
-                                    <i class="fas fa-bell" style="color:#d97706; font-size:15px; flex-shrink:0;"></i>
-                                    <div>
-                                        <div style="font-weight:700; font-size:13px; color:#92400e;">
-                                            <?= $layoutPendingCount ?> pending approval<?= $layoutPendingCount > 1 ? 's' : '' ?>
-                                            need your review
-                                        </div>
-                                        <div style="font-size:11px; color:#b45309; margin-top:1px;">
-                                            Designer has uploaded attachments awaiting your approval.
-                                        </div>
-                                    </div>
-                                </div>
-                                <a href="designer-2d3d-layout?client_id=<?= $client_id ?>&back=manager_detail"
-                                    style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:6px 13px; border-radius:7px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; flex-shrink:0;">
-                                    <i class="fas fa-arrow-right"></i> Review
-                                </a>
-                            </div>
-                        <?php endif; ?>
-
-                        <?php
-                        $approvalStagesForNotif = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)'];
-                        if (in_array($stage, $approvalStagesForNotif) && $stageData):
-                            $stagePendingCount = getStagePendingApprovalCount($conn, $admin_id, $admin_role, $isHead, $stageData['id']);
-                            if ($stagePendingCount > 0):
-                                ?>
-                                <div
-                                    style="background:#fef3c7; border:2px solid #f59e0b; border-radius:8px; padding:10px 14px; margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
-                                    <div style="display:flex; align-items:center; gap:9px;">
-                                        <i class="fas fa-bell" style="color:#d97706; font-size:15px; flex-shrink:0;"></i>
+                            <?php if ($stage === '2D / 3D Layout' && $layoutPendingCount > 0): ?>
+                                <div class="bg-amber-50 border-2 border-amber-400 rounded-lg px-3.5 py-2.5 mt-3 flex items-center justify-between gap-3 flex-wrap">
+                                    <div class="flex items-center gap-2.5">
+                                        <i class="fas fa-bell text-amber-600 text-base flex-shrink-0"></i>
                                         <div>
-                                            <div style="font-weight:700; font-size:13px; color:#92400e;">
-                                                <?= $stagePendingCount ?> file<?= $stagePendingCount > 1 ? 's' : '' ?> waiting for
-                                                your approval
+                                            <div class="font-bold text-[13px] text-amber-800">
+                                                <?= $layoutPendingCount ?> pending approval<?= $layoutPendingCount > 1 ? 's' : '' ?> need your review
                                             </div>
-                                            <div style="font-size:11px; color:#b45309; margin-top:1px;">
-                                                Open the files page to review and approve or reject.
+                                            <div class="text-[11px] text-amber-600 mt-0.5">
+                                                Designer has uploaded attachments awaiting your approval.
                                             </div>
                                         </div>
                                     </div>
-                                    <a href="<?= $filesLink ?>"
-                                        style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:6px 13px; border-radius:7px; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap; flex-shrink:0;">
-                                        <i class="fas fa-arrow-right"></i> Review Files
+                                    <a href="designer-2d3d-layout?client_id=<?= $client_id ?>&back=manager_detail" class="<?= $BTN_AMBER_SM ?> flex-shrink-0">
+                                        <i class="fas fa-arrow-right"></i> Review
                                     </a>
                                 </div>
-                            <?php endif; endif; ?>
+                            <?php endif; ?>
 
-                        <!-- Assigned -->
-                        <?php if (!empty($assigned)): ?>
-                            <div class="chip-row">
-                                <?php foreach ($assigned as $p): ?><span class="chip"><i class="fas fa-user"
-                                            style="font-size:9px;opacity:.6;"></i>
-                                        <?= htmlspecialchars($p) ?></span><?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
+                            <?php
+                            $approvalStagesForNotif = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)'];
+                            if (in_array($stage, $approvalStagesForNotif) && $stageData):
+                                $stagePendingCount = getStagePendingApprovalCount($conn, $admin_id, $admin_role, $isHead, $stageData['id']);
+                                if ($stagePendingCount > 0):
+                                    ?>
+                                    <div class="bg-amber-50 border-2 border-amber-400 rounded-lg px-3.5 py-2.5 mt-3 flex items-center justify-between gap-3 flex-wrap">
+                                        <div class="flex items-center gap-2.5">
+                                            <i class="fas fa-bell text-amber-600 text-base flex-shrink-0"></i>
+                                            <div>
+                                                <div class="font-bold text-[13px] text-amber-800">
+                                                    <?= $stagePendingCount ?> file<?= $stagePendingCount > 1 ? 's' : '' ?> waiting for your approval
+                                                </div>
+                                                <div class="text-[11px] text-amber-600 mt-0.5">
+                                                    Open the files page to review and approve or reject.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="<?= $r['filesLink'] ?>" class="<?= $BTN_AMBER_SM ?> flex-shrink-0">
+                                            <i class="fas fa-arrow-right"></i> Review Files
+                                        </a>
+                                    </div>
+                                <?php endif; endif; ?>
 
-                        <!-- Approval preview (latest file) -->
-                        <?php if ($isApproval && $preview):
-                            $required = $requiredApproversList[$stage] ?? [];
-                            $gmOmPreviewStages = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)', 'Production Data Submittals'];
-                            $isGmOmStage = in_array($stage, $gmOmPreviewStages);
-                            $gmOmSlotShown = false;
-                            ?>
-                            <div class="ap-preview">
-                                <div class="ap-preview-label">Latest File — Approval Status</div>
-                                <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-                                    <span
-                                        style="font-size:12px;font-weight:600;color:var(--text-dk);"><?= htmlspecialchars($preview['label'] ?: $preview['file_name']) ?></span>
-                                    <?php foreach ($required as $role):
-                                        // For GM/OM stages: skip individual GM/OM badges, show one combined badge instead
-                                        if ($isGmOmStage && in_array($role, ['general_manager', 'operational_manager'])) {
-                                            if ($gmOmSlotShown)
-                                                continue;
-                                            $gmOmSlotShown = true;
-
-                                            $gmRs = $preview['role_reviews']['general_manager'] ?? null;
-                                            $omRs = $preview['role_reviews']['operational_manager'] ?? null;
-
-                                            if ($gmRs === 'approved' || $omRs === 'approved') {
-                                                $combinedBc = 'approved';
-                                                $combinedBi = 'fa-check-circle';
-                                                $whoActed = $gmRs === 'approved'
-                                                    ? getRoleDisplayName('general_manager')
-                                                    : getRoleDisplayName('operational_manager');
-                                                $combinedLabel = "Approved by {$whoActed}";
-                                            } elseif ($gmRs === 'rejected' || $omRs === 'rejected') {
-                                                $combinedBc = 'rejected';
-                                                $combinedBi = 'fa-times-circle';
-                                                $whoActed = $gmRs === 'rejected'
-                                                    ? getRoleDisplayName('general_manager')
-                                                    : getRoleDisplayName('operational_manager');
-                                                $combinedLabel = "Rejected by {$whoActed}";
-                                            } else {
-                                                $combinedBc = 'pending';
-                                                $combinedBi = 'fa-clock';
-                                                $combinedLabel = 'GM or OM (one required)';
-                                            }
-                                            ?>
-                                            <span class="apbadge <?= $combinedBc ?>">
-                                                <i class="fas <?= $combinedBi ?>"></i> <?= $combinedLabel ?>
-                                            </span>
-                                            <?php
-                                            continue;
-                                        }
-                                        // All other roles — show individually as before
-                                        $rs = $preview['role_reviews'][$role] ?? null;
-                                        $bc = $rs ?? 'pending';
-                                        $bi = $bc === 'approved' ? 'fa-check-circle' : ($bc === 'rejected' ? 'fa-times-circle' : 'fa-clock');
-                                        ?>
-                                        <span class="apbadge <?= $bc ?>"><i class="fas <?= $bi ?>"></i>
-                                            <?= getRoleDisplayName($role) ?></span>
+                            <!-- Assigned -->
+                            <?php if (!empty($r['assigned'])): ?>
+                                <div class="flex flex-wrap gap-1.5 mt-3">
+                                    <?php foreach ($r['assigned'] as $p): ?>
+                                        <span class="inline-flex items-center gap-1 bg-neutral-100 border border-neutral-200 rounded-full px-2.5 py-1 text-[11px] font-semibold text-neutral-600">
+                                            <i class="fas fa-user text-[9px]"></i> <?= htmlspecialchars($p) ?>
+                                        </span>
                                     <?php endforeach; ?>
                                 </div>
-                            </div>
-                        <?php endif; ?>
+                            <?php endif; ?>
 
-                        <!-- Files chip -->
-                        <?php if (($isApproval || $isFileUpload || $isAccounting) && $stageData): ?>
-                            <div
-                                style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
-                                <a href="<?= $filesLink ?>" class="file-chip">
-                                    <span class="dot"
-                                        style="background:<?= $fileCount > 0 ? 'var(--done)' : 'var(--border)' ?>;width:7px;height:7px;border-radius:50%;flex-shrink:0;"></span>
-                                    <i class="fas fa-paperclip"></i>
-                                    <?= $fileCount ?> file<?= $fileCount !== 1 ? 's' : '' ?>
-                                    <?php if ($canApproveThis && $pendingFiles > 0): ?>
-                                        <span class="needs-review"><?= $pendingFiles ?> to review</span>
-                                    <?php endif; ?>
-                                    <i class="fas fa-chevron-right" style="font-size:9px;opacity:.4;"></i>
-                                </a>
-                            </div>
-                        <?php endif; ?>
+                            <!-- Approval preview (latest file) -->
+                            <?php if ($r['isApproval'] && $r['preview']):
+                                $preview = $r['preview'];
+                                $required = $requiredApproversList[$stage] ?? [];
+                                $gmOmPreviewStages = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)', 'Production Data Submittals'];
+                                $isGmOmStage = in_array($stage, $gmOmPreviewStages);
+                                $gmOmSlotShown = false;
+                                ?>
+                                <div class="mt-3 pt-3 border-t border-neutral-100">
+                                    <div class="text-[10px] font-bold uppercase tracking-wide text-neutral-400 mb-1.5">Latest File — Approval Status</div>
+                                    <div class="flex items-center gap-1.5 flex-wrap">
+                                        <span class="text-xs font-semibold text-black"><?= htmlspecialchars($preview['label'] ?: $preview['file_name']) ?></span>
+                                        <?php foreach ($required as $role):
+                                            if ($isGmOmStage && in_array($role, ['general_manager', 'operational_manager'])) {
+                                                if ($gmOmSlotShown)
+                                                    continue;
+                                                $gmOmSlotShown = true;
 
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
+                                                $gmRs = $preview['role_reviews']['general_manager'] ?? null;
+                                                $omRs = $preview['role_reviews']['operational_manager'] ?? null;
 
-        <!-- Payments -->
-        <div class="sec-hdr" style="margin-top:32px;">
-            <h2><i class="fas fa-money-check-alt"></i> Payment Schedule</h2>
-        </div>
-        <?php $payments->data_seek(0);
-        while ($pay = $payments->fetch_assoc()):
-            $pc = strtolower($pay['status']); ?>
-            <div class="pay-card <?= $pc ?>">
-                <div>
-                    <div class="pay-type"><?= htmlspecialchars($pay['payment_type']) ?></div>
-                    <div class="pay-pct"><?= number_format($pay['percentage'], 1) ?>% of project total</div>
-                    <?php if ($pay['payment_date']): ?>
-                        <div class="pay-date"><i class="fas fa-check-circle" style="color:var(--done);"></i> Paid
-                            <?= date('M d, Y', strtotime($pay['payment_date'])) ?>
+                                                if ($gmRs === 'approved' || $omRs === 'approved') {
+                                                    $combinedBc = 'bg-emerald-50 text-emerald-700 border-emerald-300';
+                                                    $combinedBi = 'fa-check-circle';
+                                                    $whoActed = $gmRs === 'approved'
+                                                        ? getRoleDisplayName('general_manager')
+                                                        : getRoleDisplayName('operational_manager');
+                                                    $combinedLabel = "Approved by {$whoActed}";
+                                                } elseif ($gmRs === 'rejected' || $omRs === 'rejected') {
+                                                    $combinedBc = 'bg-red-50 text-red-700 border-red-300';
+                                                    $combinedBi = 'fa-times-circle';
+                                                    $whoActed = $gmRs === 'rejected'
+                                                        ? getRoleDisplayName('general_manager')
+                                                        : getRoleDisplayName('operational_manager');
+                                                    $combinedLabel = "Rejected by {$whoActed}";
+                                                } else {
+                                                    $combinedBc = 'bg-neutral-100 text-neutral-500 border-neutral-300';
+                                                    $combinedBi = 'fa-clock';
+                                                    $combinedLabel = 'GM or OM (one required)';
+                                                }
+                                                ?>
+                                                <span class="inline-flex items-center gap-1 border rounded-full px-2 py-0.5 text-[10px] font-bold uppercase <?= $combinedBc ?>">
+                                                    <i class="fas <?= $combinedBi ?>"></i> <?= $combinedLabel ?>
+                                                </span>
+                                                <?php
+                                                continue;
+                                            }
+                                            $rs = $preview['role_reviews'][$role] ?? null;
+                                            $bc = $rs === 'approved'
+                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                                : ($rs === 'rejected' ? 'bg-red-50 text-red-700 border-red-300' : 'bg-neutral-100 text-neutral-500 border-neutral-300');
+                                            $bi = $rs === 'approved' ? 'fa-check-circle' : ($rs === 'rejected' ? 'fa-times-circle' : 'fa-clock');
+                                            ?>
+                                            <span class="inline-flex items-center gap-1 border rounded-full px-2 py-0.5 text-[10px] font-bold uppercase <?= $bc ?>">
+                                                <i class="fas <?= $bi ?>"></i> <?= getRoleDisplayName($role) ?>
+                                            </span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+
+                            <!-- Files chip -->
+                            <?php if (($r['isApproval'] || $r['isFileUpload'] || $r['isAccounting']) && $stageData): ?>
+                                <div class="mt-4 pt-4 border-t border-neutral-200 flex justify-end">
+                                    <a href="<?= $r['filesLink'] ?>" class="<?= $BTN_GHOST_SM ?>">
+                                        <span class="w-1.5 h-1.5 rounded-full <?= $r['fileCount'] > 0 ? 'bg-emerald-500' : 'bg-neutral-300' ?>"></span>
+                                        <i class="fas fa-paperclip"></i>
+                                        <?= $r['fileCount'] ?> file<?= $r['fileCount'] !== 1 ? 's' : '' ?>
+                                        <?php if ($r['canApproveThis'] && $r['pendingFiles'] > 0): ?>
+                                            <span class="bg-amber-500 text-white rounded-full px-2 py-0.5 text-[10px] font-bold"><?= $r['pendingFiles'] ?> to review</span>
+                                        <?php endif; ?>
+                                        <i class="fas fa-chevron-right text-[9px] opacity-40"></i>
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+
                         </div>
-                    <?php endif; ?>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;">
-                    <div class="pay-amt">₱<?= number_format($pay['amount'], 2) ?></div>
-                    <span
-                        class="pstatus <?= $pc ?>"><?= $pc === 'paid' ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-clock"></i>' ?>
-                        <?= htmlspecialchars($pay['status']) ?></span>
-                </div>
-            </div>
-        <?php endwhile; ?>
+                    </div>
+                <?php endforeach; ?>
+            </div><!-- /detailPanelWrap -->
+
+        </div><!-- /split master-detail -->
 
     </div>
 
@@ -1782,172 +1211,151 @@ if (in_array($admin_role, ['general_manager', 'operational_manager', 'superadmin
     $permit_required = $client['permit_required'] ?? '';
     $target_movein_date = $client['target_movein_date'] ?? '';
     ?>
-    <div id="clientDetailModal" class="modal-overlay" onclick="if(event.target===this)this.classList.remove('open')">
-        <div class="modal-box">
-            <div class="modal-header">
-                <div class="modal-title">
-                    <i class="fas fa-user-circle" style="color:#8a5a44;"></i> Client Details
+    <div id="clientDetailModal"
+        class="hidden fixed inset-0 z-[9999] bg-black/50 items-center justify-center p-5"
+        onclick="if(event.target===this){this.classList.add('hidden');this.classList.remove('flex');}">
+        <div class="bg-white rounded-2xl p-7 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-4 pb-3.5 border-b-2 border-neutral-100">
+                <div class="text-lg font-bold text-black flex items-center gap-2">
+                    <i class="fas fa-user-circle text-neutral-500"></i> Client Details
                 </div>
-                <button class="modal-close"
-                    onclick="document.getElementById('clientDetailModal').classList.remove('open')">
+                <button class="text-xl text-neutral-400 hover:text-neutral-700 p-1 leading-none"
+                    onclick="document.getElementById('clientDetailModal').classList.add('hidden'); document.getElementById('clientDetailModal').classList.remove('flex');">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
-            <div class="modal-row">
-                <div class="modal-row-label">Reference Number</div>
-                <div class="modal-row-value" style="color:#3b82f6; font-family:monospace; font-weight:600;">
-                    <?= htmlspecialchars($client['reference_number'] ?? '') ?>
-                </div>
-            </div>
-            <div class="modal-row">
-                <div class="modal-row-label">Client Name</div>
-                <div class="modal-row-value"><?= htmlspecialchars($client['clientname']) ?></div>
-            </div>
-            <div class="modal-row">
-                <div class="modal-row-label">Project Name</div>
-                <div class="modal-row-value"><?= htmlspecialchars($client['nameproject']) ?></div>
-            </div>
-            <div class="modal-row">
-                <div class="modal-row-label">Status</div>
-                <div class="modal-row-value">
-                    <?php $st = $client['status'] ?? ''; ?>
-                    <span style="padding:3px 12px; border-radius:12px; font-size:11px; font-weight:700;
-                    background:<?= strtolower($st) === 'new client' ? '#fef3c7' : '#dbeafe' ?>;
-                    color:<?= strtolower($st) === 'new client' ? '#92400e' : '#1e40af' ?>;">
-                        <?= htmlspecialchars($st) ?>
-                    </span>
-                </div>
-            </div>
-            <div class="modal-row">
-                <div class="modal-row-label">Business Type</div>
-                <div class="modal-row-value"><?= htmlspecialchars($business_type_label) ?></div>
-            </div>
-            <?php if (!empty($client['contact'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Phone</div>
-                    <div class="modal-row-value"><?= htmlspecialchars($client['contact']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($client['email'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Email</div>
-                    <div class="modal-row-value"><?= htmlspecialchars($client['email']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($client['address'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Address</div>
-                    <div class="modal-row-value"><?= htmlspecialchars($client['address']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($client['gender'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Gender</div>
-                    <div class="modal-row-value"><?= htmlspecialchars($client['gender']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($client['client_class'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Classification</div>
-                    <div class="modal-row-value"><?= htmlspecialchars($client['client_class']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($client['client_type'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Client Type</div>
-                    <div class="modal-row-value"><?= htmlspecialchars($client['client_type']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($client['project_scope'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Project Scope</div>
-                    <div class="modal-row-value"><?= nl2br(htmlspecialchars($client['project_scope'])) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($client['scope_of_work'])): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Scope of Work</div>
-                    <div class="modal-row-value"><?= nl2br(htmlspecialchars($client['scope_of_work'])) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if ($house_state): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">House State</div>
-                    <div class="modal-row-value">
-                        <?php
-                        $hsBg = '#fef3c7';
-                        $hsColor = '#92400e';
-                        if ($house_state === 'Bare/Empty Lot') {
-                            $hsBg = '#dbeafe';
-                            $hsColor = '#1e40af';
-                        } elseif ($house_state === 'Construction Started') {
-                            $hsBg = '#fee2e2';
-                            $hsColor = '#991b1b';
-                        } elseif ($house_state === 'Renovation') {
-                            $hsBg = '#ede9fe';
-                            $hsColor = '#5b21b6';
-                        }
-                        ?>
-                        <span style="padding:3px 12px; border-radius:12px; font-size:12px; font-weight:700;
-                             background:<?= $hsBg ?>; color:<?= $hsColor ?>;">
-                            <?= htmlspecialchars($house_state) ?>
-                        </span>
-                    </div>
-                </div>
-            <?php endif; ?>
-            <?php if ($permit_required): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Permit Required</div>
-                    <div class="modal-row-value">
-                        <?php
-                        $prBg = '#fef3c7';
-                        $prColor = '#92400e';
-                        if ($permit_required === 'Yes') {
-                            $prBg = '#fee2e2';
-                            $prColor = '#991b1b';
-                        } elseif ($permit_required === 'No') {
-                            $prBg = '#d1fae5';
-                            $prColor = '#065f46';
-                        }
-                        ?>
-                        <span style="padding:3px 12px; border-radius:12px; font-size:12px; font-weight:700;
-                             background:<?= $prBg ?>; color:<?= $prColor ?>;">
-                            <?= htmlspecialchars($permit_required) ?>
-                        </span>
-                    </div>
-                </div>
-            <?php endif; ?>
-            <?php if ($target_movein_date): ?>
-                <div class="modal-row">
-                    <div class="modal-row-label">Target Move-in</div>
-                    <div class="modal-row-value" style="font-weight:600;">
-                        <i class="fas fa-calendar-check" style="color:#10b981;"></i>
-                        <?= date('F d, Y', strtotime($target_movein_date)) ?>
-                    </div>
-                </div>
-            <?php endif; ?>
-            <div class="modal-row">
-                <div class="modal-row-label">Total Project Cost</div>
-                <div class="modal-row-value" style="font-weight:700; color:#3b1f0f; font-size:15px;">
-                    ₱<?= number_format($client['total_project_cost'] ?? 0, 2) ?>
-                </div>
-            </div>
-            <div class="modal-row">
-                <div class="modal-row-label">Remaining Balance</div>
-                <div class="modal-row-value" style="font-weight:700; color:#dc2626; font-size:15px;">
-                    ₱<?= number_format($client['remaining_balance'] ?? 0, 2) ?>
-                </div>
-            </div>
+            <?php
+            function detailModalRow($label, $valueHtml)
+            {
+                echo '<div class="grid grid-cols-1 sm:grid-cols-[160px_1fr] gap-1.5 sm:gap-2.5 py-2.5 border-b border-neutral-100 items-start last:border-b-0">';
+                echo '<div class="font-semibold text-neutral-500 text-[13px]">' . $label . '</div>';
+                echo '<div class="text-black text-[13px] break-words">' . $valueHtml . '</div>';
+                echo '</div>';
+            }
+            detailModalRow('Reference Number', '<span class="text-blue-600 font-mono font-semibold">' . htmlspecialchars($client['reference_number'] ?? '') . '</span>');
+            detailModalRow('Client Name', htmlspecialchars($client['clientname']));
+            detailModalRow('Project Name', htmlspecialchars($client['nameproject']));
+
+            $st = $client['status'] ?? '';
+            $stClasses = strtolower($st) === 'new client' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800';
+            detailModalRow('Status', '<span class="inline-block px-3 py-0.5 rounded-full text-[11px] font-bold ' . $stClasses . '">' . htmlspecialchars($st) . '</span>');
+
+            detailModalRow('Business Type', htmlspecialchars($business_type_label));
+
+            if (!empty($client['contact']))
+                detailModalRow('Phone', htmlspecialchars($client['contact']));
+            if (!empty($client['email']))
+                detailModalRow('Email', htmlspecialchars($client['email']));
+            if (!empty($client['address']))
+                detailModalRow('Address', htmlspecialchars($client['address']));
+            if (!empty($client['gender']))
+                detailModalRow('Gender', htmlspecialchars($client['gender']));
+            if (!empty($client['client_class']))
+                detailModalRow('Classification', htmlspecialchars($client['client_class']));
+            if (!empty($client['client_type']))
+                detailModalRow('Client Type', htmlspecialchars($client['client_type']));
+            if (!empty($client['project_scope']))
+                detailModalRow('Project Scope', nl2br(htmlspecialchars($client['project_scope'])));
+            if (!empty($client['scope_of_work']))
+                detailModalRow('Scope of Work', nl2br(htmlspecialchars($client['scope_of_work'])));
+
+            if ($house_state) {
+                $hsClasses = 'bg-amber-100 text-amber-800';
+                if ($house_state === 'Bare/Empty Lot')
+                    $hsClasses = 'bg-blue-100 text-blue-800';
+                elseif ($house_state === 'Construction Started')
+                    $hsClasses = 'bg-red-100 text-red-800';
+                elseif ($house_state === 'Renovation')
+                    $hsClasses = 'bg-violet-100 text-violet-800';
+                detailModalRow('House State', '<span class="inline-block px-3 py-0.5 rounded-full text-xs font-bold ' . $hsClasses . '">' . htmlspecialchars($house_state) . '</span>');
+            }
+
+            if ($permit_required) {
+                $prClasses = 'bg-amber-100 text-amber-800';
+                if ($permit_required === 'Yes')
+                    $prClasses = 'bg-red-100 text-red-800';
+                elseif ($permit_required === 'No')
+                    $prClasses = 'bg-emerald-100 text-emerald-800';
+                detailModalRow('Permit Required', '<span class="inline-block px-3 py-0.5 rounded-full text-xs font-bold ' . $prClasses . '">' . htmlspecialchars($permit_required) . '</span>');
+            }
+
+            if ($target_movein_date) {
+                detailModalRow('Target Move-in', '<span class="font-semibold"><i class="fas fa-calendar-check text-emerald-500"></i> ' . date('F d, Y', strtotime($target_movein_date)) . '</span>');
+            }
+
+            detailModalRow('Total Project Cost', '<span class="font-bold text-black text-[15px]">₱' . number_format($client['total_project_cost'] ?? 0, 2) . '</span>');
+            detailModalRow('Remaining Balance', '<span class="font-bold text-red-600 text-[15px]">₱' . number_format($client['remaining_balance'] ?? 0, 2) . '</span>');
+            ?>
         </div>
     </div>
 
+    <!-- Master–detail panel switching (same pattern as unified_project_tracker.php) -->
     <script>
-        function closeModal() {
-            document.getElementById('clientDetailModal').classList.remove('open');
+        function selectStage(idx) {
+            history.replaceState(null, '', '#stage-' + idx);
+
+            document.querySelectorAll('.stage-detail-panel').forEach(function (p) {
+                p.classList.add('hidden');
+            });
+            var panel = document.getElementById('stage-detail-' + idx);
+            if (panel) panel.classList.remove('hidden');
+
+            document.querySelectorAll('.master-item').forEach(function (it) {
+                it.classList.remove('bg-black', 'text-white', 'border-black', 'shadow-md');
+                it.classList.add('border-neutral-200', 'bg-white');
+                var label = it.querySelector('.master-label');
+                if (label) { label.classList.remove('text-white'); label.classList.add('text-black'); }
+                var sub = it.querySelector('.master-sub');
+                if (sub) { sub.classList.remove('text-white/70'); }
+                var chev = it.querySelector('.master-chevron');
+                if (chev) { chev.classList.remove('text-white/50'); chev.classList.add('text-neutral-300'); }
+            });
+
+            var active = document.getElementById('master-item-' + idx);
+            if (active) {
+                active.classList.remove('border-neutral-200', 'bg-white');
+                active.classList.add('bg-black', 'text-white', 'border-black', 'shadow-md');
+                var label = active.querySelector('.master-label');
+                if (label) { label.classList.add('text-white'); label.classList.remove('text-black'); }
+                var sub = active.querySelector('.master-sub');
+                if (sub) { sub.classList.add('text-white/70'); }
+                var chev = active.querySelector('.master-chevron');
+                if (chev) { chev.classList.add('text-white/50'); chev.classList.remove('text-neutral-300'); }
+            }
+
+            if (window.innerWidth < 1024) {
+                var wrap = document.getElementById('detailPanelWrap');
+                if (wrap) wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var items = document.querySelectorAll('.master-item');
+            var target = null;
+
+            var hashMatch = window.location.hash.match(/^#stage-(\d+)$/);
+            if (hashMatch) {
+                target = document.getElementById('master-item-' + hashMatch[1]);
+            }
+
+            if (!target) {
+                items.forEach(function (it) {
+                    if (!target && it.dataset.status === 'Ongoing') target = it;
+                });
+            }
+
+            if (!target && items.length) target = items[0];
+
+            if (target) selectStage(parseInt(target.dataset.idx, 10));
+        });
+
         document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeModal();
+            if (e.key === 'Escape') {
+                var modal = document.getElementById('clientDetailModal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
         });
     </script>
 

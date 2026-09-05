@@ -3,6 +3,26 @@
 session_name("Realivinguser");
 session_start();
 include $includes['connection'];
+
+$team_query = "SELECT full_name, position, contact_number, social_gmail, social_wechat, social_viber,
+               profile_picture, google_picture, avatar_source, wechat_qr_image, viber_qr_image
+               FROM account WHERE show_team_card = 1 ORDER BY id ASC";
+$team_result = $conn->query($team_query);
+$team_members = [];
+if ($team_result) {
+  while ($t = $team_result->fetch_assoc()) {
+    if (($t['avatar_source'] ?? 'custom') === 'google' && !empty($t['google_picture'])) {
+      $t['avatar_url'] = $t['google_picture'];
+    } elseif (!empty($t['profile_picture'])) {
+      $t['avatar_url'] = BASE_URL . $t['profile_picture'];
+    } else {
+      $t['avatar_url'] = null;
+    }
+    $t['wechat_qr_url'] = !empty($t['wechat_qr_image']) ? BASE_URL . $t['wechat_qr_image'] : null;
+    $t['viber_qr_url']  = !empty($t['viber_qr_image'])  ? BASE_URL . $t['viber_qr_image']  : null;
+    $team_members[] = $t;
+  }
+}
 ?>
 
 <!DOCTYPE html>
@@ -51,6 +71,104 @@ include $includes['connection'];
     .marquee-wrap.dragging {
       cursor: grabbing;
     }
+
+    /* ── Meet the Team mobile slider (mirrors homepage) ───── */
+    .team-slider-track {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      padding: 6px 6px 20px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .team-slider-track::-webkit-scrollbar { display: none; }
+
+    .team-slide-card {
+      scroll-snap-align: start;
+      flex: 0 0 auto;
+      width: 168px;
+      background: #ffffff;
+      border: 1px solid rgba(196, 144, 92, 0.18);
+      border-radius: 16px;
+      padding: 22px 14px 18px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(47, 18, 0, 0.06);
+    }
+
+    .team-slide-photo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 12px;
+      display: block;
+      border: 2px solid rgba(196, 144, 92, 0.35);
+      background: #eee;
+    }
+
+    .team-slide-initial {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #2f1200;
+      color: #c4905c;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 20px;
+    }
+
+    .team-slide-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 12.5px;
+      letter-spacing: 0.3px;
+      color: #2f1200;
+      margin: 0 0 4px;
+    }
+
+    .team-slide-position {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #c4905c;
+      margin: 0;
+    }
+
+    /* ── Team e-calling card modal ─────────────────────────── */
+    #teamCardModalBox {
+      transform: scale(0.94);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+    }
+    #teamCardModal.is-open #teamCardModalBox {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    /* ── QR fullscreen lightbox — premium framed card ──────── */
+    .qr-lightbox-card {
+      transform: scale(0.92);
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+    }
+    #qrLightbox.is-open .qr-lightbox-card {
+      transform: scale(1);
+      opacity: 1;
+    }
+    .qr-corner {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-color: #c4905c;
+    }
+    .qr-corner-tl { top: 10px; left: 10px; border-top: 2px solid; border-left: 2px solid; }
+    .qr-corner-tr { top: 10px; right: 10px; border-top: 2px solid; border-right: 2px solid; }
+    .qr-corner-bl { bottom: 10px; left: 10px; border-bottom: 2px solid; border-left: 2px solid; }
+    .qr-corner-br { bottom: 10px; right: 10px; border-bottom: 2px solid; border-right: 2px solid; }
   </style>
 </head>
 
@@ -205,6 +323,207 @@ include $includes['connection'];
         </div>
       </div>
     </section>
+
+    <!-- ═══════════════════════════════
+         MEET THE TEAM — blueprint bracket cards, matches Vision/Mission style
+    ═══════════════════════════════ -->
+    <?php if (!empty($team_members)): ?>
+    <section class="reveal-up bg-white py-20 md:py-28" id="meet-the-team">
+      <div class="mx-auto max-w-6xl px-6">
+
+        <div class="mb-14 text-center">
+          <span class="mb-3 inline-block font-montserrat text-[10px] font-bold uppercase tracking-[3px] text-[#c4905c]">
+            The People Behind It
+          </span>
+          <h2 class="font-montserrat text-3xl font-bold uppercase tracking-wide text-[#2f1200] sm:text-4xl">
+            Meet the Team
+          </h2>
+          <div class="mx-auto mt-4 h-0.5 w-16 rounded-full bg-[#c4905c] opacity-60"></div>
+        </div>
+
+        <!-- Mobile: horizontal swipe slider (matches homepage) -->
+        <div class="sm:hidden">
+          <div class="team-slider-track">
+            <?php foreach ($team_members as $i => $member): ?>
+              <div class="team-slide-card cursor-pointer" onclick="openTeamModal(<?= $i ?>)">
+                <?php if (!empty($member['avatar_url'])): ?>
+                  <img src="<?= htmlspecialchars($member['avatar_url']) ?>" alt="<?= htmlspecialchars($member['full_name']) ?>"
+                    class="team-slide-photo" loading="lazy">
+                <?php else: ?>
+                  <div class="team-slide-photo team-slide-initial">
+                    <?= htmlspecialchars(strtoupper(substr($member['full_name'], 0, 1))) ?>
+                  </div>
+                <?php endif; ?>
+                <p class="team-slide-name"><?= htmlspecialchars($member['full_name']) ?></p>
+                <?php if (!empty($member['position'])): ?>
+                  <p class="team-slide-position"><?= htmlspecialchars($member['position']) ?></p>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          </div>
+          <p class="mt-1 text-center text-[11px] text-gray-400 font-montserrat">
+            <i class="ri-swipe-line mr-1"></i> Swipe to see more
+          </p>
+        </div>
+
+        <!-- Desktop / tablet: blueprint bracket-card grid -->
+        <div class="hidden gap-8 sm:grid sm:grid-cols-2 lg:grid-cols-3">
+          <?php foreach ($team_members as $i => $member): ?>
+            <div class="group relative cursor-pointer bg-white p-8 shadow-[0_10px_35px_rgba(47,18,0,0.07)] transition-shadow duration-300 hover:shadow-[0_18px_45px_rgba(47,18,0,0.14)]" onclick="openTeamModal(<?= $i ?>)">
+              <span class="bp-bracket bp-tl"></span><span class="bp-bracket bp-tr"></span>
+              <span class="bp-bracket bp-bl"></span><span class="bp-bracket bp-br"></span>
+
+              <div class="mb-5 flex justify-center">
+                <?php if (!empty($member['avatar_url'])): ?>
+                  <img src="<?= htmlspecialchars($member['avatar_url']) ?>" alt="<?= htmlspecialchars($member['full_name']) ?>"
+                    class="h-20 w-20 rounded-full object-cover border-2 border-[#c4905c]/30" loading="lazy">
+                <?php else: ?>
+                  <div class="flex h-20 w-20 items-center justify-center rounded-full border-2 border-[#c4905c]/30 bg-[#faf8f6] font-montserrat text-xl font-bold text-[#c4905c]">
+                    <?= htmlspecialchars(strtoupper(substr($member['full_name'], 0, 1))) ?>
+                  </div>
+                <?php endif; ?>
+              </div>
+
+              <div class="text-center">
+                <h3 class="font-montserrat text-[15px] font-bold uppercase tracking-[1px] text-[#2f1200]">
+                  <?= htmlspecialchars($member['full_name']) ?>
+                </h3>
+                <?php if (!empty($member['position'])): ?>
+                  <p class="mt-1 font-montserrat text-[11px] uppercase tracking-[1px] text-[#c4905c]">
+                    <?= htmlspecialchars($member['position']) ?>
+                  </p>
+                <?php endif; ?>
+              </div>
+
+              <?php if (!empty($member['contact_number']) || !empty($member['social_gmail']) || !empty($member['social_wechat']) || !empty($member['social_viber'])): ?>
+                <div class="mt-5 flex flex-col items-center gap-1.5 border-t border-[#c4905c]/15 pt-4">
+                  <?php if (!empty($member['contact_number'])): ?>
+                    <a href="tel:<?= htmlspecialchars(preg_replace('/\s+/', '', $member['contact_number'])) ?>" onclick="event.stopPropagation()"
+                      class="flex items-center gap-2 text-[13px] text-[#5e5e5e] hover:text-[#c4905c] transition-colors">
+                      <i class="ri-phone-line text-[#c4905c]"></i> <?= htmlspecialchars($member['contact_number']) ?>
+                    </a>
+                  <?php endif; ?>
+                  <?php if (!empty($member['social_gmail'])): ?>
+                    <a href="mailto:<?= htmlspecialchars($member['social_gmail']) ?>" onclick="event.stopPropagation()"
+                      class="flex items-center gap-2 text-[13px] text-[#5e5e5e] hover:text-[#c4905c] transition-colors">
+                      <i class="ri-mail-line text-[#c4905c]"></i> <?= htmlspecialchars($member['social_gmail']) ?>
+                    </a>
+                  <?php endif; ?>
+                  <?php if (!empty($member['social_wechat'])): ?>
+                    <span class="flex items-center gap-2 text-[13px] text-[#5e5e5e]">
+                      <i class="ri-wechat-line text-[#c4905c]"></i> <?= htmlspecialchars($member['social_wechat']) ?>
+                    </span>
+                  <?php endif; ?>
+                  <?php if (!empty($member['social_viber'])): ?>
+                    <span class="flex items-center gap-2 text-[13px] text-[#5e5e5e]">
+                      <i class="ri-phone-line text-[#c4905c]"></i> Viber: <?= htmlspecialchars($member['social_viber']) ?>
+                    </span>
+                  <?php endif; ?>
+                </div>
+              <?php endif; ?>
+            </div>
+          <?php endforeach; ?>
+        </div>
+
+      </div>
+    </section>
+    <?php endif; ?>
+    <!-- ═══════════════════════════════
+         END MEET THE TEAM
+    ═══════════════════════════════ -->
+
+    <!-- ═══════════════════════════════
+         TEAM E-CALLING CARD MODAL
+    ═══════════════════════════════ -->
+    <div id="teamCardModal" class="hidden fixed inset-0 z-[99999] bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+            <div id="teamCardModalBox" class="relative w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl bg-white shadow-2xl">
+
+        <button type="button" onclick="closeTeamModal()" title="Close"
+          class="absolute top-3 right-3 z-20 w-9 h-9 rounded-full bg-white/90 text-[#2f1200] flex items-center justify-center hover:bg-[#2f1200] hover:text-white transition-colors shadow-sm">
+          <i class="ri-close-line text-lg"></i>
+        </button>
+
+        <div class="flex flex-col sm:flex-row">
+
+          <div class="relative flex shrink-0 flex-col items-center justify-center gap-4 overflow-hidden px-8 py-10 text-center sm:w-[240px] sm:py-8"
+            style="background-image: radial-gradient(rgba(255,255,255,0.07) 1px, transparent 1px), linear-gradient(135deg, #2f1200, #5a2a08); background-size: 16px 16px, 100% 100%;">
+
+            <!-- Corner brackets — matches the blueprint motif elsewhere on the site -->
+            <span class="pointer-events-none absolute top-3 left-3 h-6 w-6 border-t-2 border-l-2 border-[#c4905c]/50"></span>
+            <span class="pointer-events-none absolute top-3 right-3 h-6 w-6 border-t-2 border-r-2 border-[#c4905c]/50"></span>
+            <span class="pointer-events-none absolute bottom-3 left-3 h-6 w-6 border-b-2 border-l-2 border-[#c4905c]/50"></span>
+            <span class="pointer-events-none absolute bottom-3 right-3 h-6 w-6 border-b-2 border-r-2 border-[#c4905c]/50"></span>
+
+            <!-- Giant faint monogram behind the content -->
+            <span id="tcmMonogram" class="pointer-events-none absolute inset-0 flex items-center justify-center select-none text-[130px] font-black text-white/[0.045]" style="font-family:'Cormorant Garamond', serif;"></span>
+
+            <div class="relative">
+              <img id="tcmAvatar" src="" alt="" class="hidden h-20 w-20 rounded-full object-cover border-4 border-[#c4905c]/70 shadow-lg sm:h-24 sm:w-24">
+              <div id="tcmInitial" class="hidden h-20 w-20 items-center justify-center rounded-full border-4 border-[#c4905c]/70 bg-white/10 font-montserrat text-2xl font-bold text-white shadow-lg sm:h-24 sm:w-24"></div>
+            </div>
+
+            <div class="relative">
+              <h3 id="tcmName" class="font-montserrat text-base font-bold uppercase tracking-[1px] text-white sm:text-lg"></h3>
+              <p id="tcmPosition" class="mt-1 font-montserrat text-[10px] uppercase tracking-[2px] text-[#e8c9a0] sm:text-[11px]"></p>
+            </div>
+
+            <div class="relative flex items-center gap-2">
+              <span class="h-px w-6 bg-[#c4905c]/50"></span>
+              <i class="ri-shapes-line text-[10px] text-[#c4905c]"></i>
+              <span class="h-px w-6 bg-[#c4905c]/50"></span>
+            </div>
+
+            <span class="relative font-montserrat text-[9px] font-semibold uppercase tracking-[2px] text-white/50">Realiving Design Center</span>
+          </div>
+
+          <div class="flex flex-1 flex-col gap-6 p-6 sm:flex-row sm:items-start sm:justify-between sm:gap-8 sm:p-8">
+            <div id="tcmContacts" class="flex flex-1 flex-col gap-2 font-montserrat"></div>
+
+            <div id="tcmQrSection" class="hidden items-center gap-3 sm:w-[140px] sm:shrink-0 sm:flex-col">
+              <div id="tcmQrToggle" class="flex flex-wrap justify-center gap-2"></div>
+              <button type="button" onclick="openQrLightbox()" class="group relative h-28 w-28 sm:h-32 sm:w-32">
+                <img id="tcmQrImage" src="" alt="QR Code" class="h-full w-full rounded-lg border border-[#c4905c]/20 bg-white p-2 shadow-sm">
+                <span class="pointer-events-none absolute inset-0 flex items-center justify-center rounded-lg bg-black/0 opacity-0 transition-all duration-200 group-hover:bg-black/40 group-hover:opacity-100">
+                  <i class="ri-zoom-in-line text-lg text-white"></i>
+                </span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+    <!-- ═══════════════════════════════
+         END TEAM E-CALLING CARD MODAL
+    ═══════════════════════════════ -->
+
+      <!-- QR Fullscreen Lightbox -->
+  <div id="qrLightbox" class="hidden fixed inset-0 z-[999999] items-center justify-center bg-black/85 backdrop-blur-sm p-6" onclick="closeQrLightbox()">
+    <button type="button" onclick="closeQrLightbox()" title="Close"
+      class="absolute top-5 right-5 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-black">
+      <i class="ri-close-line text-xl"></i>
+    </button>
+
+    <div class="qr-lightbox-card relative flex flex-col items-center gap-5 rounded-2xl bg-white px-10 py-10 shadow-2xl sm:px-14 sm:py-12" onclick="event.stopPropagation()">
+      <span class="qr-corner qr-corner-tl"></span>
+      <span class="qr-corner qr-corner-tr"></span>
+      <span class="qr-corner qr-corner-bl"></span>
+      <span class="qr-corner qr-corner-br"></span>
+
+      <div class="flex items-center gap-2">
+        <i id="qrLightboxIcon" class="text-base text-[#c4905c]"></i>
+        <span id="qrLightboxLabel" class="font-montserrat text-[11px] font-bold uppercase tracking-[2.5px] text-[#2f1200]"></span>
+      </div>
+
+      <img id="qrLightboxImage" src="" alt="QR Code" class="h-56 w-56 rounded-lg border border-[#c4905c]/15 bg-white p-3 sm:h-64 sm:w-64">
+
+      <p class="font-montserrat text-[11px] text-gray-400">Scan with your camera app to connect</p>
+    </div>
+  </div>
+  <!-- ═══════════════════════════════
+       END TEAM E-CALLING CARD MODAL
+  ═══════════════════════════════ -->
 
     <!-- ═══════════════════════════════
          CORE VALUES — seamless marquee, desktop through mobile
@@ -446,6 +765,172 @@ include $includes['connection'];
         }
         requestAnimationFrame(tick);
       }
+    });
+  </script>
+
+  <script>
+    // Team e-calling card modal
+    const teamMembers = <?= json_encode(array_map(function($m){
+      return [
+        'full_name' => $m['full_name'],
+        'position' => $m['position'] ?? '',
+        'avatar_url' => $m['avatar_url'],
+        'contact_number' => $m['contact_number'] ?? '',
+        'social_gmail' => $m['social_gmail'] ?? '',
+        'social_wechat' => $m['social_wechat'] ?? '',
+        'social_viber' => $m['social_viber'] ?? '',
+        'wechat_qr_url' => $m['wechat_qr_url'] ?? null,
+        'viber_qr_url' => $m['viber_qr_url'] ?? null,
+      ];
+    }, $team_members)) ?>;
+
+    let currentTeamMember = null;
+    let qrMetaMap = {};
+    let currentQrMeta = null;
+
+    function renderTeamModal(m) {
+      document.getElementById('tcmName').textContent = m.full_name;
+      const monogramEl = document.getElementById('tcmMonogram');
+      if (monogramEl) monogramEl.textContent = m.full_name.charAt(0).toUpperCase();
+
+      const posEl = document.getElementById('tcmPosition');
+      if (m.position) { posEl.textContent = m.position; posEl.classList.remove('hidden'); }
+      else { posEl.textContent = ''; posEl.classList.add('hidden'); }
+
+      const avatarImg = document.getElementById('tcmAvatar');
+      const avatarInitial = document.getElementById('tcmInitial');
+      if (m.avatar_url) {
+        avatarImg.src = m.avatar_url;
+        avatarImg.classList.remove('hidden');
+        avatarInitial.classList.add('hidden');
+        avatarInitial.classList.remove('flex');
+      } else {
+        avatarImg.classList.add('hidden');
+        avatarInitial.textContent = m.full_name.charAt(0).toUpperCase();
+        avatarInitial.classList.remove('hidden');
+        avatarInitial.classList.add('flex');
+      }
+
+      let rows = '';
+      if (m.contact_number) {
+        rows += '<a href="tel:' + m.contact_number.replace(/\s+/g, '') + '" onclick="event.stopPropagation()" ' +
+          'class="flex items-center gap-3 rounded-lg bg-[#faf8f6] px-4 py-2.5 text-[13px] text-[#2f1200] hover:bg-[#c4905c]/10 transition-colors">' +
+          '<i class="ri-phone-line text-[#c4905c]"></i>' + m.contact_number + '</a>';
+      }
+      if (m.social_gmail) {
+        rows += '<a href="mailto:' + m.social_gmail + '" onclick="event.stopPropagation()" ' +
+          'class="flex items-center gap-3 rounded-lg bg-[#faf8f6] px-4 py-2.5 text-[13px] text-[#2f1200] hover:bg-[#c4905c]/10 transition-colors">' +
+          '<i class="ri-mail-line text-[#c4905c]"></i>' + m.social_gmail + '</a>';
+      }
+      if (m.social_wechat) {
+        rows += '<div class="flex items-center gap-3 rounded-lg bg-[#faf8f6] px-4 py-2.5 text-[13px] text-[#2f1200]">' +
+          '<i class="ri-wechat-line text-[#c4905c]"></i>' + m.social_wechat + '</div>';
+      }
+      if (m.social_viber) {
+        rows += '<div class="flex items-center gap-3 rounded-lg bg-[#faf8f6] px-4 py-2.5 text-[13px] text-[#2f1200]">' +
+          '<i class="ri-phone-line text-[#c4905c]"></i>Viber: ' + m.social_viber + '</div>';
+      }
+      document.getElementById('tcmContacts').innerHTML = rows;
+
+      const qrSection = document.getElementById('tcmQrSection');
+      const qrToggle = document.getElementById('tcmQrToggle');
+      const qrImg = document.getElementById('tcmQrImage');
+      const qrOptions = [];
+      if (m.wechat_qr_url) qrOptions.push({ key: 'wechat_qr_url', label: 'WeChat QR', icon: 'ri-wechat-line' });
+      if (m.viber_qr_url) qrOptions.push({ key: 'viber_qr_url', label: 'Viber QR', icon: 'ri-phone-line' });
+
+      if (qrOptions.length === 0) {
+        qrSection.classList.add('hidden');
+        qrSection.classList.remove('flex');
+        qrToggle.innerHTML = '';
+      } else {
+        qrSection.classList.remove('hidden');
+        qrSection.classList.add('flex');
+        qrMetaMap = {};
+        qrOptions.forEach(function (o) { qrMetaMap[o.key] = o; });
+        qrToggle.innerHTML = qrOptions.map((o, idx) =>
+          '<button type="button" data-key="' + o.key + '" onclick="tcmShowQr(\'' + o.key + '\')" ' +
+          'class="tcm-qr-btn inline-flex items-center gap-1.5 rounded-full border px-4 py-1.5 font-montserrat text-[10px] font-bold uppercase tracking-[1px] transition-colors ' +
+          (idx === 0 ? 'bg-[#2f1200] text-white border-[#2f1200]' : 'bg-white text-[#2f1200] border-[#c4905c]/30') + '">' +
+          '<i class="' + o.icon + '"></i>' + o.label + '</button>'
+        ).join('');
+        qrImg.src = m[qrOptions[0].key];
+        currentQrMeta = qrOptions[0];
+      }
+    }
+
+    function openTeamModal(i) {
+      currentTeamMember = teamMembers[i];
+      if (!currentTeamMember) return;
+      renderTeamModal(currentTeamMember);
+
+      const modal = document.getElementById('teamCardModal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      document.body.style.overflow = 'hidden';
+      requestAnimationFrame(() => modal.classList.add('is-open'));
+    }
+
+    function closeTeamModal() {
+      const modal = document.getElementById('teamCardModal');
+      modal.classList.remove('is-open');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }, 200);
+    }
+
+    function openQrLightbox() {
+      const qrImg = document.getElementById('tcmQrImage');
+      if (!qrImg || !qrImg.src) return;
+      document.getElementById('qrLightboxImage').src = qrImg.src;
+      document.getElementById('qrLightboxLabel').textContent = currentQrMeta ? currentQrMeta.label : 'QR Code';
+      document.getElementById('qrLightboxIcon').className = currentQrMeta ? currentQrMeta.icon : 'ri-qr-code-line';
+
+      const lightbox = document.getElementById('qrLightbox');
+      lightbox.classList.remove('hidden');
+      lightbox.classList.add('flex');
+      requestAnimationFrame(() => lightbox.classList.add('is-open'));
+    }
+
+    function closeQrLightbox() {
+      const lightbox = document.getElementById('qrLightbox');
+      lightbox.classList.remove('is-open');
+      setTimeout(() => {
+        lightbox.classList.add('hidden');
+        lightbox.classList.remove('flex');
+      }, 200);
+    }
+
+    function tcmShowQr(key) {
+      if (!currentTeamMember) return;
+      document.getElementById('tcmQrImage').src = currentTeamMember[key];
+      currentQrMeta = qrMetaMap[key] || null;
+      document.querySelectorAll('.tcm-qr-btn').forEach(function (btn) {
+        const active = btn.getAttribute('data-key') === key;
+        btn.classList.toggle('bg-[#2f1200]', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('border-[#2f1200]', active);
+        btn.classList.toggle('bg-white', !active);
+        btn.classList.toggle('text-[#2f1200]', !active);
+        btn.classList.toggle('border-[#c4905c]/30', !active);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const modal = document.getElementById('teamCardModal');
+      modal.addEventListener('click', function (e) {
+        if (e.target === this) closeTeamModal();
+      });
+      document.addEventListener('keydown', function (e) {
+        const lightbox = document.getElementById('qrLightbox');
+        if (e.key === 'Escape' && lightbox && !lightbox.classList.contains('hidden')) {
+          closeQrLightbox();
+          return;
+        }
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeTeamModal();
+      });
     });
   </script>
 

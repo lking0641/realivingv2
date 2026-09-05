@@ -136,6 +136,7 @@ $routes = [
   //GET ACCOUNT
   'get-account' => 'realiving_admin/realiving-account/get-account.php',
   'update-account' => 'realiving_admin/realiving-account/update-account.php',
+  'delete-team-qr' => 'realiving_admin/realiving-account/delete-team-qr.php',
 
   //PRODUCT LIST VIEW
   'allclient' => 'realiving_admin/quotation-management/insert-client/allclient.php',
@@ -195,6 +196,7 @@ $routes = [
 
   //TRACKER PAYMENT
   'add-collection-billing' => 'realiving_admin/tracker-management/tracker-payment/add_collection_billing.php',
+  'payment-tracker-js' => 'realiving_admin/tracker-management/tracker-payment/js/payment_tracker.js',
   'check-ipo-approved' => 'realiving_admin/tracker-management/tracker-payment/check_ipo_approved.php',
   'payment-tracker' => 'realiving_admin/tracker-management/tracker-payment/payment_tracker.php',
   'review-payment-proof' => 'realiving_admin/tracker-management/tracker-payment/review_payment_proof.php',

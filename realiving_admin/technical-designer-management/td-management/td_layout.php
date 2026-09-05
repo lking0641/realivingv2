@@ -168,137 +168,39 @@ if (!empty($tdAreas)) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TD Layout — <?= htmlspecialchars($clientInfo['clientname']) ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f5f1ed;
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        .container {
-            max-width: 1100px;
-            margin: 30px auto;
-            padding: 0 20px 60px;
-        }
-
-        .btn-nav {
-            color: white;
-            padding: 9px 18px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            text-decoration: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .alert {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border-left: 4px solid #10b981;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-
-        .card {
-            background: white;
-            border-radius: 12px;
-            padding: 26px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-            margin-bottom: 22px;
-        }
-
-        .card h2 {
-            font-size: 16px;
-            color: #0c4a6e;
-            margin-bottom: 18px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #f0f9ff;
-            display: flex;
-            align-items: center;
-            gap: 9px;
-        }
-
-        .form-control {
-            padding: 9px 13px;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #111;
-            transition: border-color 0.2s;
-            font-family: inherit;
-            width: 100%;
-        }
-
-        .form-control:focus {
-            outline: none;
-            border-color: #0369a1;
-        }
-
-        .btn-blue {
-            background: linear-gradient(135deg, #0c4a6e, #0369a1);
-        }
-
-        .btn-brown {
-            background: linear-gradient(135deg, #3b1f0f, #7a4528);
-        }
-
-        .intake-item {
-            background: #f0f9ff;
-            border-radius: 8px;
-            padding: 14px;
-            border-left: 3px solid #0369a1;
-        }
-
-        .intake-item .label {
-            font-size: 11px;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .intake-item .value {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1f2937;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
 </head>
 
-<body>
-    <div class="container">
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[1100px] mx-auto px-5 py-8">
 
         <!-- Back buttons -->
-        <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-            <a href="<?= $backToList ?>" class="btn-nav btn-blue"><i class="fas fa-arrow-left"></i> Back to List</a>
+        <div class="flex gap-2.5 mb-5 flex-wrap">
+            <a href="<?= $backToList ?>"
+                class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
             <?php if ($canSeeTrackerBtn): ?>
-                <a href="<?= $backToTracker ?>" class="btn-nav btn-brown"><i class="fas fa-chart-line"></i> Back to
-                    Tracker</a>
+                <a href="<?= $backToTracker ?>"
+                    class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
+                    <i class="fas fa-chart-line"></i> Back to Tracker
+                </a>
             <?php endif; ?>
         </div>
 
@@ -334,21 +236,20 @@ if (!empty($tdAreas)) {
             $remarkNeededCount = (int) $remarkNeededStmt->get_result()->fetch_row()[0];
             if ($remarkNeededCount > 0):
                 ?>
-                <div
-                    style="background:#eff6ff; border:2px solid #93c5fd; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <i class="fas fa-comment-medical" style="color:#2563eb; font-size:20px;"></i>
+                <div class="bg-blue-50 border border-blue-300 rounded-[10px] p-4 mb-[18px] flex items-center justify-between gap-3.5 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                        <i class="fas fa-comment-medical text-blue-600 text-xl"></i>
                         <div>
-                            <div style="font-weight:700; font-size:14px; color:#1e40af;">
+                            <div class="font-semibold text-sm text-blue-900">
                                 Some areas need your technical remark
                             </div>
-                            <div style="font-size:12px; color:#3b82f6; margin-top:2px;">
+                            <div class="text-xs text-blue-700 mt-0.5">
                                 The designer has requested approval but your remark is missing. Go to TD Attachments to submit.
                             </div>
                         </div>
                     </div>
                     <a href="td-attachments?client_id=<?= $client_id ?>"
-                        style="background:linear-gradient(135deg,#1d4ed8,#3b82f6); color:white; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:7px; white-space:nowrap;">
+                        class="inline-flex items-center gap-2 bg-blue-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition whitespace-nowrap">
                         <i class="fas fa-arrow-right"></i> Go to TD Attachments
                     </a>
                 </div>
@@ -361,70 +262,65 @@ if (!empty($tdAreas)) {
         $tdPendingCount = getTDPendingApprovalCount($conn, $admin_id, $client_id);
         if ($tdPendingCount > 0):
             ?>
-            <div
-                style="background:#fef3c7; border:2px solid #f59e0b; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap;">
-                <div style="display:flex; align-items:center; gap:10px;">
-                    <i class="fas fa-bell" style="color:#d97706; font-size:20px;"></i>
+            <div class="bg-amber-50 border border-amber-300 rounded-[10px] p-4 mb-[18px] flex items-center justify-between gap-3.5 flex-wrap">
+                <div class="flex items-center gap-2.5">
+                    <i class="fas fa-bell text-amber-600 text-xl"></i>
                     <div>
-                        <div style="font-weight:700; font-size:14px; color:#92400e;">
-                            You have <?= $tdPendingCount ?> pending approval<?= $tdPendingCount > 1 ? 's' : '' ?> for this
-                            client
+                        <div class="font-semibold text-sm text-amber-900">
+                            You have <?= $tdPendingCount ?> pending approval<?= $tdPendingCount > 1 ? 's' : '' ?> for this client
                         </div>
-                        <div style="font-size:12px; color:#b45309; margin-top:2px;">
+                        <div class="text-xs text-amber-700 mt-0.5">
                             Go to TD Attachments to review and approve or reject.
                         </div>
                     </div>
                 </div>
                 <a href="td-attachments?client_id=<?= $client_id ?>"
-                    style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:7px; white-space:nowrap;">
+                    class="inline-flex items-center gap-2 bg-amber-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition whitespace-nowrap">
                     <i class="fas fa-arrow-right"></i> Go to TD Attachments
                 </a>
             </div>
         <?php endif; ?>
 
         <?php if (!empty($rejectedTDItems) && $isAssigned): ?>
-            <div
-                style="background:#fee2e2; border:2px solid #ef4444; border-radius:12px; padding:14px 20px; margin-bottom:18px;">
-                <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap;">
-                    <i class="fas fa-times-circle" style="color:#dc2626; font-size:20px; flex-shrink:0;"></i>
-                    <div style="flex:1;">
-                        <div style="font-weight:700; font-size:14px; color:#991b1b;">
-                            <?= count($rejectedTDItems) ?> TD area<?= count($rejectedTDItems) > 1 ? 's/units' : '/unit' ?>
-                            rejected — action required
+            <div class="bg-red-50 border border-red-300 rounded-[10px] p-4 mb-[18px]">
+                <div class="flex items-center gap-2.5 mb-3 flex-wrap">
+                    <i class="fas fa-times-circle text-red-600 text-xl flex-shrink-0"></i>
+                    <div class="flex-1">
+                        <div class="font-semibold text-sm text-red-900">
+                            <?= count($rejectedTDItems) ?> TD area<?= count($rejectedTDItems) > 1 ? 's/units' : '/unit' ?> rejected — action required
                         </div>
-                        <div style="font-size:12px; color:#b91c1c; margin-top:2px;">
-                            Go to <strong>TD Attachments</strong> to review the rejection comments and resubmit updated
-                            files.
+                        <div class="text-xs text-red-700 mt-0.5">
+                            Go to <strong>TD Attachments</strong> to review the rejection comments and resubmit updated files.
                         </div>
                     </div>
                     <a href="td-attachments?client_id=<?= $client_id ?>"
-                        style="background:linear-gradient(135deg,#dc2626,#ef4444); color:white; padding:9px 18px; border-radius:8px; font-size:13px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:7px; white-space:nowrap; flex-shrink:0;">
+                        class="inline-flex items-center gap-2 bg-red-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition whitespace-nowrap flex-shrink-0">
                         <i class="fas fa-arrow-right"></i> Go to TD Attachments
                     </a>
                 </div>
-                <div style="display:flex; flex-direction:column; gap:8px;">
+                <div class="flex flex-col gap-2">
                     <?php foreach ($rejectedTDItems as $rej): ?>
-                        <div style="background:white; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px;">
-                            <div style="font-size:13px; font-weight:700; color:#991b1b;">
-                                <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($rej['area']) ?>
-                                <?php if ($rej['room_unit_number']): ?>
-                                    <span style="color:#6b7280; font-weight:400;"> › </span>
-                                    <i class="fas fa-door-open"></i> Unit <?= $rej['room_unit_number'] ?>
-                                <?php endif; ?>
-                            </div>
-                            <?php if ($rej['comment']): ?>
-                                <div
-                                    style="font-size:12px; color:#7f1d1d; background:#fff5f5; padding:6px 10px; border-radius:6px; margin-top:6px; border-left:3px solid #ef4444; font-style:italic;">
-                                    <i class="fas fa-comment-slash"></i> "<?= htmlspecialchars($rej['comment']) ?>"
+                        <div class="bg-white border border-red-200 rounded-lg px-3.5 py-2.5 flex items-start gap-2.5 flex-wrap">
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[13px] font-semibold text-red-900">
+                                    <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($rej['area']) ?>
+                                    <?php if ($rej['room_unit_number']): ?>
+                                        <span class="text-soft font-normal"> › </span>
+                                        <i class="fas fa-door-open"></i> Unit <?= $rej['room_unit_number'] ?>
+                                    <?php endif; ?>
                                 </div>
-                            <?php endif; ?>
-                            <div
-                                style="font-size:11px; color:#9ca3af; margin-top:5px; display:flex; align-items:center; gap:5px;">
-                                <i class="fas fa-user-times"></i>
-                                Rejected by: <?= htmlspecialchars($rej['rejected_by_name'] ?? 'Manager') ?>
-                                <?php if ($rej['responded_at']): ?>
-                                    &nbsp;•&nbsp; <?= date('M d, Y g:i A', strtotime($rej['responded_at'])) ?>
+                                <?php if ($rej['comment']): ?>
+                                    <div class="text-xs text-red-800 bg-red-50 px-2.5 py-1.5 rounded-md mt-1.5 border-l-2 border-red-500 italic">
+                                        <i class="fas fa-comment-slash"></i> "<?= htmlspecialchars($rej['comment']) ?>"
+                                    </div>
                                 <?php endif; ?>
+                                <div class="text-[11px] text-muted mt-1.5 flex items-center gap-1.5">
+                                    <i class="fas fa-user-times"></i>
+                                    Rejected by: <?= htmlspecialchars($rej['rejected_by_name'] ?? 'Manager') ?>
+                                    <?php if ($rej['responded_at']): ?>
+                                        &nbsp;•&nbsp; <?= date('M d, Y g:i A', strtotime($rej['responded_at'])) ?>
+                                    <?php endif; ?>
+                                </div>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -433,10 +329,14 @@ if (!empty($tdAreas)) {
         <?php endif; ?>
 
         <?php if ($success): ?>
-            <div class="alert alert-success"><i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?></div>
+            <div class="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?>
+            </div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?></div>
+            <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
 
         <?php
@@ -449,104 +349,79 @@ if (!empty($tdAreas)) {
             $nowCut = new DateTime();
             $endDtCut = $dlRowCut['end_date'] ? new DateTime($dlRowCut['end_date']) : null;
             $isOverdueCut = $endDtCut && $nowCut > $endDtCut;
-            $dlBgCut = $isOverdueCut ? '#fee2e2' : '#fffbeb';
-            $dlBorderCut = $isOverdueCut ? '#ef4444' : '#f59e0b';
-            $dlColorCut = $isOverdueCut ? '#991b1b' : '#92400e';
+            $dlClassesCut = $isOverdueCut ? 'bg-red-50 border-red-300 text-red-900' : 'bg-blue-50 border-blue-300 text-blue-900';
+            $dlIconColorCut = $isOverdueCut ? 'text-red-600' : 'text-blue-600';
             $dlIconCut = $isOverdueCut ? 'fa-exclamation-circle' : 'fa-calendar-alt';
-            ?>
-            <div
-                style="background:<?= $dlBgCut ?>; border:2px solid <?= $dlBorderCut ?>; border-radius:12px; padding:14px 20px; margin-bottom:18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                <i class="fas <?= $dlIconCut ?>" style="color:<?= $dlBorderCut ?>; font-size:20px; flex-shrink:0;"></i>
-                <div style="flex:1;">
-                    <div style="font-weight:700; font-size:14px; color:<?= $dlColorCut ?>;">
-                        Cuttinglist
-                        <?= $isOverdueCut ? '— OVERDUE' : 'Deadline' ?>
-                    </div>
-                    <div
-                        style="font-size:12px; color:<?= $dlColorCut ?>; opacity:0.85; margin-top:2px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                        <?php if ($dlRowCut['start_date']): ?>
-                            <span><i class="fas fa-play-circle" style="color:#10b981;"></i> Start: <strong>
-                                    <?= date('F d, Y', strtotime($dlRowCut['start_date'])) ?>
-                                </strong></span>
-                        <?php endif; ?>
-                        <?php if ($dlRowCut['end_date']): ?>
-                            <span><i class="fas fa-stop-circle" style="color:#ef4444;"></i> Deadline: <strong>
-                                    <?= date('F d, Y', strtotime($dlRowCut['end_date'])) ?>
-                                </strong></span>
-                        <?php endif; ?>
-                        <?php if ($dlRowCut['duration']): ?>
-                            <span><i class="fas fa-clock"></i>
-                                <?= $dlRowCut['duration'] ?> day
-                                <?= $dlRowCut['duration'] != 1 ? 's' : '' ?>
-                            </span>
-                        <?php endif; ?>
-                    </div>
+        ?>
+        <div class="border rounded-[10px] p-4 mb-[18px] flex items-center gap-3 flex-wrap <?= $dlClassesCut ?>">
+            <i class="fas <?= $dlIconCut ?> <?= $dlIconColorCut ?> text-xl flex-shrink-0"></i>
+            <div class="flex-1">
+                <div class="font-semibold text-sm">
+                    Cuttinglist <?= $isOverdueCut ? '— OVERDUE' : 'Deadline' ?>
+                </div>
+                <div class="text-xs opacity-85 mt-0.5 flex items-center gap-2.5 flex-wrap">
+                    <?php if ($dlRowCut['start_date']): ?>
+                        <span><i class="fas fa-play-circle text-emerald-600"></i> Start: <strong><?= date('F d, Y', strtotime($dlRowCut['start_date'])) ?></strong></span>
+                    <?php endif; ?>
+                    <?php if ($dlRowCut['end_date']): ?>
+                        <span><i class="fas fa-stop-circle text-red-600"></i> Deadline: <strong><?= date('F d, Y', strtotime($dlRowCut['end_date'])) ?></strong></span>
+                    <?php endif; ?>
+                    <?php if ($dlRowCut['duration']): ?>
+                        <span><i class="fas fa-clock"></i> <?= $dlRowCut['duration'] ?> day<?= $dlRowCut['duration'] != 1 ? 's' : '' ?></span>
+                    <?php endif; ?>
                 </div>
             </div>
-            <?php endif; ?>
+        </div>
+        <?php endif; ?>
 
-        <!-- Client Header -->
-        <div
-            style="background:linear-gradient(135deg,#0c4a6e 0%,#0369a1 100%); border-radius:12px; padding:28px 35px; margin-bottom:20px; color:white;">
-            <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:20px;">
+        <!-- ── Client Information Header ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="flex justify-between items-start gap-4 mb-5 flex-wrap">
                 <div>
-                    <h1 style="font-size:26px; margin-bottom:6px;">🔧 <?= htmlspecialchars($clientInfo['clientname']) ?>
-                    </h1>
-                    <p style="opacity:0.9; font-size:14px;"><?= htmlspecialchars($clientInfo['nameproject']) ?></p>
+                    <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                        <i class="fas fa-drafting-compass"></i> TD Layout Manager
+                    </div>
+                    <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($clientInfo['clientname']) ?></h1>
+                    <p class="text-[13.5px] text-soft mt-1"><?= htmlspecialchars($clientInfo['nameproject']) ?></p>
                 </div>
                 <button onclick="document.getElementById('clientDetailModal').style.display='flex'"
-                    style="background:white; color:#0c4a6e; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:8px;">
-                    <i class="fas fa-info-circle"></i> View Details
+                    class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-sm font-semibold hover:opacity-90 transition">
+                    <i class="fas fa-info-circle"></i> View Full Details
                 </button>
             </div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px;">
-                <div
-                    style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); border-radius:9px; padding:13px;">
-                    <div style="font-size:10px; opacity:0.75; text-transform:uppercase; letter-spacing:0.5px;">Reference
-                    </div>
-                    <div style="font-size:13px; font-weight:600; margin-top:4px; font-family:monospace;">
-                        <?= htmlspecialchars($clientInfo['reference_number']) ?>
-                    </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Reference Number</div>
+                    <div class="text-[13px] font-semibold font-mono"><?= htmlspecialchars($clientInfo['reference_number']) ?></div>
                 </div>
-                <div
-                    style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); border-radius:9px; padding:13px;">
-                    <div style="font-size:10px; opacity:0.75; text-transform:uppercase; letter-spacing:0.5px;">Business
-                        Type</div>
-                    <div style="font-size:13px; font-weight:600; margin-top:4px;">
-                        <?= htmlspecialchars($business_type_label) ?>
-                    </div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Business Type</div>
+                    <div class="text-[14px] font-semibold"><?= htmlspecialchars($business_type_label) ?></div>
                 </div>
-                <div
-                    style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); border-radius:9px; padding:13px;">
-                    <div style="font-size:10px; opacity:0.75; text-transform:uppercase; letter-spacing:0.5px;">Project
-                        Cost</div>
-                    <div style="font-size:13px; font-weight:600; margin-top:4px;">
-                        ₱<?= number_format($clientInfo['total_project_cost'] ?? 0, 2) ?></div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Project Cost</div>
+                    <div class="text-[14px] font-semibold">₱<?= number_format($clientInfo['total_project_cost'] ?? 0, 2) ?></div>
                 </div>
-                <div
-                    style="background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); border-radius:9px; padding:13px;">
-                    <div style="font-size:10px; opacity:0.75; text-transform:uppercase; letter-spacing:0.5px;">Layout
-                        Stage</div>
-                    <div style="font-size:13px; font-weight:600; margin-top:4px;">
-                        <?= htmlspecialchars($layoutTrackerStatus) ?>
-                    </div>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Layout Stage</div>
+                    <div class="text-[14px] font-semibold"><?= htmlspecialchars($layoutTrackerStatus) ?></div>
                 </div>
             </div>
         </div>
 
         <!-- Client Detail Modal -->
-        <div id="clientDetailModal"
-            style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
-            <div
-                style="background:white; padding:28px; border-radius:12px; max-width:580px; width:90%; max-height:88vh; overflow-y:auto; position:relative;">
-                <div
-                    style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; border-bottom:2px solid #e0f2fe; padding-bottom:12px;">
-                    <h2 style="font-size:18px; font-weight:bold; color:#0c4a6e;"><i class="fas fa-user-circle"
-                            style="color:#0369a1;"></i> Client Details</h2>
+        <div id="clientDetailModal" class="hidden fixed inset-0 z-[1000] bg-black/50 items-center justify-center">
+            <div class="bg-white p-7 rounded-[14px] max-w-xl w-[90%] max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-5 border-b border-line pb-3.5">
+                    <h2 class="text-lg font-bold flex items-center gap-2">
+                        <i class="fas fa-user-circle text-soft"></i> Client Details
+                    </h2>
                     <button onclick="document.getElementById('clientDetailModal').style.display='none'"
-                        style="font-size:20px; color:#666; background:none; border:none; cursor:pointer;"><i
-                            class="fas fa-times"></i></button>
+                        class="text-soft hover:text-ink text-lg">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
+
                 <?php
                 $rows = [
                     ['Reference Number', $clientInfo['reference_number']],
@@ -569,54 +444,41 @@ if (!empty($tdAreas)) {
                     if (!$val)
                         continue;
                     ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:10px 0; border-bottom:1px solid #e9ecef;">
-                        <div style="font-weight:600; color:#666; font-size:13px;"><?= $lbl ?>:</div>
-                        <div style="color:#111; font-size:13px;"><?= nl2br(htmlspecialchars($val)) ?></div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]"><?= $lbl ?>:</div>
+                        <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($val)) ?></div>
                     </div>
                 <?php endforeach; ?>
 
                 <?php if (!empty($clientInfo['project_scope'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:10px 0; border-bottom:1px solid #e9ecef;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Project Scope:</div>
-                        <div style="color:#111; font-size:13px;">
-                            <?= nl2br(htmlspecialchars($clientInfo['project_scope'])) ?>
-                        </div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Project Scope:</div>
+                        <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($clientInfo['project_scope'])) ?></div>
                     </div>
                 <?php endif; ?>
 
                 <?php if (!empty($clientInfo['scope_of_work'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:10px 0; border-bottom:1px solid #e9ecef;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Scope of Work:</div>
-                        <div style="color:#111; font-size:13px;">
-                            <?= nl2br(htmlspecialchars($clientInfo['scope_of_work'])) ?>
-                        </div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Scope of Work:</div>
+                        <div class="text-ink text-[13px]"><?= nl2br(htmlspecialchars($clientInfo['scope_of_work'])) ?></div>
                     </div>
                 <?php endif; ?>
 
                 <?php if (!empty($clientInfo['house_state'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:10px 0; border-bottom:1px solid #e9ecef;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">House State:</div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">House State:</div>
                         <div>
                             <?php
-                            $hsBg = '#fef3c7';
-                            $hsColor = '#92400e';
+                            $hsClass = 'bg-amber-100 text-amber-800';
                             if ($clientInfo['house_state'] === 'Bare/Empty Lot') {
-                                $hsBg = '#dbeafe';
-                                $hsColor = '#1e40af';
+                                $hsClass = 'bg-blue-100 text-blue-800';
                             } elseif ($clientInfo['house_state'] === 'Construction Started') {
-                                $hsBg = '#fee2e2';
-                                $hsColor = '#991b1b';
+                                $hsClass = 'bg-red-100 text-red-800';
                             } elseif ($clientInfo['house_state'] === 'Renovation') {
-                                $hsBg = '#ede9fe';
-                                $hsColor = '#5b21b6';
+                                $hsClass = 'bg-purple-100 text-purple-800';
                             }
                             ?>
-                            <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:700;
-                                 background:<?= $hsBg ?>; color:<?= $hsColor ?>;">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold <?= $hsClass ?>">
                                 <?= htmlspecialchars($clientInfo['house_state']) ?>
                             </span>
                         </div>
@@ -624,23 +486,18 @@ if (!empty($tdAreas)) {
                 <?php endif; ?>
 
                 <?php if (!empty($clientInfo['permit_required'])): ?>
-                    <div
-                        style="display:grid; grid-template-columns:160px 1fr; padding:10px 0; border-bottom:1px solid #e9ecef;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Permit Required:</div>
+                    <div class="grid grid-cols-[160px_1fr] py-3 border-b border-line items-start">
+                        <div class="font-semibold text-soft text-[13px]">Permit Required:</div>
                         <div>
                             <?php
-                            $prBg = '#fef3c7';
-                            $prColor = '#92400e';
+                            $prClass = 'bg-amber-100 text-amber-800';
                             if ($clientInfo['permit_required'] === 'Yes') {
-                                $prBg = '#fee2e2';
-                                $prColor = '#991b1b';
+                                $prClass = 'bg-red-100 text-red-800';
                             } elseif ($clientInfo['permit_required'] === 'No') {
-                                $prBg = '#d1fae5';
-                                $prColor = '#065f46';
+                                $prClass = 'bg-emerald-100 text-emerald-800';
                             }
                             ?>
-                            <span style="padding:4px 12px; border-radius:12px; font-size:12px; font-weight:700;
-                                 background:<?= $prBg ?>; color:<?= $prColor ?>;">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold <?= $prClass ?>">
                                 <?= htmlspecialchars($clientInfo['permit_required']) ?>
                             </span>
                         </div>
@@ -648,10 +505,10 @@ if (!empty($tdAreas)) {
                 <?php endif; ?>
 
                 <?php if (!empty($clientInfo['target_movein_date'])): ?>
-                    <div style="display:grid; grid-template-columns:160px 1fr; padding:10px 0;">
-                        <div style="font-weight:600; color:#666; font-size:13px;">Target Move-in:</div>
-                        <div style="color:#111; font-size:13px; font-weight:600;">
-                            <i class="fas fa-calendar-check" style="color:#10b981;"></i>
+                    <div class="grid grid-cols-[160px_1fr] py-3 items-start">
+                        <div class="font-semibold text-soft text-[13px]">Target Move-in:</div>
+                        <div class="text-ink text-[13px] font-semibold">
+                            <i class="fas fa-calendar-check text-emerald-600"></i>
                             <?= date('F d, Y', strtotime($clientInfo['target_movein_date'])) ?>
                         </div>
                     </div>
@@ -659,51 +516,59 @@ if (!empty($tdAreas)) {
             </div>
         </div>
 
-        <!-- Assigned Staff Card -->
-        <div class="card">
-            <h2><i class="fas fa-users"></i> Assigned Staff</h2>
-            <div
-                style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-bottom:18px;">
-                <div class="intake-item" style="border-left-color:#3b82f6;">
-                    <div class="label">Designer 1</div>
-                    <div class="value">
-                        <?= $clientInfo['designer1_name'] ? htmlspecialchars($clientInfo['designer1_name']) : '<span style="color:#9ca3af; font-weight:400;">Not assigned</span>' ?>
+        <!-- ── Assigned Staff Section ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                <i class="fas fa-users text-soft"></i> Assigned Staff
+                <span class="flex-1 h-px bg-line"></span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mb-5">
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-pencil-ruler"></i> Designer 1
+                    </div>
+                    <div class="text-[14px] font-semibold">
+                        <?= $clientInfo['designer1_name'] ? htmlspecialchars($clientInfo['designer1_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
-                <div class="intake-item" style="border-left-color:#6366f1;">
-                    <div class="label">Designer 2</div>
-                    <div class="value">
-                        <?= $clientInfo['designer2_name'] ? htmlspecialchars($clientInfo['designer2_name']) : '<span style="color:#9ca3af; font-weight:400;">Not assigned</span>' ?>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-pencil-ruler"></i> Designer 2
+                    </div>
+                    <div class="text-[14px] font-semibold">
+                        <?= $clientInfo['designer2_name'] ? htmlspecialchars($clientInfo['designer2_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
-                <div class="intake-item" style="border-left-color:#0891b2;">
-                    <div class="label">Technical Designer</div>
-                    <div class="value">
-                        <?= $clientInfo['tech_designer_name'] ? htmlspecialchars($clientInfo['tech_designer_name']) : '<span style="color:#9ca3af; font-weight:400;">Not assigned</span>' ?>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-tools"></i> Technical Designer
+                    </div>
+                    <div class="text-[14px] font-semibold">
+                        <?= $clientInfo['tech_designer_name'] ? htmlspecialchars($clientInfo['tech_designer_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
-                <div class="intake-item" style="border-left-color:#059669;">
-                    <div class="label">Project Coordinator</div>
-                    <div class="value">
-                        <?= $clientInfo['coordinator_name'] ? htmlspecialchars($clientInfo['coordinator_name']) : '<span style="color:#9ca3af; font-weight:400;">Not assigned</span>' ?>
+                <div class="bg-[#F5F5F5] border border-line rounded-lg p-4">
+                    <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">
+                        <i class="fas fa-clipboard-check"></i> Project Coordinator
+                    </div>
+                    <div class="text-[14px] font-semibold">
+                        <?= $clientInfo['coordinator_name'] ? htmlspecialchars($clientInfo['coordinator_name']) : '<span class="text-muted font-normal text-[13px]">Not assigned</span>' ?>
                     </div>
                 </div>
             </div>
+
             <?php if ($isTDHead): ?>
-                <div style="border-top:2px solid #f0f9ff; padding-top:16px;">
-                    <div style="font-size:13px; font-weight:700; color:#0369a1; margin-bottom:10px;">
+                <div class="border-t border-line pt-[18px]">
+                    <div class="text-[13px] font-semibold mb-3 flex items-center gap-2">
                         <i class="fas fa-tools"></i> Assign Technical Designer
-                        <span
-                            style="background:#e0f2fe; color:#0369a1; padding:2px 10px; border-radius:10px; font-size:11px; margin-left:6px;">Head
-                            Only</span>
+                        <span class="bg-[#F5F5F5] border border-line text-soft px-2.5 py-0.5 rounded-full text-[11px]">Head Only</span>
                     </div>
-                    <form method="POST" style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+                    <form method="POST" class="flex gap-2.5 items-end flex-wrap">
                         <input type="hidden" name="action" value="assign_td">
-                        <div style="display:flex; flex-direction:column; gap:5px;">
-                            <label
-                                style="font-size:11px; font-weight:700; color:#374151; text-transform:uppercase;">Technical
-                                Designer</label>
-                            <select name="technical_designer_id" class="form-control" style="min-width:220px;">
+                        <div class="flex flex-col gap-1.5">
+                            <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft">Technical Designer</label>
+                            <select name="technical_designer_id" class="min-w-[220px] border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink">
                                 <option value="">— None —</option>
                                 <?php foreach ($tdList as $td): ?>
                                     <option value="<?= $td['id'] ?>" <?= ($clientInfo['technical_designer_id'] == $td['id']) ? 'selected' : '' ?>>
@@ -712,7 +577,8 @@ if (!empty($tdAreas)) {
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <button type="submit" class="btn-nav btn-blue" style="height:38px; padding:0 18px;">
+                        <button type="submit"
+                            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition h-[42px]">
                             <i class="fas fa-save"></i> Save
                         </button>
                     </form>
@@ -720,16 +586,17 @@ if (!empty($tdAreas)) {
             <?php endif; ?>
         </div>
 
-        <!-- Designer Intake Reference (read-only) -->
+        <!-- ── Designer Intake Reference (read-only) ── -->
         <?php if ($designerIntake): ?>
-            <div class="card">
-                <h2><i class="fas fa-clipboard-list"></i> Designer Intake — Reference Only</h2>
-                <div
-                    style="background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400e; margin-bottom:16px;">
-                    <i class="fas fa-info-circle"></i> This is the intake submitted by the designer. It is read-only and for
-                    your reference.
+            <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+                <div class="flex items-center gap-2.5 text-xs font-semibold mb-4">
+                    <i class="fas fa-clipboard-list text-soft"></i> Designer Intake — Reference Only
+                    <span class="flex-1 h-px bg-line"></span>
                 </div>
-                <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:12px;">
+                <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-3.5 py-2.5 text-xs mb-4 flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> This is the intake submitted by the designer. It is read-only and for your reference.
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                     <?php
                     $iFields = [
                         'Decoration Stage' => $designerIntake['decoration_stage'],
@@ -741,22 +608,20 @@ if (!empty($tdAreas)) {
                         'Budget' => '₱' . number_format($designerIntake['budget'], 2),
                     ];
                     foreach ($iFields as $lbl => $val): ?>
-                        <div class="intake-item">
-                            <div class="label"><?= $lbl ?></div>
-                            <div class="value"><?= htmlspecialchars($val) ?></div>
+                        <div class="bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1"><?= $lbl ?></div>
+                            <div class="text-sm font-semibold"><?= htmlspecialchars($val) ?></div>
                         </div>
                     <?php endforeach; ?>
                     <?php if ($designerIntake['measurement_remark']): ?>
-                        <div class="intake-item" style="grid-column:1/-1;">
-                            <div class="label">Measurement Remark</div>
-                            <div class="value" style="font-weight:400; font-size:13px;">
-                                <?= nl2br(htmlspecialchars($designerIntake['measurement_remark'])) ?>
-                            </div>
+                        <div class="sm:col-span-2 lg:col-span-3 bg-[#F5F5F5] border border-line rounded-lg p-3.5">
+                            <div class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft mb-1">Measurement Remark</div>
+                            <div class="text-[13px] font-normal"><?= nl2br(htmlspecialchars($designerIntake['measurement_remark'])) ?></div>
                         </div>
                     <?php endif; ?>
                 </div>
-                <div style="margin-top:12px; font-size:11px; color:#9ca3af;">
-                    <i class="fas fa-check-circle" style="color:#10b981;"></i>
+                <div class="text-[11px] text-muted mt-3 flex items-center gap-1.5">
+                    <i class="fas fa-check-circle text-emerald-600"></i>
                     Submitted by <?= htmlspecialchars($designerIntake['submitter_name'] ?? '') ?> on
                     <?= date('F d, Y g:i A', strtotime($designerIntake['created_at'])) ?>
                 </div>
@@ -803,14 +668,15 @@ if (!empty($tdAreas)) {
         ?>
 
         <?php if ($isAssigned && !empty($revAreaMap)): ?>
-            <div class="card">
-                <h2><i class="fas fa-redo-alt" style="color:#f59e0b;"></i> Request Revision</h2>
+            <div class="bg-white border-2 border-amber-400 rounded-[10px] p-6 mb-5">
+                <div class="flex items-center gap-2.5 text-xs font-semibold text-amber-800 mb-2">
+                    <i class="fas fa-redo-alt"></i> Request Revision
+                    <span class="flex-1 h-px bg-line"></span>
+                </div>
 
-                <div
-                    style="background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400e; margin-bottom:16px;">
+                <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-3.5 py-2.5 text-xs mb-4 flex items-center gap-2">
                     <i class="fas fa-exclamation-triangle"></i>
-                    Requesting a revision will reset approvals for the selected areas/units and notify the assigned
-                    Technical Designer.
+                    Requesting a revision will reset approvals for the selected areas/units and notify the assigned Technical Designer.
                 </div>
 
                 <form method="POST" action="<?= BASE_URL ?>td-request-revision" onsubmit="return confirmRevision();">
@@ -818,58 +684,51 @@ if (!empty($tdAreas)) {
                     <input type="hidden" name="selections" id="selectionsInput" value="">
 
                     <!-- Area/Unit selector -->
-                    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+                    <div class="flex flex-col gap-2.5 mb-4">
                         <?php foreach ($revAreaMap as $area => $units):
                             $slug = preg_replace('/[^a-z0-9]/i', '_', strtolower($area));
                             ?>
-                            <div style="border:1px solid #e9ecef; border-radius:9px; overflow:hidden;">
+                            <div class="border border-line rounded-lg overflow-hidden">
                                 <!-- Area header row -->
-                                <div style="background:#f8fafc; padding:11px 14px; display:flex; align-items:center; gap:10px; cursor:pointer;"
+                                <div class="bg-[#F5F5F5] px-4 py-3 flex items-center gap-2.5 cursor-pointer"
                                     onclick="toggleUnits('<?= $slug ?>')">
                                     <?php if (empty($units)): ?>
-                                        <input type="checkbox" class="rev-area-check" data-area="<?= htmlspecialchars($area) ?>"
-                                            onclick="event.stopPropagation(); onAreaCheck(this);"
-                                            style="width:15px; height:15px; cursor:pointer; flex-shrink:0;">
+                                        <input type="checkbox" class="rev-area-check w-4 h-4 cursor-pointer accent-amber-500" data-area="<?= htmlspecialchars($area) ?>"
+                                            onclick="event.stopPropagation(); onAreaCheck(this);">
                                     <?php endif; ?>
-                                    <span style="font-size:13px; font-weight:700; color:#1f2937; flex:1;">
-                                        <i class="fas fa-map-marker-alt" style="color:#0369a1;"></i>
+                                    <span class="text-sm font-semibold text-ink flex-1">
+                                        <i class="fas fa-map-marker-alt text-soft"></i>
                                         <?= htmlspecialchars($area) ?>
                                         <?php if (!empty($units)): ?>
-                                            <span
-                                                style="font-size:11px; font-weight:400; color:#6b7280; margin-left:6px;"><?= count($units) ?>
-                                                unit<?= count($units) > 1 ? 's' : '' ?></span>
+                                            <span class="text-[11px] font-normal text-muted ml-1.5"><?= count($units) ?> unit<?= count($units) > 1 ? 's' : '' ?></span>
                                         <?php endif; ?>
                                     </span>
                                     <?php if (!empty($units)): ?>
-                                        <i class="fas fa-chevron-down" id="chevron-<?= $slug ?>"
-                                            style="color:#6b7280; transition:transform .2s; font-size:12px;"></i>
+                                        <i class="fas fa-chevron-down text-soft text-xs transition-transform" id="chevron-<?= $slug ?>"></i>
                                     <?php endif; ?>
                                 </div>
 
                                 <!-- Units list (collapsible) -->
                                 <?php if (!empty($units)): ?>
-                                    <div id="units-<?= $slug ?>"
-                                        style="display:none; padding:10px 14px; border-top:1px solid #e9ecef; background:white;">
-                                        <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+                                    <div id="units-<?= $slug ?>" class="hidden px-4 py-3.5 border-t border-line bg-white">
+                                        <div class="flex justify-end mb-2">
                                             <button type="button" id="selectAllBtn-<?= $slug ?>"
                                                 onclick="selectAllUnits('<?= htmlspecialchars($area, ENT_QUOTES) ?>','<?= $slug ?>')"
-                                                style="font-size:11px; color:#0369a1; background:none; border:none; cursor:pointer; font-weight:600;">
+                                                class="text-[11px] text-ink font-semibold hover:underline">
                                                 Select All
                                             </button>
                                         </div>
-                                        <div style="display:flex; flex-direction:column; gap:6px;">
+                                        <div class="flex flex-col gap-1.5">
                                             <?php foreach ($units as $unit): ?>
                                                 <label id="unitlabel-<?= $slug ?>-<?= $unit['unit_num'] ?>"
-                                                    style="display:flex; align-items:center; gap:9px; padding:8px 10px; border:1px solid #e9ecef; border-radius:7px; cursor:pointer; transition:background .15s;"
-                                                    onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">
-                                                    <input type="checkbox" class="rev-unit-check"
+                                                    class="flex items-center gap-2.5 px-2.5 py-2 border border-line rounded-md cursor-pointer transition hover:bg-[#F5F5F5]">
+                                                    <input type="checkbox" class="rev-unit-check w-3.5 h-3.5 cursor-pointer accent-amber-500"
                                                         data-area="<?= htmlspecialchars($area) ?>" data-area-slug="<?= $slug ?>"
                                                         data-unit-num="<?= $unit['unit_num'] ?>"
                                                         data-unit-name="<?= htmlspecialchars($unit['unit_name'] ?? '') ?>"
-                                                        onclick="onUnitCheck(this);"
-                                                        style="width:14px; height:14px; cursor:pointer; flex-shrink:0;">
-                                                    <span style="font-size:13px; color:#374151;">
-                                                        <i class="fas fa-door-open" style="color:#6b7280; font-size:11px;"></i>
+                                                        onclick="onUnitCheck(this);">
+                                                    <span class="text-[13px] text-ink">
+                                                        <i class="fas fa-door-open text-muted text-[11px]"></i>
                                                         <?= htmlspecialchars($unit['unit_name'] ?? 'Unit ' . $unit['unit_num']) ?>
                                                     </span>
                                                 </label>
@@ -882,18 +741,16 @@ if (!empty($tdAreas)) {
                     </div>
 
                     <!-- Selected items summary + reason inputs -->
-                    <div id="selectionSummary"
-                        style="display:none; background:#fffbeb; border:2px solid #fcd34d; border-radius:9px; padding:14px; margin-bottom:14px;">
-                        <div
-                            style="font-size:12px; font-weight:700; color:#92400e; margin-bottom:10px; text-transform:uppercase; letter-spacing:.4px;">
+                    <div id="selectionSummary" class="hidden bg-amber-50 border border-amber-300 rounded-lg p-4 mb-4">
+                        <div class="text-xs font-semibold text-amber-800 uppercase tracking-[0.4px] mb-3">
                             <i class="fas fa-list-check"></i> Selected for Revision — add a reason for each
                         </div>
-                        <div id="selectionItems" style="display:flex; flex-direction:column; gap:10px;"></div>
+                        <div id="selectionItems" class="flex flex-col gap-2.5"></div>
                     </div>
 
-                    <div style="display:flex; justify-content:flex-end;">
+                    <div class="flex justify-end">
                         <button type="submit" id="revisionSubmitBtn" disabled
-                            style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:11px 24px; border:none; border-radius:9px; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:8px; opacity:0.5; cursor:not-allowed;">
+                            class="inline-flex items-center gap-2 bg-amber-600 text-white rounded-lg px-6 py-2.5 text-[13px] font-semibold opacity-50 cursor-not-allowed transition">
                             <i class="fas fa-redo-alt"></i> Submit Revision Request
                         </button>
                     </div>
@@ -903,46 +760,44 @@ if (!empty($tdAreas)) {
 
         <!-- ── Revision History ───────────────────────────────────────────── -->
         <?php if (!empty($revisionLogs)): ?>
-            <div class="card">
-                <h2 style="cursor:pointer;" onclick="toggleRevPanel('revHistoryPanel','revHistoryChevron')">
-                    <i class="fas fa-history" style="color:#6b7280;"></i>
-                    Revision History
-                    <span
-                        style="font-size:12px; font-weight:400; color:#6b7280; margin-left:6px;">(<?= count($revisionLogs) ?>
-                        entr<?= count($revisionLogs) > 1 ? 'ies' : 'y' ?>)</span>
-                    <i class="fas fa-chevron-down" id="revHistoryChevron"
-                        style="margin-left:auto; color:#6b7280; font-size:13px; transition:transform .2s;"></i>
-                </h2>
-                <div id="revHistoryPanel" style="display:none;">
-                    <div style="display:flex; flex-direction:column; gap:10px;">
+            <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+                <div class="flex items-center justify-between mb-4 pb-3 border-b border-line">
+                    <div class="flex items-center gap-2.5 text-xs font-semibold">
+                        <i class="fas fa-history"></i> Revision History
+                        <span class="text-muted font-normal">(<?= count($revisionLogs) ?> entr<?= count($revisionLogs) > 1 ? 'ies' : 'y' ?>)</span>
+                    </div>
+                    <button type="button" onclick="toggleRevPanel('revHistoryPanel','revHistoryChevron')"
+                        class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 transition">
+                        <i class="fas fa-eye"></i> Toggle
+                        <i class="fas fa-chevron-down text-[11px]" id="revHistoryChevron"></i>
+                    </button>
+                </div>
+                <div id="revHistoryPanel" class="hidden">
+                    <div class="flex flex-col gap-2.5">
                         <?php foreach ($revisionLogs as $log): ?>
-                            <div style="border:1px solid #e9ecef; border-radius:9px; padding:13px 16px; background:#fafafa;">
-                                <div
-                                    style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px; flex-wrap:wrap; margin-bottom:6px;">
-                                    <div style="font-size:13px; font-weight:700; color:#1f2937;">
-                                        <i class="fas fa-map-marker-alt" style="color:#0369a1;"></i>
+                            <div class="border border-line rounded-lg px-4 py-3.5 bg-[#F5F5F5]">
+                                <div class="flex justify-between items-start gap-2.5 flex-wrap mb-1.5">
+                                    <div class="text-[13px] font-semibold text-ink">
+                                        <i class="fas fa-map-marker-alt text-soft"></i>
                                         <?= htmlspecialchars($log['area']) ?>
                                         <?php if ($log['room_unit_number']): ?>
-                                            <span style="color:#6b7280; font-weight:400;"> › </span>
-                                            <i class="fas fa-door-open" style="color:#6b7280; font-size:11px;"></i>
+                                            <span class="text-soft font-normal"> › </span>
+                                            <i class="fas fa-door-open text-muted text-[11px]"></i>
                                             Unit <?= $log['room_unit_number'] ?>
                                         <?php endif; ?>
                                     </div>
-                                    <span
-                                        style="font-size:11px; padding:3px 9px; border-radius:20px; font-weight:700;
-                            background:<?= $log['status'] === 'pending' ? '#fef3c7' : ($log['status'] === 'done' ? '#d1fae5' : '#f3f4f6') ?>;
-                            color:<?= $log['status'] === 'pending' ? '#92400e' : ($log['status'] === 'done' ? '#065f46' : '#374151') ?>;">
+                                    <span class="text-[11px] px-2.5 py-0.5 rounded-full font-bold
+                                        <?= $log['status'] === 'pending' ? 'bg-amber-100 text-amber-800' : ($log['status'] === 'done' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-soft') ?>">
                                         <?= ucfirst($log['status']) ?>
                                     </span>
                                 </div>
                                 <?php if ($log['reason']): ?>
-                                    <div
-                                        style="font-size:12px; color:#6b7280; background:#f3f4f6; padding:7px 10px; border-radius:6px; border-left:3px solid #d97706; font-style:italic; margin-bottom:6px;">
-                                        <i class="fas fa-quote-left" style="font-size:10px; opacity:.5;"></i>
+                                    <div class="text-[12px] text-soft bg-white px-2.5 py-1.5 rounded-md border-l-2 border-amber-500 italic mb-1.5">
+                                        <i class="fas fa-quote-left text-[10px] opacity-50"></i>
                                         <?= htmlspecialchars($log['reason']) ?>
                                     </div>
                                 <?php endif; ?>
-                                <div style="font-size:11px; color:#9ca3af; display:flex; align-items:center; gap:5px;">
+                                <div class="text-[11px] text-muted flex items-center gap-1.5">
                                     <i class="fas fa-user"></i> <?= htmlspecialchars($log['requester_name'] ?? 'Unknown') ?>
                                     &nbsp;•&nbsp;
                                     <i class="fas fa-clock"></i> <?= date('M d, Y g:i A', strtotime($log['created_at'])) ?>
@@ -955,39 +810,37 @@ if (!empty($tdAreas)) {
         <?php endif; ?>
 
         <!-- TD Attachments button -->
-        <div style="margin-bottom:22px;">
+        <div class="mb-[22px]">
             <a href="td-attachments?client_id=<?= $client_id ?>"
-                style="background:linear-gradient(135deg,#0c4a6e,#0369a1); color:white; padding:22px 28px; border-radius:12px; text-decoration:none; display:flex; align-items:center; gap:16px; box-shadow:0 4px 10px rgba(3,105,161,0.2); transition:opacity 0.2s;">
-                <i class="fas fa-paperclip" style="font-size:30px; opacity:0.9;"></i>
+                class="bg-ink text-white rounded-[10px] px-7 py-6 flex items-center gap-4 hover:opacity-90 transition">
+                <i class="fas fa-paperclip text-2xl opacity-90"></i>
                 <div>
-                    <div style="font-size:16px; font-weight:700;">TD Attachments</div>
-                    <div style="font-size:12px; opacity:0.8; margin-top:3px;">Upload technical documents &amp; cutting
-                        list files per area</div>
+                    <div class="text-base font-bold">TD Attachments</div>
+                    <div class="text-xs opacity-75 mt-0.5">Upload technical documents &amp; cutting list files per area</div>
                 </div>
-                <i class="fas fa-chevron-right" style="margin-left:auto; opacity:0.7;"></i>
+                <i class="fas fa-chevron-right ml-auto opacity-70"></i>
             </a>
         </div>
 
         <?php if ($allAreasApproved && $cuttingTrackerStatus === 'Ongoing' && $cuttingTrackerId && $isAssigned): ?>
-            <div
-                style="margin-top:20px; background:linear-gradient(135deg,#065f46,#10b981); color:white; padding:20px 26px; border-radius:12px; display:flex; justify-content:space-between; align-items:center; box-shadow:0 4px 12px rgba(16,185,129,0.3);">
+            <div class="bg-emerald-50 border border-emerald-300 rounded-[10px] p-5 mb-5 flex justify-between items-center gap-4 flex-wrap">
                 <div>
-                    <div style="font-size:15px; font-weight:700; margin-bottom:4px;">
+                    <div class="font-semibold text-[15px] text-emerald-900 mb-1">
                         <i class="fas fa-check-double"></i> All Areas Approved!
                     </div>
-                    <div style="font-size:12px; opacity:0.85;">All TD attachments have been fully approved. You can now mark
-                        the Cuttinglist stage as Done.</div>
+                    <div class="text-[13px] text-emerald-800 opacity-85">
+                        All TD attachments have been fully approved. You can now mark the Cuttinglist stage as Done.
+                    </div>
                 </div>
                 <button onclick="markCuttinglistDone(<?= $cuttingTrackerId ?>)"
-                    style="background:white; color:#065f46; padding:12px 24px; border:none; border-radius:10px; cursor:pointer; font-size:14px; font-weight:700; display:inline-flex; align-items:center; gap:8px; white-space:nowrap; flex-shrink:0;">
+                    class="inline-flex items-center gap-2 bg-emerald-700 text-white rounded-lg px-5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition whitespace-nowrap">
                     <i class="fas fa-check-circle"></i> Mark Cuttinglist as Done
                 </button>
             </div>
         <?php elseif ($allAreasApproved && $cuttingTrackerStatus === 'Done' && $isAssigned): ?>
-            <div
-                style="margin-top:20px; background:#d1fae5; color:#065f46; padding:16px 22px; border-radius:12px; display:flex; align-items:center; gap:10px; border:2px solid #10b981;">
-                <i class="fas fa-check-circle" style="font-size:20px;"></i>
-                <span style="font-size:14px; font-weight:700;">Cuttinglist stage is marked as Done.</span>
+            <div class="bg-emerald-50 border border-emerald-300 rounded-[10px] px-6 py-4 mb-5 flex items-center gap-2.5">
+                <i class="fas fa-check-circle text-emerald-600 text-xl"></i>
+                <span class="font-semibold text-sm text-emerald-900">Cuttinglist stage is marked as Done.</span>
             </div>
         <?php endif; ?>
 
@@ -1000,15 +853,14 @@ if (!empty($tdAreas)) {
             if (m && e.target === m) m.style.display = 'none';
         });
 
-
         // ── Revision multi-select ────────────────────────────────────────────────
         let revSelections = [];
         function toggleUnits(slug) {
             const el = document.getElementById('units-' + slug), chv = document.getElementById('chevron-' + slug);
             if (!el) return;
-            const open = el.style.display !== 'none';
+            const open = el.style.display !== 'none' && el.style.display !== '';
             el.style.display = open ? 'none' : 'block';
-            chv.style.transform = open ? '' : 'rotate(180deg)';
+            if (chv) chv.style.transform = open ? '' : 'rotate(180deg)';
         }
         function getSelKey(area, unitNum) { return area + '||' + (unitNum ?? 'null'); }
         function onAreaCheck(cb) {
@@ -1053,13 +905,13 @@ if (!empty($tdAreas)) {
             items.innerHTML = revSelections.map(s => {
                 const key = getSelKey(s.area, s.unitNum);
                 const label = s.unitNum !== null ? s.area + ' › ' + (s.unitName || 'Unit ' + s.unitNum) : s.area + ' (whole area)';
-                return `<div style="border:1px solid #fcd34d;border-radius:8px;padding:12px 14px;background:white;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <span style="font-size:13px;font-weight:700;color:#92400e;"><i class="fas fa-map-marker-alt"></i> ${label}</span>
-                <button type="button" onclick="removeSelection('${key}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:13px;"><i class="fas fa-times"></i> Remove</button>
+                return `<div class="border border-amber-300 rounded-lg p-3.5 bg-white">
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-[13px] font-semibold text-amber-900"><i class="fas fa-map-marker-alt"></i> ${label}</span>
+                <button type="button" onclick="removeSelection('${key}')" class="bg-transparent border-none text-red-500 cursor-pointer text-[13px]"><i class="fas fa-times"></i> Remove</button>
             </div>
             <textarea placeholder="Reason for revision on this area/unit... *" oninput="updateReason('${key}',this.value)"
-                style="width:100%;padding:8px 10px;border:1px solid #e9ecef;border-radius:6px;font-size:13px;font-family:inherit;resize:vertical;min-height:60px;box-sizing:border-box;"
+                class="w-full px-2.5 py-2 border border-line rounded-md text-[13px] font-sans resize-y min-h-[60px] box-border focus:outline-none focus:border-ink"
             >${s.reason}</textarea>
         </div>`;
             }).join('');
@@ -1077,21 +929,15 @@ if (!empty($tdAreas)) {
             const btn = document.getElementById('revisionSubmitBtn');
             if (!btn) return;
             const ready = revSelections.length > 0 && revSelections.every(s => s.reason.trim() !== '');
-            btn.disabled = !ready; btn.style.opacity = ready ? '1' : '0.5'; btn.style.cursor = ready ? 'pointer' : 'not-allowed';
+            btn.disabled = !ready;
+            btn.style.opacity = ready ? '1' : '0.5';
+            btn.style.cursor = ready ? 'pointer' : 'not-allowed';
         }
         function confirmRevision() {
             if (revSelections.length === 0) return false;
             if (!revSelections.every(s => s.reason.trim() !== '')) { alert('Please fill in a reason for each selected area/unit.'); return false; }
             const lines = revSelections.map(s => s.unitNum !== null ? '  • ' + s.area + ' › ' + (s.unitName || 'Unit ' + s.unitNum) : '  • ' + s.area + ' (whole area)').join('\n');
             return confirm('This will request a revision.\n\nAreas/units to reset:\n' + lines + '\n\nApprovals for these will be reset. Continue?');
-        }
-        function toggleRevHistory() {
-            const panel = document.getElementById('revHistoryPanel'), icon = document.getElementById('revHistoryBtnIcon'), text = document.getElementById('revHistoryBtnText');
-            if (!panel) return;
-            const open = panel.style.display !== 'none';
-            panel.style.display = open ? 'none' : 'block';
-            icon.className = open ? 'fas fa-eye' : 'fas fa-eye-slash';
-            text.textContent = open ? 'Show History' : 'Hide History';
         }
         async function markCuttinglistDone(stageId) {
             if (!confirm('Mark the Cuttinglist stage as Done? All areas have been approved.')) return;
@@ -1114,7 +960,7 @@ if (!empty($tdAreas)) {
         }
         function toggleRevPanel(panelId, chevronId) {
             const panel = document.getElementById(panelId), chev = document.getElementById(chevronId);
-            const open = panel.style.display !== 'none';
+            const open = panel.style.display !== 'none' && panel.style.display !== '';
             panel.style.display = open ? 'none' : 'block';
             if (chev) chev.style.transform = open ? '' : 'rotate(180deg)';
         }

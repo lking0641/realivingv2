@@ -135,8 +135,6 @@ if ($business_type === 'Project') {
     }
 
     // ── Compute overall installation progress across entries + fixed_sizes ──
-    // Items with no unit distribution: use their own status
-    // Items with unit distribution: count each unit
     $epStmt = $conn->prepare("
         SELECT
             COUNT(*)                                                     AS items_no_unit,
@@ -179,18 +177,16 @@ if ($business_type === 'Project') {
     $collStmt->execute();
     $collections = $collStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 
-    // Sum of already billed amounts and find the highest snapshot_pct billed so far
     $already_billed_pct = 0;
     $already_billed_amt = 0;
     $total_paid = 0;
-    $last_snapshot_pct = 0; // highest progress % already collected against
+    $last_snapshot_pct = 0;
 
     foreach ($collections as $c) {
-        $already_billed_pct += (float) $c['percentage']; // amount-based %, for display only
+        $already_billed_pct += (float) $c['percentage'];
         $already_billed_amt += (float) $c['amount'];
         if ($c['status'] === 'Paid')
             $total_paid += (float) $c['amount'];
-        // Track the highest snapshot_pct billed (the progress % at time of each billing)
         if (!empty($c['snapshot_pct']) && (float) $c['snapshot_pct'] > $last_snapshot_pct) {
             $last_snapshot_pct = (float) $c['snapshot_pct'];
         }
@@ -198,11 +194,8 @@ if ($business_type === 'Project') {
     if ($dpRow && $dpRow['status'] === 'Paid')
         $total_paid += (float) $dpRow['amount'];
 
-    // Suggested = (current overall% - last billed snapshot%) × remaining_balance
     $unbilled_pct = max(0, $overall_pct - $last_snapshot_pct);
 
-    // If progress is 100%, suggest the full remaining balance directly
-// instead of a percentage calculation (avoids rounding gaps)
     if ($overall_pct >= 100) {
         $suggested_amount = round($remaining_balance, 2);
     } else {
@@ -210,7 +203,6 @@ if ($business_type === 'Project') {
     }
     $next_no = count($collections) + 1;
 
-    // Ordinal suffix
     function getOrdinal($n)
     {
         $n = (int) $n;
@@ -230,9 +222,6 @@ if ($business_type === 'Project') {
     }
     $default_label = getOrdinal($next_no) . ' Billing Collection';
 
-    // ── Area breakdown for sidebar (unit-aware) ──
-// For items WITH units: count each unit from quotation_room_distribution
-// For items WITHOUT units: count the item directly
     $areaStmt = $conn->prepare("
     SELECT
         qe.area,
@@ -286,7 +275,6 @@ if ($business_type === 'Project') {
         $i2->bind_param("idid", $client_id, $bf_a, $client_id, $af_a);
         $i2->execute();
     } elseif ($schedCount > 0 && $total_cost > 0) {
-        // Recalculate amounts for unpaid entries if total cost changed
         $dp_a = $total_cost * 0.50;
 
         $upDp = $conn->prepare("UPDATE payment_schedule SET amount = ? WHERE client_id = ? AND payment_type LIKE '%Down Payment%' AND status != 'Paid'");
@@ -346,7 +334,6 @@ if ($business_type === 'Project') {
             $total_paid += (float) $p['amount'];
     }
 
-    // Determine if the split can still be toggled (locked once the relevant stage is Paid)
     $toggleLockedRow = null;
     foreach ($payments as $p) {
         if ($p['payment_type'] === '40% Before Installation' || $p['payment_type'] === '50% Retention') {
@@ -355,6 +342,34 @@ if ($business_type === 'Project') {
         }
     }
     $isSplitLocked = $toggleLockedRow && $toggleLockedRow['status'] === 'Paid';
+}
+
+// ── Small style helpers (theme-consistent badge/stripe colors) ──
+function badgeClasses($status)
+{
+    switch (strtolower($status)) {
+        case 'paid':
+            return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        case 'pending':
+            return 'bg-amber-100 text-amber-800 border-amber-300';
+        case 'not available':
+            return 'bg-gray-100 text-gray-600 border-gray-300';
+        default:
+            return 'bg-[#F5F5F5] text-ink border-line';
+    }
+}
+function stripeClasses($status)
+{
+    switch (strtolower($status)) {
+        case 'paid':
+            return 'border-l-emerald-400';
+        case 'pending':
+            return 'border-l-amber-400';
+        case 'not available':
+            return 'border-l-gray-300';
+        default:
+            return 'border-l-line';
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -365,1551 +380,537 @@ if ($business_type === 'Project') {
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Payment Tracker — <?= htmlspecialchars($client['clientname']) ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
     <style>
-        :root {
-            --green: #059669;
-            --green2: #10b981;
-            --brand: #3b1f0f;
-            --bg: #f5f1ed;
-            --yellow: #f59e0b;
-            --blue: #3b82f6;
-        }
-
-        *,
-        *::before,
-        *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: var(--bg);
-            font-family: 'Segoe UI', sans-serif;
-            color: #1f2937;
-        }
-
-        .wrap {
-            max-width: 1240px;
-            margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        /* ── Header ── */
-        .client-header {
-            background: linear-gradient(135deg, #059669, #10b981);
-            padding: 32px 36px;
-            border-radius: 16px;
-            color: #fff;
-            margin-bottom: 24px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .client-header::after {
-            content: '';
-            position: absolute;
-            right: -40px;
-            top: -40px;
-            width: 220px;
-            height: 220px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, .07);
-        }
-
-        .hdr-inner {
-            position: relative;
-            z-index: 1;
-        }
-
-        .hdr-inner h1 {
-            font-size: 24px;
-            font-weight: 800;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .biz-tag {
-            background: rgba(255, 255, 255, .2);
-            border: 1px solid rgba(255, 255, 255, .3);
-            padding: 3px 13px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .5px;
-        }
-
-        .hdr-sub {
-            font-size: 14px;
-            opacity: .88;
-            margin-top: 7px;
-        }
-
-        .kpi-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
-            gap: 12px;
-            margin-top: 18px;
-        }
-
-        .kpi {
-            background: rgba(255, 255, 255, .14);
-            border: 1px solid rgba(255, 255, 255, .18);
-            border-radius: 10px;
-            padding: 12px 14px;
-        }
-
-        .kpi-label {
-            font-size: 10px;
-            opacity: .72;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            margin-bottom: 3px;
-        }
-
-        .kpi-val {
-            font-size: 19px;
-            font-weight: 800;
-            line-height: 1.2;
-        }
-
-        .kpi-val.sm {
-            font-size: 14px;
-        }
-
-        /* ── Layout ── */
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: #059669;
-            color: #fff;
-            padding: 8px 17px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            margin-bottom: 16px;
-            transition: background .2s;
-        }
-
-        .back-link:hover {
-            background: #047857;
-        }
-
-        .two-col {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 20px;
-            align-items: start;
-        }
-
-        @media(max-width:860px) {
-            .two-col {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ── Card ── */
-        .card {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, .07);
-            margin-bottom: 20px;
-            overflow: hidden;
-        }
-
-        .card-hdr {
-            padding: 15px 22px;
-            border-bottom: 2px solid #f5f1ed;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .card-hdr h2 {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--brand);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .card-hdr .sub {
-            font-size: 12px;
-            color: #9ca3af;
-        }
-
-        .card-body {
-            padding: 20px 22px;
-        }
-
-        /* ── Down Payment ── */
-        .dp-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            padding: 16px 18px;
-            border-radius: 10px;
-            border: 2px solid #e9ecef;
-        }
-
-        .dp-row.paid {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-
-        .dp-row.pending {
-            border-color: #f59e0b;
-            background: #fffbeb;
-        }
-
-        .dp-left .dp-type {
-            font-size: 15px;
-            font-weight: 700;
-            color: #111;
-            margin-bottom: 6px;
-        }
-
-        .dp-right .dp-amount {
-            font-size: 22px;
-            font-weight: 800;
-            color: #059669;
-            text-align: right;
-        }
-
-        /* ── Progress Banner ── */
-        .prog-banner {
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-            border: 2px solid #a7f3d0;
-            border-radius: 12px;
-            padding: 18px 20px;
-            margin-bottom: 20px;
-        }
-
-        .prog-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 9px;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .prog-title {
-            font-size: 13px;
-            font-weight: 700;
-            color: #065f46;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .prog-stat {
-            font-size: 15px;
-            font-weight: 800;
-            color: #059669;
-        }
-
-        .prog-bar-bg {
-            height: 14px;
-            background: #d1fae5;
-            border-radius: 7px;
-            overflow: hidden;
-        }
-
-        .prog-bar-fill {
-            height: 100%;
-            border-radius: 7px;
-            background: linear-gradient(90deg, #059669, #34d399);
-            transition: width .6s ease;
-        }
-
-        .prog-bottom {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 6px;
-            font-size: 11px;
-            color: #6b7280;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
-        /* ── Collection list ── */
-        .coll-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .coll-item {
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-            transition: box-shadow .18s;
-        }
-
-        .coll-item:hover {
-            box-shadow: 0 3px 14px rgba(0, 0, 0, .09);
-        }
-
-        .coll-item.paid {
-            border-color: #10b981;
-        }
-
-        .coll-item.pending {
-            border-color: #f59e0b;
-        }
-
-        .coll-top {
-            padding: 11px 17px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .coll-top.paid {
-            background: #f0fdf4;
-        }
-
-        .coll-top.pending {
-            background: #fffbeb;
-        }
-
-        .coll-name {
-            font-size: 13px;
-            font-weight: 700;
-            color: #111;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .coll-num {
-            background: var(--brand);
-            color: #fff;
-            min-width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 800;
-        }
-
-        .snap-pill {
-            background: #dbeafe;
-            color: #1e40af;
-            padding: 2px 9px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .coll-bot {
-            padding: 13px 17px;
-            border-top: 1px solid #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .coll-amount {
-            font-size: 21px;
-            font-weight: 800;
-            color: #059669;
-        }
-
-        .coll-meta {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 2px;
-        }
-
-        /* ── Badges ── */
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .badge-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-paid {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .badge-not-available {
-            background: #e5e7eb;
-            color: #6b7280;
-        }
-
-        /* ── Add billing form ── */
-        .add-form {
-            background: linear-gradient(135deg, #f0fdf4, #f8fffc);
-            border: 2px dashed #6ee7b7;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 6px;
-        }
-
-        .add-form-title {
-            color: #065f46;
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 3px;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .add-form-sub {
-            color: #9ca3af;
-            font-size: 12px;
-            margin-bottom: 16px;
-        }
-
-        /* Suggestion box */
-        .sug-box {
-            background: #fff;
-            border: 2px solid #a7f3d0;
-            border-radius: 10px;
-            padding: 14px 16px;
-            margin-bottom: 16px;
-        }
-
-        .sug-line {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-        }
-
-        .sug-key {
-            font-size: 12px;
-            color: #6b7280;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .sug-v {
-            font-size: 13px;
-            font-weight: 700;
-            color: #374151;
-        }
-
-        .sug-divider {
-            border: none;
-            border-top: 1px dashed #d1fae5;
-            margin: 8px 0;
-        }
-
-        .sug-big {
-            font-size: 21px;
-            font-weight: 800;
-            color: #059669;
-        }
-
-        .sug-formula {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 8px;
-            padding-top: 7px;
-            border-top: 1px solid #f0fdf4;
-            line-height: 1.6;
-        }
-
-        .form-group {
-            margin-bottom: 14px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #4a5568;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-            margin-bottom: 5px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 10px 13px;
-            border: 2px solid #d1fae5;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            background: #fff;
-            transition: border-color .2s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #10b981;
-        }
-
-        .form-input.overridden {
-            border-color: #f59e0b !important;
-            background: #fffbeb;
-        }
-
-        .hint {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-top: 4px;
-        }
-
-        /* ── Buttons ── */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 9px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            border: none;
-            cursor: pointer;
-            transition: all .2s;
-            white-space: nowrap;
-        }
-
-        .btn-green {
-            background: #10b981;
-            color: #fff;
-        }
-
-        .btn-green:hover {
-            background: #059669;
-        }
-
-        .btn-gray {
-            background: #e5e7eb;
-            color: #374151;
-        }
-
-        .btn-gray:hover {
-            background: #d1d5db;
-        }
-
-        .btn-outline {
-            background: transparent;
-            border: 2px solid #10b981;
-            color: #059669;
-        }
-
-        .btn-outline:hover {
-            background: #f0fdf4;
-        }
-
-        .btn-sm {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        .btn:disabled {
-            background: #d1d5db !important;
-            color: #9ca3af !important;
-            cursor: not-allowed;
-            border-color: #d1d5db !important;
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
-        }
-
-        /* ── Sidebar area breakdown ── */
-        .sidebar-card {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, .07);
-            overflow: hidden;
-            position: sticky;
-            top: 20px;
-        }
-
-        .sb-hdr {
-            padding: 14px 18px;
-            background: var(--brand);
-            color: #fff;
-        }
-
-        .sb-hdr h3 {
-            font-size: 13px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .sb-body {
-            padding: 14px;
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-
-        .area-row {
-            padding: 9px 11px;
-            border-radius: 8px;
-            background: #f9f9f9;
-            border: 1px solid #f0ece8;
-        }
-
-        .area-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 3px;
-        }
-
-        .area-name {
-            font-size: 12px;
-            font-weight: 700;
-            color: #374151;
-        }
-
-        .area-pct {
-            font-size: 12px;
-            font-weight: 800;
-        }
-
-        .area-count {
-            font-size: 11px;
-            color: #9ca3af;
-            margin-bottom: 4px;
-        }
-
-        .mini-bar-bg {
-            height: 5px;
-            background: #e9ecef;
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .mini-bar-fill {
-            height: 100%;
-            border-radius: 3px;
-            transition: width .4s;
-        }
-
-        /* ── Non-project payment items ── */
-        .pay-item {
-            border-left: 4px solid #e9ecef;
-            padding: 14px 18px;
-            margin-bottom: 12px;
-            border-radius: 8px;
-            background: #f9f9f9;
-        }
-
-        .pay-item.status-pending {
-            border-left-color: #f59e0b;
-            background: #fffbeb;
-        }
-
-        .pay-item.status-paid {
-            border-left-color: #10b981;
-            background: #f0fdf4;
-        }
-
-        .pay-item.status-not-available {
-            border-left-color: #9ca3af;
-            background: #f9fafb;
-            opacity: .8;
-        }
-
-        .pay-hdr {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .pay-type {
-            font-size: 14px;
-            font-weight: 600;
-            color: #111;
-        }
-
-        .pay-amt {
-            font-size: 18px;
-            font-weight: 700;
-            color: #059669;
-        }
-
-        .pay-meta {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 12px;
-            color: #666;
-            flex-wrap: wrap;
-        }
-
-        /* ── Modals ── */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal {
-            background: #fff;
-            border-radius: 16px;
-            padding: 28px;
-            max-width: 440px;
-            width: 92%;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .22);
-        }
-
-        .modal h3 {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--brand);
-            margin-bottom: 8px;
-        }
-
-        .modal .modal-sub {
-            font-size: 13px;
-            color: #6b7280;
-            margin-bottom: 20px;
-            line-height: 1.6;
-        }
-
-        .modal .form-input {
-            border: 2px solid #e2e8f0;
-        }
-
-        .modal .form-input:focus {
-            border-color: #10b981;
-        }
-
-        .modal-btns {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 18px;
-        }
-
-        .modal-err {
-            display: none;
-            color: #ef4444;
-            font-size: 13px;
-            padding: 8px 12px;
-            background: #fee2e2;
-            border-radius: 6px;
-            margin-bottom: 12px;
-        }
-
-        /* ── Empty state ── */
-        .empty {
-            text-align: center;
-            padding: 34px 20px;
-            color: #9ca3af;
-        }
-
-        .empty i {
-            font-size: 34px;
-            display: block;
-            margin-bottom: 10px;
-            opacity: .5;
-        }
-
-        .empty p {
-            font-size: 13px;
-        }
-
-        /* ── Proof upload ── */
-        .proof-box {
-            margin-top: 12px;
-            border: 2px dashed #d1fae5;
-            border-radius: 10px;
-            padding: 14px 16px;
-            background: #f0fdf4;
-        }
-
-        .proof-box.rejected {
-            border-color: #fca5a5;
-            background: #fef2f2;
-        }
-
-        .proof-box.pending {
-            border-color: #fde68a;
-            background: #fffbeb;
-        }
-
-        .proof-box.approved {
-            border-color: #6ee7b7;
-            background: #f0fdf4;
-        }
-
-        .proof-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #065f46;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .proof-title.rejected {
-            color: #991b1b;
-        }
-
-        .proof-title.pending {
-            color: #92400e;
-        }
-
-        .proof-input {
-            width: 100%;
-            padding: 8px;
-            border: 2px solid #d1fae5;
-            border-radius: 7px;
-            font-size: 13px;
-            background: #fff;
-            cursor: pointer;
-        }
-
-        .proof-preview {
-            max-width: 100%;
-            max-height: 180px;
-            border-radius: 8px;
-            margin-top: 8px;
-            display: none;
-            object-fit: contain;
-        }
-
-        .proof-filename {
-            font-size: 11px;
-            color: #6b7280;
-            margin-top: 4px;
-        }
-
-        .acct-status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .acct-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .acct-approved {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .acct-rejected {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* ── Toast ── */
-        .toast {
-            position: fixed;
-            top: 18px;
-            right: 18px;
-            background: #fff;
-            padding: 12px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .14);
-            display: none;
-            align-items: center;
-            gap: 10px;
-            z-index: 9999;
-            font-size: 13px;
-            font-weight: 600;
-            animation: slideIn .3s ease;
-        }
-
-        .toast.show {
-            display: flex;
-        }
-
-        .toast.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .toast.error {
-            border-left: 4px solid #ef4444;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(360px);
-                opacity: 0
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1
-            }
-        }
-
-        /* ── Lightbox ── */
-        .lightbox-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .88);
-            z-index: 9998;
-            align-items: center;
-            justify-content: center;
-            cursor: zoom-out;
-        }
-        .lightbox-overlay.open {
-            display: flex;
-        }
-        .lightbox-overlay img {
-            max-width: 92vw;
-            max-height: 90vh;
-            border-radius: 10px;
-            object-fit: contain;
-            box-shadow: 0 8px 40px rgba(0,0,0,.6);
-            cursor: default;
-        }
-        .lightbox-close {
-            position: fixed;
-            top: 16px;
-            right: 20px;
-            color: #fff;
-            font-size: 28px;
-            cursor: pointer;
-            z-index: 9999;
-            background: rgba(0,0,0,.4);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background .2s;
-        }
-        .lightbox-close:hover {
-            background: rgba(255,255,255,.2);
-        }
+        /* Only used for JS-driven show/hide (classList 'open') — everything else is Tailwind */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay.open { display: flex; }
+        .lightbox-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.88); z-index: 9998; align-items: center; justify-content: center; cursor: zoom-out; }
+        .lightbox-overlay.open { display: flex; }
+        .toast { position: fixed; top: 18px; right: 18px; display: none; align-items: center; gap: 10px; z-index: 9999; animation: slideIn .3s ease; }
+        .toast.show { display: flex; }
+        @keyframes slideIn { from { transform: translateX(360px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .proof-preview, #ntpPreview { display: none; }
+        .form-input.overridden { border-color: #f59e0b !important; background: #fffbeb; }
     </style>
 </head>
 
-<body>
-    <div class="wrap">
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[1300px] mx-auto px-5 py-8">
 
         <a href="<?= $view_only ? 'manager-project-detail?client_id=' . $client_id : 'unified-project-tracker?client_id=' . $client_id ?>"
-            class="back-link">
+            class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition mb-4">
             <i class="fas fa-arrow-left"></i> <?= $view_only ? 'Back to Project Detail' : 'Back to Project Tracker' ?>
         </a>
 
         <?php if ($view_only): ?>
-            <div
-                style="background:#fef3c7; border:2px solid #f59e0b; border-radius:10px; padding:13px 18px; margin-bottom:16px; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:#92400e;">
+            <div class="bg-amber-50 border border-amber-300 rounded-lg px-5 py-3 mb-5 flex items-center gap-3 text-[13px] font-semibold text-amber-800">
                 <i class="fas fa-eye"></i> View Only — You can view payment details but cannot make changes.
             </div>
         <?php endif; ?>
 
         <!-- ══ PAGE HEADER ══ -->
-        <div class="client-header">
-            <div class="hdr-inner">
-                <h1>
-                    <i class="fas fa-money-bill-wave"></i> Payment Tracker
-                    <span
-                        class="biz-tag"><?= $business_type === 'Non-Project' ? 'Individual' : htmlspecialchars($business_type) ?></span>
-                </h1>
-                <div class="hdr-sub"><?= htmlspecialchars($client['clientname']) ?> &mdash;
-                    <?= htmlspecialchars($client['nameproject']) ?>
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                <i class="fas fa-money-bill-wave"></i> Payment Tracker
+            </div>
+            <h1 class="text-2xl font-bold tracking-[-0.01em] flex items-center gap-2 flex-wrap">
+                <?= htmlspecialchars($client['clientname']) ?>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border bg-purple-100 text-purple-800 border-purple-300">
+                    <?= $business_type === 'Non-Project' ? 'Individual' : htmlspecialchars($business_type) ?>
+                </span>
+            </h1>
+            <p class="text-[13.5px] text-soft mt-1"><?= htmlspecialchars($client['nameproject']) ?></p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-3 <?= $business_type === 'Project' ? 'lg:grid-cols-5' : 'lg:grid-cols-3' ?> gap-3 mt-5">
+                <div class="bg-[#F5F5F5] border border-line rounded-[10px] p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-ink text-white flex items-center justify-center text-lg flex-shrink-0"><i class="fas fa-sack-dollar"></i></div>
+                    <div>
+                        <div class="text-lg font-bold">&#8369;<?= number_format($total_cost, 2) ?></div>
+                        <div class="text-[10px] font-semibold uppercase tracking-[0.4px] text-muted">Total Project Cost</div>
+                    </div>
                 </div>
-                <div class="kpi-row">
-                    <div class="kpi">
-                        <div class="kpi-label">Total Project Cost</div>
-                        <div class="kpi-val">&#8369;<?= number_format($total_cost, 2) ?></div>
+                <div class="bg-[#F5F5F5] border border-line rounded-[10px] p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-500 text-white flex items-center justify-center text-lg flex-shrink-0"><i class="fas fa-circle-check"></i></div>
+                    <div>
+                        <div class="text-lg font-bold">&#8369;<?= number_format($total_paid, 2) ?></div>
+                        <div class="text-[10px] font-semibold uppercase tracking-[0.4px] text-muted">Total Paid</div>
                     </div>
-                    <div class="kpi">
-                        <div class="kpi-label">Total Paid</div>
-                        <div class="kpi-val">&#8369;<?= number_format($total_paid, 2) ?></div>
-                    </div>
-                    <div class="kpi">
-                        <div class="kpi-label">Remaining Balance</div>
-                        <div class="kpi-val">&#8369;<?= number_format($remaining_balance, 2) ?></div>
-                    </div>
-                    <?php if ($business_type === 'Project'): ?>
-                        <div class="kpi">
-                            <div class="kpi-label">Overall Progress</div>
-                            <div class="kpi-val"><?= $overall_pct ?>%</div>
-                        </div>
-                        <div class="kpi">
-                            <div class="kpi-label">Already Billed</div>
-                            <div class="kpi-val sm">&#8369;<?= number_format($already_billed_amt, 2) ?></div>
-                        </div>
-                    <?php endif; ?>
                 </div>
+                <div class="bg-[#F5F5F5] border border-line rounded-[10px] p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center text-lg flex-shrink-0"><i class="fas fa-hourglass-half"></i></div>
+                    <div>
+                        <div class="text-lg font-bold">&#8369;<?= number_format($remaining_balance, 2) ?></div>
+                        <div class="text-[10px] font-semibold uppercase tracking-[0.4px] text-muted">Remaining Balance</div>
+                    </div>
+                </div>
+                <?php if ($business_type === 'Project'): ?>
+                    <div class="bg-[#F5F5F5] border border-line rounded-[10px] p-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500 text-white flex items-center justify-center text-lg flex-shrink-0"><i class="fas fa-chart-line"></i></div>
+                        <div>
+                            <div class="text-lg font-bold"><?= $overall_pct ?>%</div>
+                            <div class="text-[10px] font-semibold uppercase tracking-[0.4px] text-muted">Overall Progress</div>
+                        </div>
+                    </div>
+                    <div class="bg-[#F5F5F5] border border-line rounded-[10px] p-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-purple-500 text-white flex items-center justify-center text-lg flex-shrink-0"><i class="fas fa-file-invoice-dollar"></i></div>
+                        <div>
+                            <div class="text-base font-bold">&#8369;<?= number_format($already_billed_amt, 2) ?></div>
+                            <div class="text-[10px] font-semibold uppercase tracking-[0.4px] text-muted">Already Billed</div>
+                        </div>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
 
         <?php if ($business_type === 'Project'): ?>
             <!-- ════════════════════════════════════ PROJECT ════════════════════════════════════ -->
-            <div class="two-col">
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-5 items-start">
 
                 <!-- LEFT -->
-                <div>
+                <div class="flex flex-col gap-5">
 
                     <!-- Down Payment -->
-                    <div class="card">
-                        <div class="card-hdr">
-                            <h2><i class="fas fa-hand-holding-usd" style="color:#f59e0b;"></i> Down Payment</h2>
-                            <span class="sub">30% of total project cost</span>
+                    <div class="bg-white border border-line rounded-[10px] p-6">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                            <div class="flex items-center gap-2.5 text-[15px] font-bold">
+                                <i class="fas fa-hand-holding-dollar text-amber-500"></i> Down Payment
+                            </div>
+                            <span class="text-[12px] text-muted">30% of total project cost</span>
                         </div>
-                        <div class="card-body">
-                            <?php if ($dpRow):
-                                $dpCls = strtolower($dpRow['status']);
-                                ?>
-                                <div class="dp-row <?= $dpCls ?>">
-                                    <div class="dp-left">
-                                        <div class="dp-type">Down Payment (30%)</div>
-                                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:5px;">
-                                            <span class="badge badge-<?= $dpCls ?>"><?= $dpRow['status'] ?></span>
-                                            <?php if ($dpRow['payment_date']): ?>
-                                                <span style="font-size:12px;color:#6b7280;">
-                                                    <i class="fas fa-check-circle" style="color:#10b981;"></i>
-                                                    Paid on: <?= date('M d, Y g:i A', strtotime($dpRow['payment_date'])) ?>
-                                                </span>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                    <div class="dp-right">
-                                        <div class="dp-amount">&#8369;<?= number_format($dpRow['amount'], 2) ?></div>
-                                        <?php if ($dpRow['status'] === 'Paid'):
-                                            $dpPaidProof = getPaymentProofInfo($conn, $dpRow['id']);
-                                            $dpNTP = getNTPInfo($conn, $dpRow['id']);
-                                            if ($dpPaidProof): ?>
-                                                <div class="proof-box approved" style="margin-top:10px;">
-                                                    <div class="proof-title"><i class="fas fa-history"></i> Payment Proof (Approved)
-                                                    </div>
-                                                    <div style="font-size:11px;color:#065f46;margin-bottom:8px;">
-                                                        <i class="fas fa-check-circle"></i> Reviewed by:
-                                                        <?= htmlspecialchars($dpPaidProof['reviewer_name'] ?? 'Accounting') ?>
-                                                    </div>
-                                                    <?php if (strpos($dpPaidProof['file_type'] ?? '', 'image') !== false): ?>
-                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($dpPaidProof['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                                        <img src="<?= BASE_URL ?><?= htmlspecialchars($dpPaidProof['file_path']) ?>"
-                                                            style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; cursor:pointer;">
-                                                        </a>
-                                                    <?php else: ?>
-                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($dpPaidProof['file_path']) ?>" target="_blank"
-                                                            class="btn btn-sm btn-gray" style="margin-top:6px;">
-                                                            <i class="fas fa-file"></i> View Proof File
-                                                        </a>
-                                                    <?php endif; ?>
-                                                    <div class="proof-filename" style="margin-top:6px;">
-                                                        <i class="fas fa-paperclip"></i>
-                                                        <?= htmlspecialchars($dpPaidProof['file_name']) ?>
-                                                    </div>
-                                                </div>
-                                            <?php endif; ?>
-                                            <?php if ($dpNTP): ?>
-                                                <div
-                                                    style="margin-top:10px; background:#f0f9ff; border:2px solid #7dd3fc; border-radius:10px; padding:14px 16px;">
-                                                    <div
-                                                        style="font-size:12px; font-weight:700; color:#0369a1; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                                                        <i class="fas fa-file-signature"></i> Notice to Proceed (NTP) Issued
-                                                    </div>
-                                                    <div style="font-size:11px; color:#0369a1; margin-bottom:8px;">
-                                                        <i class="fas fa-user"></i> Uploaded by:
-                                                        <?= htmlspecialchars($dpNTP['uploader_name'] ?? 'Accounting') ?>
-                                                        &bull; <?= date('M d, Y g:i A', strtotime($dpNTP['uploaded_at'])) ?>
-                                                    </div>
-                                                    <?php if (!empty($dpNTP['notes'])): ?>
-                                                        <div
-                                                            style="font-size:11px; color:#374151; background:#e0f2fe; border-radius:6px; padding:7px 10px; margin-bottom:8px;">
-                                                            <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($dpNTP['notes']) ?>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                    <?php if (strpos($dpNTP['file_type'] ?? '', 'image') !== false): ?>
-                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($dpNTP['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                                        <img src="<?= BASE_URL ?><?= htmlspecialchars($dpNTP['file_path']) ?>"
-                                                            style="max-width:100%; max-height:200px; border-radius:8px; object-fit:contain; cursor:pointer;">
-                                                        </a>
-                                                    <?php else: ?>
-                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($dpNTP['file_path']) ?>" target="_blank"
-                                                            class="btn btn-sm btn-gray" style="margin-top:6px;">
-                                                            <i class="fas fa-file"></i> View NTP File
-                                                        </a>
-                                                    <?php endif; ?>
-                                                    <div class="proof-filename" style="margin-top:6px;">
-                                                        <i class="fas fa-paperclip"></i> <?= htmlspecialchars($dpNTP['file_name']) ?>
-                                                    </div>
-                                                    <?php if ($canApprovePayment): ?>
-                                                    <div class="btn-row" style="margin-top:10px;">
-                                                        <button class="btn btn-sm btn-outline" onclick="openUpdateNTP(<?= $dpRow['id'] ?>)">
-                                                            <i class="fas fa-sync-alt"></i> Update NTP
-                                                        </button>
-                                                    </div>
-                                                    <?php endif; ?>
-                                                </div>
-                                            <?php endif; elseif ($dpRow['status'] === 'Pending'): ?>
-                                            <?php
-                                            $dpProof = getPaymentProofInfo($conn, $dpRow['id']);
-                                            $dpAcctStatus = $dpRow['accounting_status'] ?? 'not_submitted';
-                                            if (!$view_only && $canSubmitProof):
-                                                ?>
-                                                <div
-                                                    class="proof-box <?= $dpAcctStatus === 'rejected' ? 'rejected' : ($dpAcctStatus === 'pending_review' ? 'pending' : '') ?>">
-                                                    <?php if ($dpAcctStatus === 'rejected'): ?>
-                                                        <div class="proof-title rejected"><i class="fas fa-times-circle"></i> Proof rejected
-                                                            — please resubmit</div>
-                                                        <div style="font-size:11px;color:#b91c1c;margin-bottom:8px;font-style:italic;">
-                                                            "<?= htmlspecialchars($dpProof['rejection_note'] ?? 'No reason provided') ?>"
-                                                            — <?= htmlspecialchars($dpProof['reviewer_name'] ?? 'Accounting') ?>
-                                                        </div>
-                                                    <?php elseif ($dpAcctStatus === 'pending_review'): ?>
-                                                        <div class="proof-title pending"><i class="fas fa-clock"></i> Proof submitted —
-                                                            awaiting accounting review</div>
-                                                        <?php if ($dpProof): ?>
-                                                            <div class="proof-filename"><i class="fas fa-paperclip"></i>
-                                                                <?= htmlspecialchars($dpProof['file_name']) ?></div>
-                                                        <?php endif; ?>
-                                                    <?php else: ?>
-                                                        <div class="proof-title"><i class="fas fa-upload"></i> Attach Proof of Payment</div>
-                                                    <?php endif; ?>
-                                                    <?php if ($dpAcctStatus !== 'pending_review'): ?>
-                                                        <input type="file" class="proof-input" id="proofFile_<?= $dpRow['id'] ?>"
-                                                            accept="image/*,.pdf,.doc,.docx"
-                                                            onchange="previewProof(this, <?= $dpRow['id'] ?>)">
-                                                        <img id="proofImg_<?= $dpRow['id'] ?>" class="proof-preview">
-                                                        <div class="btn-row" style="margin-top:10px;">
-                                                            <button class="btn btn-sm btn-green"
-                                                                onclick="submitProof(<?= $dpRow['id'] ?>, <?= $client_id ?>)">
-                                                                <i class="fas fa-paper-plane"></i> Submit for Review
-                                                            </button>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                </div>
-                                            <?php endif; ?>
+
+                        <?php if ($dpRow):
+                            $dpCls = strtolower($dpRow['status']);
+                            ?>
+                            <div class="border <?= $dpCls === 'paid' ? 'border-emerald-300 bg-emerald-50' : 'border-amber-300 bg-amber-50' ?> rounded-lg p-4 flex justify-between items-center gap-3 flex-wrap">
+                                <div>
+                                    <div class="text-[15px] font-bold text-ink">Down Payment (30%)</div>
+                                    <div class="flex items-center gap-2.5 flex-wrap mt-1.5">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border <?= badgeClasses($dpRow['status']) ?>"><?= $dpRow['status'] ?></span>
+                                        <?php if ($dpRow['payment_date']): ?>
+                                            <span class="text-[12px] text-soft">
+                                                <i class="fas fa-check-circle text-emerald-500"></i>
+                                                Paid on: <?= date('M d, Y g:i A', strtotime($dpRow['payment_date'])) ?>
+                                            </span>
                                         <?php endif; ?>
                                     </div>
                                 </div>
-                                <?php
-                                // Accounting review panel for downpayment
-                                if ($canApprovePayment && isset($dpRow) && $dpRow['status'] === 'Pending') {
-                                    $dpProofAcct = getPaymentProofInfo($conn, $dpRow['id']);
-                                    $dpAcctStatus = $dpRow['accounting_status'] ?? 'not_submitted';
-                                    if (in_array($dpAcctStatus, ['pending_review', 'rejected']) && $dpProofAcct):
-                                        ?>
-                                        <div
-                                            style="margin-top:12px; background:<?= $dpAcctStatus === 'rejected' ? '#fef2f2' : '#fffbeb' ?>; border:2px solid <?= $dpAcctStatus === 'rejected' ? '#fca5a5' : '#fde68a' ?>; border-radius:10px; padding:14px 16px;">
-                                            <div
-                                                style="font-weight:700; font-size:13px; color:<?= $dpAcctStatus === 'rejected' ? '#991b1b' : '#92400e' ?>; margin-bottom:8px;">
-                                                <i class="fas fa-<?= $dpAcctStatus === 'rejected' ? 'times-circle' : 'file-alt' ?>"></i>
-                                                <?= $dpAcctStatus === 'rejected' ? 'You rejected this proof' : 'Proof submitted — Accounting Review Required' ?>
-                                            </div>
-                                            <?php if ($dpAcctStatus === 'rejected' && !empty($dpProofAcct['rejection_note'])): ?>
-                                                <div
-                                                    style="background:#fee2e2; border:1px solid #fca5a5; border-radius:7px; padding:10px 12px; margin-bottom:10px;">
-                                                    <div style="font-size:11px; font-weight:700; color:#991b1b; margin-bottom:3px;">Your
-                                                        rejection note:</div>
-                                                    <div style="font-size:12px; color:#b91c1c; font-style:italic;">
-                                                        "<?= htmlspecialchars($dpProofAcct['rejection_note']) ?>"</div>
+                                <div class="text-right">
+                                    <div class="text-xl font-bold text-emerald-600">&#8369;<?= number_format($dpRow['amount'], 2) ?></div>
+                                    <?php if ($dpRow['status'] === 'Paid'):
+                                        $dpPaidProof = getPaymentProofInfo($conn, $dpRow['id']);
+                                        $dpNTP = getNTPInfo($conn, $dpRow['id']);
+                                        if ($dpPaidProof): ?>
+                                            <div class="bg-emerald-50 border-2 border-emerald-300 rounded-lg p-3.5 mt-2.5 text-left">
+                                                <div class="text-[12px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-clock-rotate-left"></i> Payment Proof (Approved)</div>
+                                                <div class="text-[11px] text-emerald-800 mb-2">
+                                                    <i class="fas fa-check-circle"></i> Reviewed by: <?= htmlspecialchars($dpPaidProof['reviewer_name'] ?? 'Accounting') ?>
                                                 </div>
-                                                <div style="font-size:11px; color:#9ca3af;">Waiting for the uploader to resubmit a new
-                                                    proof.</div>
-                                            <?php else: ?>
-                                                <?php if (strpos($dpProofAcct['file_type'] ?? '', 'image') !== false): ?>
-                                                    <a href="<?= BASE_URL ?><?= htmlspecialchars($dpProofAcct['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                                    <img src="<?= BASE_URL ?><?= htmlspecialchars($dpProofAcct['file_path']) ?>"
-                                                        style="max-width:100%; max-height:200px; border-radius:8px; margin-bottom:10px; object-fit:contain; cursor:pointer;">
+                                                <?php if (strpos($dpPaidProof['file_type'] ?? '', 'image') !== false): ?>
+                                                    <a href="<?= BASE_URL ?><?= htmlspecialchars($dpPaidProof['file_path']) ?>" onclick="openLightbox(this.href);return false;">
+                                                        <img src="<?= BASE_URL ?><?= htmlspecialchars($dpPaidProof['file_path']) ?>" class="max-w-full max-h-[200px] rounded-lg object-contain cursor-pointer">
                                                     </a>
                                                 <?php else: ?>
-                                                    <a href="<?= BASE_URL ?><?= htmlspecialchars($dpProofAcct['file_path']) ?>" target="_blank"
-                                                        class="btn btn-sm btn-gray" style="margin-bottom:10px;">
+                                                    <a href="<?= BASE_URL ?><?= htmlspecialchars($dpPaidProof['file_path']) ?>" target="_blank"
+                                                        class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mt-1.5">
                                                         <i class="fas fa-file"></i> View Proof File
                                                     </a>
                                                 <?php endif; ?>
-                                                <div class="btn-row">
-                                                    <button class="btn btn-sm btn-gray" onclick="openRejectModal(<?= $dpRow['id'] ?>)">
-                                                        <i class="fas fa-times"></i> Reject
-                                                    </button>
-                                                    <button class="btn btn-sm btn-green" onclick="approvePayment(<?= $dpRow['id'] ?>)">
-                                                        <i class="fas fa-check"></i> Approve & Mark Paid
-                                                    </button>
+                                                <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($dpPaidProof['file_name']) ?></div>
+                                            </div>
+                                        <?php endif; ?>
+                                        <?php if ($dpNTP): ?>
+                                            <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-3.5 mt-2.5 text-left">
+                                                <div class="text-[12px] font-bold text-blue-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-file-signature"></i> Notice to Proceed (NTP) Issued</div>
+                                                <div class="text-[11px] text-blue-800 mb-1.5">
+                                                    <i class="fas fa-user"></i> Uploaded by: <?= htmlspecialchars($dpNTP['uploader_name'] ?? 'Accounting') ?>
+                                                    &bull; <?= date('M d, Y g:i A', strtotime($dpNTP['uploaded_at'])) ?>
                                                 </div>
-                                            <?php endif; ?>
+                                                <?php if (!empty($dpNTP['notes'])): ?>
+                                                    <div class="text-[11px] text-ink bg-blue-100/70 rounded-md p-2 mb-1.5"><i class="fas fa-sticky-note"></i> <?= htmlspecialchars($dpNTP['notes']) ?></div>
+                                                <?php endif; ?>
+                                                <?php if (strpos($dpNTP['file_type'] ?? '', 'image') !== false): ?>
+                                                    <a href="<?= BASE_URL ?><?= htmlspecialchars($dpNTP['file_path']) ?>" onclick="openLightbox(this.href);return false;">
+                                                        <img src="<?= BASE_URL ?><?= htmlspecialchars($dpNTP['file_path']) ?>" class="max-w-full max-h-[200px] rounded-lg object-contain cursor-pointer">
+                                                    </a>
+                                                <?php else: ?>
+                                                    <a href="<?= BASE_URL ?><?= htmlspecialchars($dpNTP['file_path']) ?>" target="_blank"
+                                                        class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mt-1.5">
+                                                        <i class="fas fa-file"></i> View NTP File
+                                                    </a>
+                                                <?php endif; ?>
+                                                <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($dpNTP['file_name']) ?></div>
+                                                <?php if ($canApprovePayment): ?>
+                                                    <div class="flex justify-end mt-2.5">
+                                                        <button class="inline-flex items-center gap-1.5 border-2 border-emerald-600 text-emerald-700 rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-emerald-50 transition"
+                                                            onclick="openUpdateNTP(<?= $dpRow['id'] ?>)">
+                                                            <i class="fas fa-sync-alt"></i> Update NTP
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; elseif ($dpRow['status'] === 'Pending'): ?>
+                                        <?php
+                                        $dpProof = getPaymentProofInfo($conn, $dpRow['id']);
+                                        $dpAcctStatus = $dpRow['accounting_status'] ?? 'not_submitted';
+                                        if (!$view_only && $canSubmitProof):
+                                            $dpBoxCls = $dpAcctStatus === 'rejected' ? 'border-red-300 bg-red-50' : ($dpAcctStatus === 'pending_review' ? 'border-amber-300 bg-amber-50' : 'border-emerald-200 bg-emerald-50/40');
+                                            ?>
+                                            <div class="border-2 <?= $dpBoxCls ?> rounded-lg p-3.5 mt-2.5 text-left">
+                                                <?php if ($dpAcctStatus === 'rejected'): ?>
+                                                    <div class="text-[12px] font-bold text-red-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-times-circle"></i> Proof rejected — please resubmit</div>
+                                                    <div class="text-[11px] text-red-700 italic mb-2">"<?= htmlspecialchars($dpProof['rejection_note'] ?? 'No reason provided') ?>" — <?= htmlspecialchars($dpProof['reviewer_name'] ?? 'Accounting') ?></div>
+                                                <?php elseif ($dpAcctStatus === 'pending_review'): ?>
+                                                    <div class="text-[12px] font-bold text-amber-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-clock"></i> Proof submitted — awaiting accounting review</div>
+                                                    <?php if ($dpProof): ?>
+                                                        <div class="text-[11px] text-muted"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($dpProof['file_name']) ?></div>
+                                                    <?php endif; ?>
+                                                <?php else: ?>
+                                                    <div class="text-[12px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-upload"></i> Attach Proof of Payment</div>
+                                                <?php endif; ?>
+                                                <?php if ($dpAcctStatus !== 'pending_review'): ?>
+                                                    <input type="file" class="proof-input block w-full text-[13px] border-2 border-dashed border-line rounded-lg p-2 cursor-pointer bg-white"
+                                                        id="proofFile_<?= $dpRow['id'] ?>" accept="image/*,.pdf,.doc,.docx" onchange="previewProof(this, <?= $dpRow['id'] ?>)">
+                                                    <img id="proofImg_<?= $dpRow['id'] ?>" class="proof-preview max-w-full max-h-[180px] rounded-lg mt-2 object-contain">
+                                                    <div class="flex justify-end mt-2.5">
+                                                        <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-[12px] font-semibold transition"
+                                                            onclick="submitProof(<?= $dpRow['id'] ?>, <?= $client_id ?>)">
+                                                            <i class="fas fa-paper-plane"></i> Submit for Review
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            <?php
+                            if ($canApprovePayment && isset($dpRow) && $dpRow['status'] === 'Pending') {
+                                $dpProofAcct = getPaymentProofInfo($conn, $dpRow['id']);
+                                $dpAcctStatus = $dpRow['accounting_status'] ?? 'not_submitted';
+                                if (in_array($dpAcctStatus, ['pending_review', 'rejected']) && $dpProofAcct):
+                                    ?>
+                                    <div class="mt-3 border-2 <?= $dpAcctStatus === 'rejected' ? 'border-red-300 bg-red-50' : 'border-amber-300 bg-amber-50' ?> rounded-lg p-3.5">
+                                        <div class="text-[13px] font-bold <?= $dpAcctStatus === 'rejected' ? 'text-red-800' : 'text-amber-800' ?> mb-2">
+                                            <i class="fas fa-<?= $dpAcctStatus === 'rejected' ? 'times-circle' : 'file-alt' ?>"></i>
+                                            <?= $dpAcctStatus === 'rejected' ? 'You rejected this proof' : 'Proof submitted — Accounting Review Required' ?>
                                         </div>
-                                    <?php endif;
-                                } ?>
-                            <?php endif; ?>
-                        </div>
+                                        <?php if ($dpAcctStatus === 'rejected' && !empty($dpProofAcct['rejection_note'])): ?>
+                                            <div class="bg-red-100 border border-red-300 rounded-md p-2.5 mb-2.5">
+                                                <div class="text-[11px] font-bold text-red-800 mb-1">Your rejection note:</div>
+                                                <div class="text-[12px] text-red-700 italic">"<?= htmlspecialchars($dpProofAcct['rejection_note']) ?>"</div>
+                                            </div>
+                                            <div class="text-[11px] text-muted">Waiting for the uploader to resubmit a new proof.</div>
+                                        <?php else: ?>
+                                            <?php if (strpos($dpProofAcct['file_type'] ?? '', 'image') !== false): ?>
+                                                <a href="<?= BASE_URL ?><?= htmlspecialchars($dpProofAcct['file_path']) ?>" onclick="openLightbox(this.href);return false;">
+                                                    <img src="<?= BASE_URL ?><?= htmlspecialchars($dpProofAcct['file_path']) ?>" class="max-w-full max-h-[200px] rounded-lg mb-2.5 object-contain cursor-pointer">
+                                                </a>
+                                            <?php else: ?>
+                                                <a href="<?= BASE_URL ?><?= htmlspecialchars($dpProofAcct['file_path']) ?>" target="_blank"
+                                                    class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mb-2.5">
+                                                    <i class="fas fa-file"></i> View Proof File
+                                                </a>
+                                            <?php endif; ?>
+                                            <div class="flex gap-2 justify-end flex-wrap">
+                                                <button class="inline-flex items-center gap-1.5 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition" onclick="openRejectModal(<?= $dpRow['id'] ?>)">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                                <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-[12px] font-semibold transition" onclick="approvePayment(<?= $dpRow['id'] ?>)">
+                                                    <i class="fas fa-check"></i> Approve & Mark Paid
+                                                </button>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endif;
+                            } ?>
+                        <?php endif; ?>
                     </div>
 
                     <!-- Overall Progress -->
-                    <div class="prog-banner">
-                        <div class="prog-top">
-                            <div class="prog-title"><i class="fas fa-chart-line"></i> Overall Installation Progress</div>
-                            <div class="prog-stat"><?= $grand_done ?> / <?= $grand_total ?> items done</div>
+                    <div class="bg-emerald-50 border border-emerald-300 rounded-[10px] p-5">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-2.5">
+                            <div class="text-[13px] font-bold text-emerald-800 flex items-center gap-1.5"><i class="fas fa-chart-line"></i> Overall Installation Progress</div>
+                            <div class="text-[15px] font-bold text-emerald-600"><?= $grand_done ?> / <?= $grand_total ?> items done</div>
                         </div>
-                        <div class="prog-bar-bg">
-                            <div class="prog-bar-fill" style="width:<?= min(100, $overall_pct) ?>%;"></div>
+                        <div class="h-3.5 bg-emerald-100 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500" style="width:<?= min(100, $overall_pct) ?>%;"></div>
                         </div>
-                        <div class="prog-bottom">
+                        <div class="flex justify-between flex-wrap gap-1 mt-1.5 text-[11px] text-soft">
                             <span><?= $overall_pct ?>% complete</span>
                             <span>
                                 Last billed at: <?= round($last_snapshot_pct, 1) ?>%
                                 &nbsp;&bull;&nbsp;
-                                Unbilled progress: <strong
-                                    style="color:#059669;"><?= max(0, round($overall_pct - $last_snapshot_pct, 1)) ?>%</strong>
+                                Unbilled progress: <strong class="text-emerald-700"><?= max(0, round($overall_pct - $last_snapshot_pct, 1)) ?>%</strong>
                             </span>
                         </div>
                     </div>
 
                     <!-- Collection Billings -->
-                    <div class="card">
-                        <div class="card-hdr">
-                            <h2><i class="fas fa-file-invoice-dollar" style="color:#10b981;"></i> Progress Billing
-                                Collections</h2>
-                            <span class="sub"><?= count($collections) ?>
-                                collection<?= count($collections) != 1 ? 's' : '' ?> recorded</span>
+                    <div class="bg-white border border-line rounded-[10px] p-6">
+                        <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                            <div class="flex items-center gap-2.5 text-[15px] font-bold"><i class="fas fa-file-invoice-dollar text-emerald-500"></i> Progress Billing Collections</div>
+                            <span class="text-[12px] text-muted"><?= count($collections) ?> collection<?= count($collections) != 1 ? 's' : '' ?> recorded</span>
                         </div>
-                        <div class="card-body">
 
-                            <!-- Existing collections -->
-                            <?php if (empty($collections)): ?>
-                                <div class="empty">
-                                    <i class="fas fa-file-invoice"></i>
-                                    <p>No billing collections yet. Add the first one below.</p>
-                                </div>
-                            <?php else: ?>
-                                <div class="coll-list" style="margin-bottom:20px;">
-                                    <?php foreach ($collections as $idx => $coll):
-                                        $cCls = strtolower($coll['status']);
-                                        $cNo = $idx + 1;
-                                        ?>
-                                        <div class="coll-item <?= $cCls ?>">
-                                            <div class="coll-top <?= $cCls ?>">
-                                                <div class="coll-name">
-                                                    <span class="coll-num"><?= $cNo ?></span>
-                                                    <?= htmlspecialchars($coll['payment_type']) ?>
-                                                    <?php if (!empty($coll['snapshot_pct'])): ?>
-                                                        <span class="snap-pill">
-                                                            <i class="fas fa-camera"></i>
-                                                            <?= number_format((float) $coll['snapshot_pct'], 1) ?>% at billing
-                                                        </span>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <span class="badge badge-<?= $cCls ?>"><?= $coll['status'] ?></span>
-                                            </div>
-                                            <div class="coll-bot">
-                                                <div>
-                                                    <div class="coll-amount">&#8369;<?= number_format($coll['amount'], 2) ?></div>
-                                                    <div class="coll-meta">
-                                                        <?= number_format((float) $coll['percentage'], 2) ?>% of project
-                                                        <?php if ($coll['payment_date']): ?>
-                                                            &bull; <i class="fas fa-check-circle" style="color:#10b981;"></i>
-                                                            Paid <?= date('M d, Y', strtotime($coll['payment_date'])) ?>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                </div>
-                                                <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                                                    <?php if ($coll['status'] !== 'Paid' && !$view_only && $canApprovePayment):
-                                                        $collProof = getPaymentProofInfo($conn, $coll['id']);
-                                                        $collAcctStatus = $coll['accounting_status'] ?? 'not_submitted';
-                                                        ?>
-                                                        <button class="btn btn-sm btn-outline"
-                                                            onclick="openEditModal(<?= $coll['id'] ?>, <?= $coll['amount'] ?>, '<?= addslashes($coll['payment_type']) ?>')">
-                                                            <i class="fas fa-edit"></i> Edit
-                                                        </button>
-                                                    <?php elseif ($coll['status'] !== 'Paid' && $view_only): ?>
-                                                    <?php else: ?>
-                                                        <span style="font-size:12px;color:#059669;font-weight:700;">
-                                                            <i class="fas fa-check-double"></i> Paid
-                                                        </span>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                            <?php if ($coll['status'] === 'Paid'):
-                                                $paidProof = getPaymentProofInfo($conn, $coll['id']);
-                                                $collNTP = getNTPInfo($conn, $coll['id']);
-                                                if ($paidProof): ?>
-                                                    <div class="proof-box approved" style="margin:0 17px 13px;">
-                                                        <div class="proof-title"><i class="fas fa-history"></i> Payment Proof (Approved)
-                                                        </div>
-                                                        <div style="font-size:11px;color:#065f46;margin-bottom:8px;">
-                                                            <i class="fas fa-check-circle"></i> Reviewed by:
-                                                            <?= htmlspecialchars($paidProof['reviewer_name'] ?? 'Accounting') ?>
-                                                        </div>
-                                                        <?php if (strpos($paidProof['file_type'] ?? '', 'image') !== false): ?>
-                                                            <a href="<?= BASE_URL ?><?= htmlspecialchars($paidProof['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                                            <img src="<?= BASE_URL ?><?= htmlspecialchars($paidProof['file_path']) ?>"
-                                                                style="max-width:100%; max-height:180px; border-radius:8px; object-fit:contain; cursor:pointer;">
-                                                            </a>
-                                                        <?php else: ?>
-                                                            <a href="<?= BASE_URL ?><?= htmlspecialchars($paidProof['file_path']) ?>" target="_blank"
-                                                                class="btn btn-sm btn-gray" style="margin-top:6px;">
-                                                                <i class="fas fa-file"></i> View Proof File
-                                                            </a>
-                                                        <?php endif; ?>
-                                                        <div class="proof-filename" style="margin-top:6px;">
-                                                            <i class="fas fa-paperclip"></i>
-                                                            <?= htmlspecialchars($paidProof['file_name']) ?>
-                                                        </div>
-                                                    </div>
+                        <?php if (empty($collections)): ?>
+                            <div class="text-center py-10 text-muted">
+                                <i class="fas fa-file-invoice text-3xl mb-3 block opacity-50"></i>
+                                <p class="text-[13px]">No billing collections yet. Add the first one below.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="flex flex-col gap-3 mb-5">
+                                <?php foreach ($collections as $idx => $coll):
+                                    $cCls = strtolower($coll['status']);
+                                    $cNo = $idx + 1;
+                                    ?>
+                                    <div class="border border-line <?= stripeClasses($coll['status']) ?> border-l-4 rounded-lg overflow-hidden hover:border-ink transition">
+                                        <div class="p-3.5 flex items-center justify-between flex-wrap gap-2 <?= $cCls === 'paid' ? 'bg-emerald-50' : 'bg-amber-50' ?>">
+                                            <div class="text-[13px] font-bold flex items-center gap-2 flex-wrap">
+                                                <span class="bg-ink text-white min-w-[26px] h-[26px] rounded-full inline-flex items-center justify-center text-[11px] font-bold"><?= $cNo ?></span>
+                                                <?= htmlspecialchars($coll['payment_type']) ?>
+                                                <?php if (!empty($coll['snapshot_pct'])): ?>
+                                                    <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-[10px] font-bold inline-flex items-center gap-1">
+                                                        <i class="fas fa-camera"></i> <?= number_format((float) $coll['snapshot_pct'], 1) ?>% at billing
+                                                    </span>
                                                 <?php endif; ?>
-                                                <?php if ($collNTP): ?>
-                                                    <div
-                                                        style="margin:0 17px 13px; background:#f0f9ff; border:2px solid #7dd3fc; border-radius:10px; padding:14px 16px;">
-                                                        <div
-                                                            style="font-size:12px; font-weight:700; color:#0369a1; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                                                            <i class="fas fa-file-signature"></i> Notice to Proceed (NTP) Issued
-                                                        </div>
-                                                        <div style="font-size:11px; color:#0369a1; margin-bottom:8px;">
-                                                            <i class="fas fa-user"></i> Uploaded by:
-                                                            <?= htmlspecialchars($collNTP['uploader_name'] ?? 'Accounting') ?>
-                                                            &bull; <?= date('M d, Y g:i A', strtotime($collNTP['uploaded_at'])) ?>
-                                                        </div>
-                                                        <?php if (!empty($collNTP['notes'])): ?>
-                                                            <div
-                                                                style="font-size:11px; color:#374151; background:#e0f2fe; border-radius:6px; padding:7px 10px; margin-bottom:8px;">
-                                                                <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($collNTP['notes']) ?>
-                                                            </div>
-                                                        <?php endif; ?>
-                                                        <?php if (strpos($collNTP['file_type'] ?? '', 'image') !== false): ?>
-                                                            <a href="<?= BASE_URL ?><?= htmlspecialchars($collNTP['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                                            <img src="<?= BASE_URL ?><?= htmlspecialchars($collNTP['file_path']) ?>"
-                                                                style="max-width:100%; max-height:180px; border-radius:8px; object-fit:contain; cursor:pointer;">
-                                                            </a>
-                                                        <?php else: ?>
-                                                            <a href="<?= BASE_URL ?><?= htmlspecialchars($collNTP['file_path']) ?>" target="_blank"
-                                                                class="btn btn-sm btn-gray" style="margin-top:6px;">
-                                                                <i class="fas fa-file"></i> View NTP File
-                                                            </a>
-                                                        <?php endif; ?>
-                                                        <div class="proof-filename" style="margin-top:6px;">
-                                                            <i class="fas fa-paperclip"></i> <?= htmlspecialchars($collNTP['file_name']) ?>
-                                                        </div>
-                                                        <?php if ($canApprovePayment): ?>
-                                                        <div class="btn-row" style="margin-top:10px;">
-                                                            <button class="btn btn-sm btn-outline" onclick="openUpdateNTP(<?= $coll['id'] ?>)">
+                                            </div>
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border <?= badgeClasses($coll['status']) ?>"><?= $coll['status'] ?></span>
+                                        </div>
+                                        <div class="p-3.5 border-t border-line flex items-center justify-between flex-wrap gap-2.5">
+                                            <div>
+                                                <div class="text-xl font-bold text-emerald-600">&#8369;<?= number_format($coll['amount'], 2) ?></div>
+                                                <div class="text-[11px] text-muted">
+                                                    <?= number_format((float) $coll['percentage'], 2) ?>% of project
+                                                    <?php if ($coll['payment_date']): ?>
+                                                        &bull; <i class="fas fa-check-circle text-emerald-500"></i> Paid <?= date('M d, Y', strtotime($coll['payment_date'])) ?>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                            <div class="flex gap-2 flex-wrap">
+                                                <?php if ($coll['status'] !== 'Paid' && !$view_only && $canApprovePayment): ?>
+                                                    <button class="inline-flex items-center gap-1.5 border-2 border-emerald-600 text-emerald-700 rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-emerald-50 transition"
+                                                        onclick="openEditModal(<?= $coll['id'] ?>, <?= $coll['amount'] ?>, '<?= addslashes($coll['payment_type']) ?>')">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                <?php elseif ($coll['status'] !== 'Paid' && $view_only): ?>
+                                                <?php else: ?>
+                                                    <span class="text-[12px] text-emerald-600 font-bold"><i class="fas fa-check-double"></i> Paid</span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                        <?php if ($coll['status'] === 'Paid'):
+                                            $paidProof = getPaymentProofInfo($conn, $coll['id']);
+                                            $collNTP = getNTPInfo($conn, $coll['id']);
+                                            if ($paidProof): ?>
+                                                <div class="mx-3.5 mb-3.5 bg-emerald-50 border-2 border-emerald-300 rounded-lg p-3.5">
+                                                    <div class="text-[12px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-clock-rotate-left"></i> Payment Proof (Approved)</div>
+                                                    <div class="text-[11px] text-emerald-800 mb-2"><i class="fas fa-check-circle"></i> Reviewed by: <?= htmlspecialchars($paidProof['reviewer_name'] ?? 'Accounting') ?></div>
+                                                    <?php if (strpos($paidProof['file_type'] ?? '', 'image') !== false): ?>
+                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($paidProof['file_path']) ?>" onclick="openLightbox(this.href);return false;">
+                                                            <img src="<?= BASE_URL ?><?= htmlspecialchars($paidProof['file_path']) ?>" class="max-w-full max-h-[180px] rounded-lg object-contain cursor-pointer">
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($paidProof['file_path']) ?>" target="_blank"
+                                                            class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mt-1.5">
+                                                            <i class="fas fa-file"></i> View Proof File
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($paidProof['file_name']) ?></div>
+                                                </div>
+                                            <?php endif; ?>
+                                            <?php if ($collNTP): ?>
+                                                <div class="mx-3.5 mb-3.5 bg-blue-50 border-2 border-blue-300 rounded-lg p-3.5">
+                                                    <div class="text-[12px] font-bold text-blue-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-file-signature"></i> Notice to Proceed (NTP) Issued</div>
+                                                    <div class="text-[11px] text-blue-800 mb-1.5">
+                                                        <i class="fas fa-user"></i> Uploaded by: <?= htmlspecialchars($collNTP['uploader_name'] ?? 'Accounting') ?>
+                                                        &bull; <?= date('M d, Y g:i A', strtotime($collNTP['uploaded_at'])) ?>
+                                                    </div>
+                                                    <?php if (!empty($collNTP['notes'])): ?>
+                                                        <div class="text-[11px] text-ink bg-blue-100/70 rounded-md p-2 mb-1.5"><i class="fas fa-sticky-note"></i> <?= htmlspecialchars($collNTP['notes']) ?></div>
+                                                    <?php endif; ?>
+                                                    <?php if (strpos($collNTP['file_type'] ?? '', 'image') !== false): ?>
+                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($collNTP['file_path']) ?>" onclick="openLightbox(this.href);return false;">
+                                                            <img src="<?= BASE_URL ?><?= htmlspecialchars($collNTP['file_path']) ?>" class="max-w-full max-h-[180px] rounded-lg object-contain cursor-pointer">
+                                                        </a>
+                                                    <?php else: ?>
+                                                        <a href="<?= BASE_URL ?><?= htmlspecialchars($collNTP['file_path']) ?>" target="_blank"
+                                                            class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mt-1.5">
+                                                            <i class="fas fa-file"></i> View NTP File
+                                                        </a>
+                                                    <?php endif; ?>
+                                                    <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($collNTP['file_name']) ?></div>
+                                                    <?php if ($canApprovePayment): ?>
+                                                        <div class="flex justify-end mt-2.5">
+                                                            <button class="inline-flex items-center gap-1.5 border-2 border-emerald-600 text-emerald-700 rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-emerald-50 transition" onclick="openUpdateNTP(<?= $coll['id'] ?>)">
                                                                 <i class="fas fa-sync-alt"></i> Update NTP
                                                             </button>
                                                         </div>
-                                                        <?php endif; ?>
-                                                    </div>
-                                                <?php endif; endif; ?>
-                                            <?php
-                                            $collProof2 = getPaymentProofInfo($conn, $coll['id']);
-                                            $collAcctStatus2 = $coll['accounting_status'] ?? 'not_submitted';
-                                            if ($coll['status'] !== 'Paid' && !$view_only && ($canSubmitProof || $isAccountingRole)):
-                                                ?>
-                                                <div class="proof-box <?= $collAcctStatus2 === 'rejected' ? 'rejected' : ($collAcctStatus2 === 'pending_review' ? 'pending' : '') ?>"
-                                                    style="margin:0 17px 13px;">
-                                                    <?php if ($collAcctStatus2 === 'rejected'): ?>
-                                                        <div class="proof-title rejected"><i class="fas fa-times-circle"></i> Proof rejected
-                                                            — resubmit</div>
-                                                        <div style="font-size:11px;color:#b91c1c;margin-bottom:8px;font-style:italic;">
-                                                            "<?= htmlspecialchars($collProof2['rejection_note'] ?? '') ?>"
-                                                        </div>
-                                                    <?php elseif ($collAcctStatus2 === 'pending_review'): ?>
-                                                        <div class="proof-title pending"><i class="fas fa-clock"></i> Awaiting accounting
-                                                            review</div>
-                                                    <?php else: ?>
-                                                        <div class="proof-title"><i class="fas fa-upload"></i> Attach Proof of Payment</div>
-                                                    <?php endif; ?>
-                                                    <?php if ($collAcctStatus2 !== 'pending_review' && $canSubmitProof): ?>
-                                                        <input type="file" class="proof-input" id="proofFile_<?= $coll['id'] ?>"
-                                                            accept="image/*,.pdf,.doc,.docx"
-                                                            onchange="previewProof(this, <?= $coll['id'] ?>)">
-                                                        <img id="proofImg_<?= $coll['id'] ?>" class="proof-preview">
-                                                        <div class="btn-row" style="margin-top:8px;">
-                                                            <button class="btn btn-sm btn-green"
-                                                                onclick="submitProof(<?= $coll['id'] ?>, <?= $client_id ?>)">
-                                                                <i class="fas fa-paper-plane"></i> Submit for Review
-                                                            </button>
-                                                        </div>
-                                                    <?php endif; ?>
-                                                    <?php if ($canApprovePayment && $collAcctStatus2 === 'pending_review' && $collProof2): ?>
-                                                        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #fde68a;">
-                                                            <div style="font-weight:700; font-size:12px; color:#92400e; margin-bottom:8px;">
-                                                                Accounting Review</div>
-                                                            <?php if (strpos($collProof2['file_type'] ?? '', 'image') !== false): ?>
-                                                    <a href="<?= BASE_URL ?><?= htmlspecialchars($collProof2['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                                    <img src="<?= BASE_URL ?><?= htmlspecialchars($collProof2['file_path']) ?>"
-                                                        style="max-width:100%; max-height:160px; border-radius:7px; margin-bottom:8px; object-fit:contain; cursor:pointer;">
-                                                    </a>
-                                                            <?php else: ?>
-                                                                <a href="<?= BASE_URL ?><?= htmlspecialchars($collProof2['file_path']) ?>"
-                                                                    target="_blank" class="btn btn-sm btn-gray" style="margin-bottom:8px;">
-                                                                    <i class="fas fa-file"></i> View File
-                                                                </a>
-                                                            <?php endif; ?>
-                                                            <div class="btn-row">
-                                                <button class="btn btn-sm btn-gray"
-                                                    onclick="openRejectModal(<?= $coll['id'] ?>)">
-                                                    <i class="fas fa-times"></i> Reject
-                                                </button>
-                                                <button class="btn btn-sm btn-green"
-                                                    onclick="quickApprove(<?= $coll['id'] ?>)">
-                                                    <i class="fas fa-check"></i> Approve & Mark Paid
-                                                </button>
-                                            </div>
-                                                        </div>
                                                     <?php endif; ?>
                                                 </div>
-                                            <?php endif; ?>
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                            <?php endif; ?>
+                                            <?php endif; endif; ?>
+                                        <?php
+                                        $collProof2 = getPaymentProofInfo($conn, $coll['id']);
+                                        $collAcctStatus2 = $coll['accounting_status'] ?? 'not_submitted';
+                                        if ($coll['status'] !== 'Paid' && !$view_only && ($canSubmitProof || $isAccountingRole)):
+                                            $collBoxCls = $collAcctStatus2 === 'rejected' ? 'border-red-300 bg-red-50' : ($collAcctStatus2 === 'pending_review' ? 'border-amber-300 bg-amber-50' : 'border-emerald-200 bg-emerald-50/40');
+                                            ?>
+                                            <div class="mx-3.5 mb-3.5 border-2 <?= $collBoxCls ?> rounded-lg p-3.5">
+                                                <?php if ($collAcctStatus2 === 'rejected'): ?>
+                                                    <div class="text-[12px] font-bold text-red-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-times-circle"></i> Proof rejected — resubmit</div>
+                                                    <div class="text-[11px] text-red-700 italic mb-2">"<?= htmlspecialchars($collProof2['rejection_note'] ?? '') ?>"</div>
+                                                <?php elseif ($collAcctStatus2 === 'pending_review'): ?>
+                                                    <div class="text-[12px] font-bold text-amber-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-clock"></i> Awaiting accounting review</div>
+                                                <?php else: ?>
+                                                    <div class="text-[12px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-upload"></i> Attach Proof of Payment</div>
+                                                <?php endif; ?>
+                                                <?php if ($collAcctStatus2 !== 'pending_review' && $canSubmitProof): ?>
+                                                    <input type="file" class="proof-input block w-full text-[13px] border-2 border-dashed border-line rounded-lg p-2 cursor-pointer bg-white"
+                                                        id="proofFile_<?= $coll['id'] ?>" accept="image/*,.pdf,.doc,.docx" onchange="previewProof(this, <?= $coll['id'] ?>)">
+                                                    <img id="proofImg_<?= $coll['id'] ?>" class="proof-preview max-w-full max-h-[180px] rounded-lg mt-2 object-contain">
+                                                    <div class="flex justify-end mt-2">
+                                                        <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-[12px] font-semibold transition"
+                                                            onclick="submitProof(<?= $coll['id'] ?>, <?= $client_id ?>)">
+                                                            <i class="fas fa-paper-plane"></i> Submit for Review
+                                                        </button>
+                                                    </div>
+                                                <?php endif; ?>
+                                                <?php if ($canApprovePayment && $collAcctStatus2 === 'pending_review' && $collProof2): ?>
+                                                    <div class="mt-2.5 pt-2.5 border-t border-dashed border-amber-300">
+                                                        <div class="text-[12px] font-bold text-amber-800 mb-2">Accounting Review</div>
+                                                        <?php if (strpos($collProof2['file_type'] ?? '', 'image') !== false): ?>
+                                                            <a href="<?= BASE_URL ?><?= htmlspecialchars($collProof2['file_path']) ?>" onclick="openLightbox(this.href);return false;">
+                                                                <img src="<?= BASE_URL ?><?= htmlspecialchars($collProof2['file_path']) ?>" class="max-w-full max-h-[160px] rounded-md mb-2 object-contain cursor-pointer">
+                                                            </a>
+                                                        <?php else: ?>
+                                                            <a href="<?= BASE_URL ?><?= htmlspecialchars($collProof2['file_path']) ?>" target="_blank"
+                                                                class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mb-2">
+                                                                <i class="fas fa-file"></i> View File
+                                                            </a>
+                                                        <?php endif; ?>
+                                                        <div class="flex gap-2 justify-end flex-wrap">
+                                                            <button class="inline-flex items-center gap-1.5 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition" onclick="openRejectModal(<?= $coll['id'] ?>)">
+                                                                <i class="fas fa-times"></i> Reject
+                                                            </button>
+                                                            <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-[12px] font-semibold transition" onclick="quickApprove(<?= $coll['id'] ?>)">
+                                                                <i class="fas fa-check"></i> Approve & Mark Paid
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                <?php endif; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
 
-                            <!-- ── Add New Collection ── -->
-                            <?php
-                            // Hide new collection form if there's already a pending (unpaid) collection
-                            $hasPendingCollection = false;
-                            foreach ($collections as $c) {
-                                if ($c['status'] !== 'Paid') {
-                                    $hasPendingCollection = true;
-                                    break;
-                                }
+                        <!-- ── Add New Collection ── -->
+                        <?php
+                        $hasPendingCollection = false;
+                        foreach ($collections as $c) {
+                            if ($c['status'] !== 'Paid') {
+                                $hasPendingCollection = true;
+                                break;
                             }
-                            ?>
-                            <?php if (!$view_only && $isAccountingRole && $remaining_balance > 0 && !$hasPendingCollection): ?>
-                                <div class="add-form">
-                                    <div class="add-form-title">
-                                        <i class="fas fa-plus-circle"></i> New Collection — #<?= $next_no ?>
-                                    </div>
-                                    <div class="add-form-sub">
-                                        The system suggests an amount based on unbilled progress. You can enter any amount.
-                                    </div>
+                        }
+                        ?>
+                        <?php if (!$view_only && $isAccountingRole && $remaining_balance > 0 && !$hasPendingCollection): ?>
+                            <div class="border-2 border-dashed border-emerald-300 bg-emerald-50/40 rounded-[10px] p-5 mt-1.5">
+                                <div class="text-emerald-800 text-[14px] font-bold flex items-center gap-1.5 mb-1"><i class="fas fa-plus-circle"></i> New Collection — #<?= $next_no ?></div>
+                                <div class="text-muted text-[12px] mb-4">The system suggests an amount based on unbilled progress. You can enter any amount.</div>
 
-                                    <!-- Suggestion breakdown -->
-                                    <div class="sug-box">
-                                        <div class="sug-line">
-                                            <span class="sug-key"><i class="fas fa-chart-bar" style="color:#10b981;"></i>
-                                                Current overall progress</span>
-                                            <span class="sug-v"><?= $overall_pct ?>%</span>
-                                        </div>
-                                        <div class="sug-line">
-                                            <span class="sug-key"><i class="fas fa-minus-circle" style="color:#9ca3af;"></i>
-                                                Last billed progress snapshot</span>
-                                            <span class="sug-v"><?= round($last_snapshot_pct, 2) ?>%</span>
-                                        </div>
-                                        <hr class="sug-divider">
-                                        <div class="sug-line">
-                                            <span class="sug-key" style="color:#059669;font-weight:700;">
-                                                <i class="fas fa-lightbulb" style="color:#f59e0b;"></i> Suggested billing amount
-                                            </span>
-                                            <span class="sug-big">&#8369;<?= number_format($suggested_amount, 2) ?></span>
-                                        </div>
-                                        <div class="sug-formula">
-                                            <?php if ($overall_pct >= 100): ?>
-                                                All work is 100% complete — suggesting full remaining balance.
-                                                <br>&#8369;<?= number_format($remaining_balance, 2) ?> (remaining balance)
-                                                = <strong>&#8369;<?= number_format($suggested_amount, 2) ?></strong>
-                                            <?php else: ?>
-                                                Formula: (<?= $overall_pct ?>% &minus; <?= round($last_snapshot_pct, 2) ?>% last
-                                                snapshot)
-                                                &times; &#8369;<?= number_format($remaining_balance, 2) ?> (remaining balance)
-                                                = <strong>&#8369;<?= number_format($suggested_amount, 2) ?></strong>
-                                            <?php endif; ?>
-                                            <br>You can override this with any amount below.
-                                        </div>
+                                <div class="bg-white border-2 border-emerald-300 rounded-lg p-3.5 mb-4">
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-[12px] text-soft font-semibold flex items-center gap-1.5"><i class="fas fa-chart-bar text-emerald-500"></i> Current overall progress</span>
+                                        <span class="text-[13px] font-bold text-gray-700"><?= $overall_pct ?>%</span>
                                     </div>
-
-                                    <div class="form-group">
-                                        <label><i class="fas fa-tag"></i> Billing Label</label>
-                                        <input type="text" id="newCollLabel" class="form-input"
-                                            value="<?= htmlspecialchars($default_label) ?>"
-                                            placeholder="e.g. 1st Billing Collection">
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-[12px] text-soft font-semibold flex items-center gap-1.5"><i class="fas fa-minus-circle text-muted"></i> Last billed progress snapshot</span>
+                                        <span class="text-[13px] font-bold text-gray-700"><?= round($last_snapshot_pct, 2) ?>%</span>
                                     </div>
-                                    <div class="form-group">
-                                        <label><i class="fas fa-peso-sign"></i> Amount to Bill (&#8369;) <span
-                                                style="color:#ef4444;">*</span></label>
-                                        <input type="number" id="newCollAmount" class="form-input"
-                                            value="<?= $suggested_amount ?>" min="0" step="0.01" oninput="onAmountInput(this)">
-                                        <div id="overrideHint" class="hint"></div>
+                                    <hr class="border-none border-t border-dashed border-emerald-200 my-2">
+                                    <div class="flex justify-between items-center py-1">
+                                        <span class="text-[12px] text-emerald-700 font-bold flex items-center gap-1.5"><i class="fas fa-lightbulb text-amber-500"></i> Suggested billing amount</span>
+                                        <span class="text-xl font-bold text-emerald-600">&#8369;<?= number_format($suggested_amount, 2) ?></span>
                                     </div>
-
-                                    <div id="addCollErr" class="modal-err" style="margin-bottom:12px;"></div>
-
-                                    <div class="btn-row">
-                                        <button class="btn btn-sm btn-gray" onclick="resetSuggested()">
-                                            <i class="fas fa-undo"></i> Reset to Suggested
-                                        </button>
-                                        <button class="btn btn-green" id="addCollBtn" onclick="submitNewCollection()">
-                                            <i class="fas fa-save"></i> Save Billing Entry
-                                        </button>
+                                    <div class="text-[11px] text-muted mt-2 pt-1.5 border-t border-line leading-relaxed">
+                                        <?php if ($overall_pct >= 100): ?>
+                                            All work is 100% complete — suggesting full remaining balance.
+                                            <br>&#8369;<?= number_format($remaining_balance, 2) ?> (remaining balance) = <strong>&#8369;<?= number_format($suggested_amount, 2) ?></strong>
+                                        <?php else: ?>
+                                            Formula: (<?= $overall_pct ?>% &minus; <?= round($last_snapshot_pct, 2) ?>% last snapshot) &times; &#8369;<?= number_format($remaining_balance, 2) ?> (remaining balance) = <strong>&#8369;<?= number_format($suggested_amount, 2) ?></strong>
+                                        <?php endif; ?>
+                                        <br>You can override this with any amount below.
                                     </div>
                                 </div>
-                            <?php endif; ?>
 
-                        </div>
+                                <div class="mb-3.5">
+                                    <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-[0.4px] mb-1.5"><i class="fas fa-tag"></i> Billing Label</label>
+                                    <input type="text" id="newCollLabel" class="form-input w-full px-3.5 py-2.5 border-2 border-emerald-200 rounded-lg text-sm font-semibold bg-white focus:outline-none focus:border-emerald-500"
+                                        value="<?= htmlspecialchars($default_label) ?>" placeholder="e.g. 1st Billing Collection">
+                                </div>
+                                <div class="mb-3.5">
+                                    <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-[0.4px] mb-1.5"><i class="fas fa-peso-sign"></i> Amount to Bill (&#8369;) <span class="text-red-500">*</span></label>
+                                    <input type="number" id="newCollAmount" class="form-input w-full px-3.5 py-2.5 border-2 border-emerald-200 rounded-lg text-sm font-semibold bg-white focus:outline-none focus:border-emerald-500"
+                                        value="<?= $suggested_amount ?>" min="0" step="0.01" oninput="onAmountInput(this)">
+                                    <div id="overrideHint" class="text-[11px] text-muted mt-1"></div>
+                                </div>
+
+                                <div id="addCollErr" class="hidden text-red-500 text-[13px] px-3 py-2 bg-red-100 rounded-md mb-3"></div>
+
+                                <div class="flex gap-2 justify-end flex-wrap">
+                                    <button class="inline-flex items-center gap-1.5 bg-[#F5F5F5] border border-line text-ink rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-line/40 transition" onclick="resetSuggested()">
+                                        <i class="fas fa-undo"></i> Reset to Suggested
+                                    </button>
+                                    <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-[13px] font-semibold transition" id="addCollBtn" onclick="submitNewCollection()">
+                                        <i class="fas fa-save"></i> Save Billing Entry
+                                    </button>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                     </div>
 
                 </div><!-- /left -->
 
                 <!-- RIGHT — Area Breakdown Sidebar -->
                 <div>
-                    <div class="sidebar-card">
-                        <div class="sb-hdr">
-                            <h3><i class="fas fa-map-marker-alt"></i> Area Breakdown</h3>
+                    <div class="bg-white border border-line rounded-[10px] overflow-hidden sticky top-5">
+                        <div class="bg-ink text-white px-4.5 py-3.5 px-[18px] py-[14px]">
+                            <h3 class="text-[13px] font-bold flex items-center gap-1.5"><i class="fas fa-map-marker-alt"></i> Area Breakdown</h3>
                         </div>
-                        <div class="sb-body">
+                        <div class="p-3.5 flex flex-col gap-2.5 max-h-[500px] overflow-y-auto">
                             <?php if (empty($areaMap)): ?>
-                                <div style="text-align:center;padding:20px;color:#9ca3af;font-size:13px;">No areas found.</div>
+                                <div class="text-center py-5 text-muted text-[13px]">No areas found.</div>
                             <?php else: ?>
                                 <?php foreach ($areaMap as $aName => $aData):
                                     $aPct = $aData['total'] > 0 ? round($aData['done'] / $aData['total'] * 100) : 0;
-                                    $aColor = ($aPct === 100) ? '#10b981' : ($aPct > 0 ? '#3b82f6' : '#9ca3af');
+                                    $aColorClasses = ($aPct === 100) ? ['text' => 'text-emerald-500', 'bar' => 'bg-emerald-500'] : (($aPct > 0) ? ['text' => 'text-blue-500', 'bar' => 'bg-blue-500'] : ['text' => 'text-muted', 'bar' => 'bg-muted']);
                                     ?>
-                                    <div class="area-row">
-                                        <div class="area-top">
-                                            <span class="area-name"><?= htmlspecialchars($aName) ?></span>
-                                            <span class="area-pct" style="color:<?= $aColor ?>;"><?= $aPct ?>%</span>
+                                    <div class="bg-[#F9F9F9] border border-line rounded-lg px-2.5 py-2">
+                                        <div class="flex justify-between items-center mb-0.5">
+                                            <span class="text-[12px] font-bold text-gray-700"><?= htmlspecialchars($aName) ?></span>
+                                            <span class="text-[12px] font-bold <?= $aColorClasses['text'] ?>"><?= $aPct ?>%</span>
                                         </div>
-                                        <div class="area-count"><?= $aData['done'] ?>/<?= $aData['total'] ?> items done</div>
-                                        <div class="mini-bar-bg">
-                                            <div class="mini-bar-fill" style="width:<?= $aPct ?>%;background:<?= $aColor ?>;"></div>
+                                        <div class="text-[11px] text-muted mb-1"><?= $aData['done'] ?>/<?= $aData['total'] ?> items done</div>
+                                        <div class="h-[5px] bg-line rounded-full overflow-hidden">
+                                            <div class="h-full rounded-full <?= $aColorClasses['bar'] ?> transition-all duration-300" style="width:<?= $aPct ?>%;"></div>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -1918,50 +919,43 @@ if ($business_type === 'Project') {
                     </div>
                 </div><!-- /right -->
 
-            </div><!-- /two-col -->
+            </div><!-- /grid -->
 
         <?php else: ?>
             <!-- ════════════════════════════════════ NON-PROJECT ════════════════════════════════════ -->
 
             <?php if ($isAssignedToClient && !$view_only): ?>
-                <div class="card" style="margin-bottom:16px;">
-                    <div class="card-body" style="padding:16px 22px;">
-                        <?php if ($isSplitLocked): ?>
-                            <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:#6b7280;">
-                                <i class="fas fa-lock" style="color:#9ca3af;"></i>
-                                Payment split is locked (<?= $payment_split_mode === 'merged' ? '50% Retention' : '40%/10% split' ?> already paid).
-                            </div>
-                        <?php elseif ($payment_split_mode === 'merged'): ?>
-                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-                                <div style="font-size:13px;color:#374151;">
-                                    <i class="fas fa-info-circle" style="color:#3b82f6;"></i>
-                                    Currently using <strong>50% Retention</strong> split.
-                                </div>
-                                <button class="btn btn-sm btn-outline" onclick="openToggleConfirm('revert')">
-                                    <i class="fas fa-undo"></i> Revert to 40% / 10% split
-                                </button>
-                            </div>
-                        <?php else: ?>
-                            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-                                <div style="font-size:13px;color:#374151;">
-                                    <i class="fas fa-info-circle" style="color:#3b82f6;"></i>
-                                    Currently using <strong>40% Before / 10% After</strong> split.
-                                </div>
-                                <button class="btn btn-sm btn-outline" onclick="openToggleConfirm('merge')">
-                                    <i class="fas fa-random"></i> Switch to 50% Retention
-                                </button>
-                            </div>
-                        <?php endif; ?>
-                    </div>
+                <div class="bg-white border border-line rounded-[10px] p-5 mb-4">
+                    <?php if ($isSplitLocked): ?>
+                        <div class="flex items-center gap-2.5 text-[13px] text-soft">
+                            <i class="fas fa-lock text-muted"></i>
+                            Payment split is locked (<?= $payment_split_mode === 'merged' ? '50% Retention' : '40%/10% split' ?> already paid).
+                        </div>
+                    <?php elseif ($payment_split_mode === 'merged'): ?>
+                        <div class="flex items-center justify-between flex-wrap gap-2.5">
+                            <div class="text-[13px] text-gray-700"><i class="fas fa-info-circle text-blue-500"></i> Currently using <strong>50% Retention</strong> split.</div>
+                            <button class="inline-flex items-center gap-1.5 border-2 border-emerald-600 text-emerald-700 rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-emerald-50 transition" onclick="openToggleConfirm('revert')">
+                                <i class="fas fa-undo"></i> Revert to 40% / 10% split
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <div class="flex items-center justify-between flex-wrap gap-2.5">
+                            <div class="text-[13px] text-gray-700"><i class="fas fa-info-circle text-blue-500"></i> Currently using <strong>40% Before / 10% After</strong> split.</div>
+                            <button class="inline-flex items-center gap-1.5 border-2 border-emerald-600 text-emerald-700 rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-emerald-50 transition" onclick="openToggleConfirm('merge')">
+                                <i class="fas fa-random"></i> Switch to 50% Retention
+                            </button>
+                        </div>
+                    <?php endif; ?>
                 </div>
             <?php endif; ?>
 
-            <div class="card">
-                <div class="card-hdr">
-                    <h2><i class="fas fa-calendar-check" style="color:#059669;"></i> Payment Schedule</h2>
-                    <span class="sub"><?= $payment_split_mode === 'merged' ? '50% Down &bull; 50% Retention' : '50% Down &bull; 40% Before Installation &bull; 10% After Installation' ?></span>
+            <div class="bg-white border border-line rounded-[10px] p-6">
+                <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+                    <div class="flex items-center gap-2.5 text-[15px] font-bold"><i class="fas fa-calendar-check text-emerald-500"></i> Payment Schedule</div>
+                    <span class="text-[12px] text-muted"><?= $payment_split_mode === 'merged' ? '50% Down &bull; 50% Retention' : '50% Down &bull; 40% Before Installation &bull; 10% After Installation' ?></span>
                 </div>
-                <div class="card-body">
+
+                <div class="flex flex-col gap-3">
                     <?php foreach ($payments as $payment):
                         $st = strtolower(str_replace(' ', '-', $payment['status']));
                         $canMark = true;
@@ -2034,95 +1028,70 @@ if ($business_type === 'Project') {
                             }
                         }
                         ?>
-                        <div class="pay-item status-<?= $st ?>">
-                            <div class="pay-hdr">
-                                <span class="pay-type">
+                        <div class="border border-line <?= stripeClasses($payment['status']) ?> border-l-4 rounded-lg p-4 <?= $st === 'paid' ? 'bg-emerald-50/60' : ($st === 'pending' ? 'bg-amber-50/60' : 'bg-[#F9F9F9]') ?>">
+                            <div class="flex justify-between items-center mb-1.5 flex-wrap gap-2">
+                                <span class="text-[14px] font-bold text-ink">
                                     <?= htmlspecialchars($payment['payment_type']) ?>
-                                    <span
-                                        style="color:#999;font-size:12px;font-weight:400;">(<?= number_format($payment['percentage'], 1) ?>%)</span>
+                                    <span class="text-muted text-[12px] font-normal">(<?= number_format($payment['percentage'], 1) ?>%)</span>
                                 </span>
-                                <span class="pay-amt">&#8369;<?= number_format($payment['amount'], 2) ?></span>
+                                <span class="text-lg font-bold text-emerald-600">&#8369;<?= number_format($payment['amount'], 2) ?></span>
                             </div>
-                            <div class="pay-meta">
-                                <span
-                                    class="badge badge-<?= str_replace(' ', '-', strtolower($payment['status'])) ?>"><?= $payment['status'] ?></span>
+                            <div class="flex items-center gap-3 text-[12px] text-soft flex-wrap">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border <?= badgeClasses($payment['status']) ?>"><?= $payment['status'] ?></span>
                                 <?php if (!$canMark && $payment['status'] !== 'Paid'): ?>
-                                    <span style="font-size:11px;color:#f59e0b;"><i class="fas fa-info-circle"></i>
-                                        <?= $disableMsg ?></span>
+                                    <span class="text-[11px] text-amber-600"><i class="fas fa-info-circle"></i> <?= $disableMsg ?></span>
                                 <?php endif; ?>
                                 <?php if ($payment['payment_date']): ?>
-                                    <span><i class="fas fa-check-circle" style="color:#10b981;"></i> Paid:
-                                        <?= date('M d, Y g:i A', strtotime($payment['payment_date'])) ?></span>
+                                    <span><i class="fas fa-check-circle text-emerald-500"></i> Paid: <?= date('M d, Y g:i A', strtotime($payment['payment_date'])) ?></span>
                                 <?php endif; ?>
-                                <div style="margin-left:auto;">
-                                    <?php if ($payment['status'] !== 'Paid' && $payment['status'] !== 'Not Available' && !$view_only): ?>
-                                    <?php endif; ?>
-                                </div>
                             </div>
                             <?php if ($payment['status'] === 'Paid'):
                                 $paidProofNP = getPaymentProofInfo($conn, $payment['id']);
                                 $npNTP = getNTPInfo($conn, $payment['id']);
                                 if ($paidProofNP): ?>
-                                    <div class="proof-box approved" style="margin-top:10px;">
-                                        <div class="proof-title"><i class="fas fa-history"></i> Payment Proof (Approved)</div>
-                                        <div style="font-size:11px;color:#065f46;margin-bottom:8px;">
-                                            <i class="fas fa-check-circle"></i> Reviewed by:
-                                            <?= htmlspecialchars($paidProofNP['reviewer_name'] ?? 'Accounting') ?>
-                                        </div>
+                                    <div class="bg-emerald-50 border-2 border-emerald-300 rounded-lg p-3.5 mt-2.5">
+                                        <div class="text-[12px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-clock-rotate-left"></i> Payment Proof (Approved)</div>
+                                        <div class="text-[11px] text-emerald-800 mb-2"><i class="fas fa-check-circle"></i> Reviewed by: <?= htmlspecialchars($paidProofNP['reviewer_name'] ?? 'Accounting') ?></div>
                                         <?php if (strpos($paidProofNP['file_type'] ?? '', 'image') !== false): ?>
                                             <a href="<?= BASE_URL ?><?= htmlspecialchars($paidProofNP['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                            <img src="<?= BASE_URL ?><?= htmlspecialchars($paidProofNP['file_path']) ?>"
-                                                style="max-width:100%; max-height:180px; border-radius:8px; object-fit:contain; cursor:pointer;">
+                                                <img src="<?= BASE_URL ?><?= htmlspecialchars($paidProofNP['file_path']) ?>" class="max-w-full max-h-[180px] rounded-lg object-contain cursor-pointer">
                                             </a>
                                         <?php else: ?>
                                             <a href="<?= BASE_URL ?><?= htmlspecialchars($paidProofNP['file_path']) ?>" target="_blank"
-                                                class="btn btn-sm btn-gray" style="margin-top:6px;">
+                                                class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mt-1.5">
                                                 <i class="fas fa-file"></i> View Proof File
                                             </a>
                                         <?php endif; ?>
-                                        <div class="proof-filename" style="margin-top:6px;">
-                                            <i class="fas fa-paperclip"></i> <?= htmlspecialchars($paidProofNP['file_name']) ?>
-                                        </div>
+                                        <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($paidProofNP['file_name']) ?></div>
                                     </div>
                                 <?php endif; ?>
                                 <?php if ($npNTP): ?>
-                                    <div
-                                        style="margin-top:10px; background:#f0f9ff; border:2px solid #7dd3fc; border-radius:10px; padding:14px 16px;">
-                                        <div
-                                            style="font-size:12px; font-weight:700; color:#0369a1; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                                            <i class="fas fa-file-signature"></i> Notice to Proceed (NTP) Issued
-                                        </div>
-                                        <div style="font-size:11px; color:#0369a1; margin-bottom:8px;">
-                                            <i class="fas fa-user"></i> Uploaded by:
-                                            <?= htmlspecialchars($npNTP['uploader_name'] ?? 'Accounting') ?>
+                                    <div class="bg-blue-50 border-2 border-blue-300 rounded-lg p-3.5 mt-2.5">
+                                        <div class="text-[12px] font-bold text-blue-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-file-signature"></i> Notice to Proceed (NTP) Issued</div>
+                                        <div class="text-[11px] text-blue-800 mb-1.5">
+                                            <i class="fas fa-user"></i> Uploaded by: <?= htmlspecialchars($npNTP['uploader_name'] ?? 'Accounting') ?>
                                             &bull; <?= date('M d, Y g:i A', strtotime($npNTP['uploaded_at'])) ?>
                                         </div>
                                         <?php if (!empty($npNTP['notes'])): ?>
-                                            <div
-                                                style="font-size:11px; color:#374151; background:#e0f2fe; border-radius:6px; padding:7px 10px; margin-bottom:8px;">
-                                                <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($npNTP['notes']) ?>
-                                            </div>
+                                            <div class="text-[11px] text-ink bg-blue-100/70 rounded-md p-2 mb-1.5"><i class="fas fa-sticky-note"></i> <?= htmlspecialchars($npNTP['notes']) ?></div>
                                         <?php endif; ?>
                                         <?php if (strpos($npNTP['file_type'] ?? '', 'image') !== false): ?>
                                             <a href="<?= BASE_URL ?><?= htmlspecialchars($npNTP['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                            <img src="<?= BASE_URL ?><?= htmlspecialchars($npNTP['file_path']) ?>"
-                                                style="max-width:100%; max-height:180px; border-radius:8px; object-fit:contain; cursor:pointer;">
+                                                <img src="<?= BASE_URL ?><?= htmlspecialchars($npNTP['file_path']) ?>" class="max-w-full max-h-[180px] rounded-lg object-contain cursor-pointer">
                                             </a>
                                         <?php else: ?>
                                             <a href="<?= BASE_URL ?><?= htmlspecialchars($npNTP['file_path']) ?>" target="_blank"
-                                                class="btn btn-sm btn-gray" style="margin-top:6px;">
+                                                class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mt-1.5">
                                                 <i class="fas fa-file"></i> View NTP File
                                             </a>
                                         <?php endif; ?>
-                                        <div class="proof-filename" style="margin-top:6px;">
-                                            <i class="fas fa-paperclip"></i> <?= htmlspecialchars($npNTP['file_name']) ?>
-                                        </div>
+                                        <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-paperclip"></i> <?= htmlspecialchars($npNTP['file_name']) ?></div>
                                         <?php if ($canApprovePayment): ?>
-                                        <div class="btn-row" style="margin-top:10px;">
-                                            <button class="btn btn-sm btn-outline" onclick="openUpdateNTP(<?= $payment['id'] ?>)">
-                                                <i class="fas fa-sync-alt"></i> Update NTP
-                                            </button>
-                                        </div>
+                                            <div class="flex justify-end mt-2.5">
+                                                <button class="inline-flex items-center gap-1.5 border-2 border-emerald-600 text-emerald-700 rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-emerald-50 transition" onclick="openUpdateNTP(<?= $payment['id'] ?>)">
+                                                    <i class="fas fa-sync-alt"></i> Update NTP
+                                                </button>
+                                            </div>
                                         <?php endif; ?>
                                     </div>
                                 <?php endif; endif; ?>
@@ -2130,70 +1099,61 @@ if ($business_type === 'Project') {
                             $npProof = getPaymentProofInfo($conn, $payment['id']);
                             $npAcctStatus = $payment['accounting_status'] ?? 'not_submitted';
                             if ($payment['status'] !== 'Paid' && $payment['status'] !== 'Not Available' && !$view_only && ($canSubmitProof && $canMark || $isAccountingRole)):
+                                $npBoxCls = $npAcctStatus === 'rejected' ? 'border-red-300 bg-red-50' : ($npAcctStatus === 'pending_review' ? 'border-amber-300 bg-amber-50' : 'border-emerald-200 bg-emerald-50/40');
                                 ?>
-                                <div class="proof-box <?= $npAcctStatus === 'rejected' ? 'rejected' : ($npAcctStatus === 'pending_review' ? 'pending' : '') ?>"
-                                    style="margin-top:10px;">
+                                <div class="border-2 <?= $npBoxCls ?> rounded-lg p-3.5 mt-2.5">
                                     <?php if ($npAcctStatus === 'rejected' && $npProof): ?>
-                                        <div class="proof-title rejected"><i class="fas fa-times-circle"></i> Proof rejected — resubmit
-                                        </div>
-                                        <div style="font-size:11px;color:#b91c1c;margin-bottom:8px;font-style:italic;">
-                                            "<?= htmlspecialchars($npProof['rejection_note'] ?? '') ?>"
-                                        </div>
+                                        <div class="text-[12px] font-bold text-red-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-times-circle"></i> Proof rejected — resubmit</div>
+                                        <div class="text-[11px] text-red-700 italic mb-2">"<?= htmlspecialchars($npProof['rejection_note'] ?? '') ?>"</div>
                                     <?php elseif ($npAcctStatus === 'pending_review'): ?>
-                                        <div class="proof-title pending"><i class="fas fa-clock"></i> Awaiting accounting review</div>
+                                        <div class="text-[12px] font-bold text-amber-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-clock"></i> Awaiting accounting review</div>
                                     <?php else: ?>
-                                        <div class="proof-title"><i class="fas fa-upload"></i> Attach Proof of Payment</div>
+                                        <div class="text-[12px] font-bold text-emerald-800 flex items-center gap-1.5 mb-1.5"><i class="fas fa-upload"></i> Attach Proof of Payment</div>
                                     <?php endif; ?>
                                     <?php if ($npAcctStatus !== 'pending_review' && $canSubmitProof): ?>
-                                        <input type="file" class="proof-input" id="proofFile_<?= $payment['id'] ?>"
-                                            accept="image/*,.pdf,.doc,.docx" onchange="previewProof(this, <?= $payment['id'] ?>)">
-                                        <img id="proofImg_<?= $payment['id'] ?>" class="proof-preview">
-                                        <div class="btn-row" style="margin-top:8px;">
-                                            <button class="btn btn-sm btn-green"
+                                        <input type="file" class="proof-input block w-full text-[13px] border-2 border-dashed border-line rounded-lg p-2 cursor-pointer bg-white"
+                                            id="proofFile_<?= $payment['id'] ?>" accept="image/*,.pdf,.doc,.docx" onchange="previewProof(this, <?= $payment['id'] ?>)">
+                                        <img id="proofImg_<?= $payment['id'] ?>" class="proof-preview max-w-full max-h-[180px] rounded-lg mt-2 object-contain">
+                                        <div class="flex justify-end mt-2">
+                                            <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-[12px] font-semibold transition"
                                                 onclick="submitProof(<?= $payment['id'] ?>, <?= $client_id ?>)">
                                                 <i class="fas fa-paper-plane"></i> Submit for Review
                                             </button>
                                         </div>
                                     <?php endif; ?>
                                     <?php if ($canApprovePayment && in_array($npAcctStatus, ['pending_review', 'rejected']) && $npProof): ?>
-                                        <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #fde68a;">
-                                            <div
-                                                style="font-weight:700; font-size:12px; color:<?= $npAcctStatus === 'rejected' ? '#991b1b' : '#92400e' ?>; margin-bottom:8px;">
+                                        <div class="mt-2.5 pt-2.5 border-t border-dashed <?= $npAcctStatus === 'rejected' ? 'border-red-300' : 'border-amber-300' ?>">
+                                            <div class="text-[12px] font-bold <?= $npAcctStatus === 'rejected' ? 'text-red-800' : 'text-amber-800' ?> mb-2">
                                                 <i class="fas fa-<?= $npAcctStatus === 'rejected' ? 'times-circle' : 'file-alt' ?>"></i>
                                                 <?= $npAcctStatus === 'rejected' ? 'You rejected this proof' : 'Accounting Review' ?>
                                             </div>
                                             <?php if ($npAcctStatus === 'rejected' && !empty($npProof['rejection_note'])): ?>
-                                                <div
-                                                    style="background:#fee2e2; border:1px solid #fca5a5; border-radius:7px; padding:10px 12px; margin-bottom:10px;">
-                                                    <div style="font-size:11px; font-weight:700; color:#991b1b; margin-bottom:3px;">Your
-                                                        rejection note:</div>
-                                                    <div style="font-size:12px; color:#b91c1c; font-style:italic;">
-                                                        "<?= htmlspecialchars($npProof['rejection_note']) ?>"</div>
+                                                <div class="bg-red-100 border border-red-300 rounded-md p-2.5 mb-2.5">
+                                                    <div class="text-[11px] font-bold text-red-800 mb-1">Your rejection note:</div>
+                                                    <div class="text-[12px] text-red-700 italic">"<?= htmlspecialchars($npProof['rejection_note']) ?>"</div>
                                                 </div>
-                                                <div style="font-size:11px; color:#9ca3af;">Waiting for the uploader to resubmit a new
-                                                    proof.</div>
+                                                <div class="text-[11px] text-muted">Waiting for the uploader to resubmit a new proof.</div>
                                             <?php else: ?>
                                                 <?php if (strpos($npProof['file_type'] ?? '', 'image') !== false): ?>
                                                     <a href="<?= BASE_URL ?><?= htmlspecialchars($npProof['file_path']) ?>" onclick="openLightbox(this.href);return false;">
-                                                    <img src="<?= BASE_URL ?><?= htmlspecialchars($npProof['file_path']) ?>"
-                                                        style="max-width:100%; max-height:160px; border-radius:7px; margin-bottom:8px; object-fit:contain; cursor:pointer;">
+                                                        <img src="<?= BASE_URL ?><?= htmlspecialchars($npProof['file_path']) ?>" class="max-w-full max-h-[160px] rounded-md mb-2 object-contain cursor-pointer">
                                                     </a>
                                                 <?php else: ?>
                                                     <a href="<?= BASE_URL ?><?= htmlspecialchars($npProof['file_path']) ?>" target="_blank"
-                                                        class="btn btn-sm btn-gray" style="margin-bottom:8px;">
+                                                        class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition mb-2">
                                                         <i class="fas fa-file"></i> View File
                                                     </a>
                                                 <?php endif; ?>
-                                                <div class="btn-row">
-                                                    <button class="btn btn-sm btn-gray" onclick="openRejectModal(<?= $payment['id'] ?>)">
+                                                <div class="flex gap-2 justify-end flex-wrap">
+                                                    <button class="inline-flex items-center gap-1.5 bg-[#F5F5F5] border border-line text-ink rounded-lg px-3 py-1.5 text-[12px] font-semibold hover:bg-line/40 transition" onclick="openRejectModal(<?= $payment['id'] ?>)">
                                                         <i class="fas fa-times"></i> Reject
                                                     </button>
                                                     <?php if (stripos($payment['payment_type'], 'Down Payment') !== false): ?>
-                                                        <button class="btn btn-sm btn-green" onclick="approvePayment(<?= $payment['id'] ?>)">
+                                                        <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-[12px] font-semibold transition" onclick="approvePayment(<?= $payment['id'] ?>)">
                                                             <i class="fas fa-check"></i> Approve & Upload NTP
                                                         </button>
                                                     <?php else: ?>
-                                                        <button class="btn btn-sm btn-green" onclick="quickApprove(<?= $payment['id'] ?>)">
+                                                        <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-3 py-1.5 text-[12px] font-semibold transition" onclick="quickApprove(<?= $payment['id'] ?>)">
                                                             <i class="fas fa-check"></i> Approve & Mark Paid
                                                         </button>
                                                     <?php endif; ?>
@@ -2213,19 +1173,19 @@ if ($business_type === 'Project') {
 
     <!-- ══ Lightbox ══ -->
     <div id="lightboxOverlay" class="lightbox-overlay" onclick="closeLightbox()">
-        <span class="lightbox-close" onclick="closeLightbox()"><i class="fas fa-times"></i></span>
-        <img id="lightboxImg" src="" onclick="event.stopPropagation()">
+        <span class="fixed top-4 right-5 text-white text-2xl cursor-pointer z-[9999] bg-black/40 hover:bg-white/20 rounded-full w-10 h-10 flex items-center justify-center transition" onclick="closeLightbox()"><i class="fas fa-times"></i></span>
+        <img id="lightboxImg" src="" class="max-w-[92vw] max-h-[90vh] rounded-lg object-contain shadow-2xl" onclick="event.stopPropagation()">
     </div>
 
     <!-- ══ Confirm Modal ══ -->
     <div id="confirmModal" class="modal-overlay">
-        <div class="modal">
-            <h3><i class="fas fa-check-circle" style="color:#10b981;"></i> Confirm Payment</h3>
-            <p id="confirmMsg" class="modal-sub"></p>
+        <div class="bg-white rounded-2xl p-7 max-w-[440px] w-[92%] shadow-2xl">
+            <h3 class="text-[17px] font-bold text-ink mb-2"><i class="fas fa-check-circle text-emerald-500"></i> Confirm Payment</h3>
+            <p id="confirmMsg" class="text-[13px] text-soft mb-5 leading-relaxed"></p>
             <input type="hidden" id="confirmId">
-            <div class="modal-btns">
-                <button class="btn btn-gray" onclick="closeConfirm()">Cancel</button>
-                <button class="btn btn-green" onclick="doMarkPaid()">
+            <div class="flex gap-2.5 justify-end mt-4">
+                <button class="bg-[#F5F5F5] border border-line text-ink rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-line/40 transition" onclick="closeConfirm()">Cancel</button>
+                <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-[13px] font-semibold transition" onclick="doMarkPaid()">
                     <i class="fas fa-check"></i> Yes, Mark as Paid
                 </button>
             </div>
@@ -2234,37 +1194,33 @@ if ($business_type === 'Project') {
 
     <!-- ══ NTP Upload Modal ══ -->
     <div id="ntpModal" class="modal-overlay">
-        <div class="modal" style="max-width:500px;">
-            <h3><i class="fas fa-file-signature" style="color:#059669;"></i> Upload Notice to Proceed (NTP)</h3>
-            <p class="modal-sub">
-                An NTP file is <strong style="color:#ef4444;">required</strong> before this payment can be approved.
+        <div class="bg-white rounded-2xl p-7 max-w-[500px] w-[92%] shadow-2xl">
+            <h3 class="text-[17px] font-bold text-ink mb-2"><i class="fas fa-file-signature text-emerald-500"></i> Upload Notice to Proceed (NTP)</h3>
+            <p class="modal-sub text-[13px] text-soft mb-5 leading-relaxed">
+                An NTP file is <strong class="text-red-500">required</strong> before this payment can be approved.
                 Please attach the NTP document below.
             </p>
             <input type="hidden" id="ntpPaymentId">
             <input type="hidden" id="ntpClientId">
 
-            <div class="form-group">
-                <label><i class="fas fa-paperclip"></i> NTP File <span style="color:#ef4444;">*</span></label>
-                <input type="file" id="ntpFile" class="form-input" accept="image/*,.pdf,.doc,.docx"
-                    style="padding:8px;cursor:pointer;" onchange="previewNTP(this)">
-                <img id="ntpPreview"
-                    style="max-width:100%;max-height:160px;border-radius:8px;margin-top:8px;display:none;object-fit:contain;">
+            <div class="mb-3.5">
+                <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-[0.4px] mb-1.5"><i class="fas fa-paperclip"></i> NTP File <span class="text-red-500">*</span></label>
+                <input type="file" id="ntpFile" class="block w-full text-[13px] border-2 border-line rounded-lg p-2 cursor-pointer bg-white" accept="image/*,.pdf,.doc,.docx" onchange="previewNTP(this)">
+                <img id="ntpPreview" class="max-w-full max-h-[160px] rounded-lg mt-2 object-contain">
             </div>
 
-            <div class="form-group">
-                <label><i class="fas fa-sticky-note"></i> Notes <span
-                        style="color:#9ca3af;font-weight:400;">(optional)</span></label>
-                <textarea id="ntpNotes" class="form-input" rows="2" placeholder="e.g. NTP issued on June 3, 2026..."
-                    style="resize:vertical;"></textarea>
+            <div class="mb-3.5">
+                <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-[0.4px] mb-1.5"><i class="fas fa-sticky-note"></i> Notes <span class="text-muted font-normal">(optional)</span></label>
+                <textarea id="ntpNotes" rows="2" class="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm resize-y focus:outline-none focus:border-emerald-500" placeholder="e.g. NTP issued on June 3, 2026..."></textarea>
             </div>
 
-            <div id="ntpErr" class="modal-err"></div>
+            <div id="ntpErr" class="hidden text-red-500 text-[13px] px-3 py-2 bg-red-100 rounded-md mb-3"></div>
 
-            <div class="modal-btns">
-                <button class="btn btn-gray" onclick="closeNTPModal()">
+            <div class="flex gap-2.5 justify-end mt-4">
+                <button class="bg-[#F5F5F5] border border-line text-ink rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-line/40 transition" onclick="closeNTPModal()">
                     <i class="fas fa-times"></i> Cancel
                 </button>
-                <button class="btn btn-green" onclick="doApproveWithNTP()">
+                <button class="btn-green inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-[13px] font-semibold transition" onclick="doApproveWithNTP()">
                     <i class="fas fa-check"></i> Approve &amp; Upload NTP
                 </button>
             </div>
@@ -2273,19 +1229,18 @@ if ($business_type === 'Project') {
 
     <!-- ══ Reject Proof Modal ══ -->
     <div id="rejectModal" class="modal-overlay">
-        <div class="modal">
-            <h3><i class="fas fa-times-circle" style="color:#ef4444;"></i> Reject Proof</h3>
-            <p class="modal-sub">Please provide a reason so the submitter can resubmit correctly.</p>
+        <div class="bg-white rounded-2xl p-7 max-w-[440px] w-[92%] shadow-2xl">
+            <h3 class="text-[17px] font-bold text-ink mb-2"><i class="fas fa-times-circle text-red-500"></i> Reject Proof</h3>
+            <p class="text-[13px] text-soft mb-5 leading-relaxed">Please provide a reason so the submitter can resubmit correctly.</p>
             <input type="hidden" id="rejectPaymentId">
-            <div class="form-group">
-                <label>Rejection Reason <span style="color:#ef4444;">*</span></label>
-                <textarea id="rejectNote" class="form-input" rows="3"
-                    placeholder="e.g. Image is blurry, wrong receipt..." style="resize:vertical;"></textarea>
+            <div class="mb-3.5">
+                <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-[0.4px] mb-1.5">Rejection Reason <span class="text-red-500">*</span></label>
+                <textarea id="rejectNote" rows="3" class="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm resize-y focus:outline-none focus:border-emerald-500" placeholder="e.g. Image is blurry, wrong receipt..."></textarea>
             </div>
-            <div id="rejectErr" class="modal-err"></div>
-            <div class="modal-btns">
-                <button class="btn btn-gray" onclick="closeRejectModal()">Cancel</button>
-                <button class="btn" style="background:#ef4444;color:white;" onclick="submitReject()">
+            <div id="rejectErr" class="hidden text-red-500 text-[13px] px-3 py-2 bg-red-100 rounded-md mb-3"></div>
+            <div class="flex gap-2.5 justify-end mt-4">
+                <button class="bg-[#F5F5F5] border border-line text-ink rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-line/40 transition" onclick="closeRejectModal()">Cancel</button>
+                <button class="inline-flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2 text-[13px] font-semibold transition" onclick="submitReject()">
                     <i class="fas fa-times"></i> Reject
                 </button>
             </div>
@@ -2294,18 +1249,18 @@ if ($business_type === 'Project') {
 
     <!-- ══ Edit Amount Modal ══ -->
     <div id="editModal" class="modal-overlay">
-        <div class="modal">
-            <h3><i class="fas fa-edit" style="color:#3b82f6;"></i> Edit Billing Amount</h3>
-            <p id="editModalLabel" class="modal-sub"></p>
+        <div class="bg-white rounded-2xl p-7 max-w-[440px] w-[92%] shadow-2xl">
+            <h3 class="text-[17px] font-bold text-ink mb-2"><i class="fas fa-edit text-blue-500"></i> Edit Billing Amount</h3>
+            <p id="editModalLabel" class="text-[13px] text-soft mb-5 leading-relaxed"></p>
             <input type="hidden" id="editId">
-            <div class="form-group">
-                <label>New Amount (&#8369;)</label>
-                <input type="number" id="editAmt" class="form-input" min="0" step="0.01">
+            <div class="mb-3.5">
+                <label class="block text-[11px] font-bold text-gray-600 uppercase tracking-[0.4px] mb-1.5">New Amount (&#8369;)</label>
+                <input type="number" id="editAmt" class="w-full px-3.5 py-2.5 border-2 border-line rounded-lg text-sm font-semibold focus:outline-none focus:border-emerald-500" min="0" step="0.01">
             </div>
-            <div id="editErr" class="modal-err"></div>
-            <div class="modal-btns">
-                <button class="btn btn-gray" onclick="closeEditModal()">Cancel</button>
-                <button class="btn btn-green" onclick="submitEdit()">
+            <div id="editErr" class="hidden text-red-500 text-[13px] px-3 py-2 bg-red-100 rounded-md mb-3"></div>
+            <div class="flex gap-2.5 justify-end mt-4">
+                <button class="bg-[#F5F5F5] border border-line text-ink rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-line/40 transition" onclick="closeEditModal()">Cancel</button>
+                <button class="inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-[13px] font-semibold transition" onclick="submitEdit()">
                     <i class="fas fa-save"></i> Update Amount
                 </button>
             </div>
@@ -2314,15 +1269,14 @@ if ($business_type === 'Project') {
 
     <!-- ══ Quick Approve Confirmation Modal ══ -->
     <div id="quickApproveModal" class="modal-overlay">
-        <div class="modal">
-            <h3><i class="fas fa-check-circle" style="color:#10b981;"></i> Confirm Approval</h3>
-            <p class="modal-sub">
-                Are you sure you want to approve this payment proof and mark it as
-                <strong style="color:#059669;">Paid</strong>? This action cannot be undone.
+        <div class="bg-white rounded-2xl p-7 max-w-[440px] w-[92%] shadow-2xl">
+            <h3 class="text-[17px] font-bold text-ink mb-2"><i class="fas fa-check-circle text-emerald-500"></i> Confirm Approval</h3>
+            <p class="text-[13px] text-soft mb-5 leading-relaxed">
+                Are you sure you want to approve this payment proof and mark it as <strong class="text-emerald-600">Paid</strong>? This action cannot be undone.
             </p>
-            <div class="modal-btns">
-                <button class="btn btn-gray" onclick="closeQuickApproveModal()">Cancel</button>
-                <button class="btn btn-green" onclick="doQuickApprove()">
+            <div class="flex gap-2.5 justify-end mt-4">
+                <button class="bg-[#F5F5F5] border border-line text-ink rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-line/40 transition" onclick="closeQuickApproveModal()">Cancel</button>
+                <button class="btn-green inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-[13px] font-semibold transition" onclick="doQuickApprove()">
                     <i class="fas fa-check"></i> Yes, Approve & Mark Paid
                 </button>
             </div>
@@ -2331,12 +1285,12 @@ if ($business_type === 'Project') {
 
     <!-- ══ Toggle Payment Split Confirmation Modal ══ -->
     <div id="toggleConfirmModal" class="modal-overlay">
-        <div class="modal">
-            <h3><i class="fas fa-random" style="color:#3b82f6;"></i> Confirm Payment Split Change</h3>
-            <p id="toggleConfirmMsg" class="modal-sub"></p>
-            <div class="modal-btns">
-                <button class="btn btn-gray" onclick="closeToggleConfirm()">Cancel</button>
-                <button class="btn btn-green" onclick="doToggleSplit()">
+        <div class="bg-white rounded-2xl p-7 max-w-[440px] w-[92%] shadow-2xl">
+            <h3 class="text-[17px] font-bold text-ink mb-2"><i class="fas fa-random text-blue-500"></i> Confirm Payment Split Change</h3>
+            <p id="toggleConfirmMsg" class="text-[13px] text-soft mb-5 leading-relaxed"></p>
+            <div class="flex gap-2.5 justify-end mt-4">
+                <button class="bg-[#F5F5F5] border border-line text-ink rounded-lg px-4 py-2 text-[13px] font-semibold hover:bg-line/40 transition" onclick="closeToggleConfirm()">Cancel</button>
+                <button class="btn-green inline-flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-2 text-[13px] font-semibold transition" onclick="doToggleSplit()">
                     <i class="fas fa-check"></i> Yes, Continue
                 </button>
             </div>
@@ -2344,568 +1298,22 @@ if ($business_type === 'Project') {
     </div>
 
     <!-- ══ Toast ══ -->
-    <div id="toast" class="toast">
-        <i id="toastIcon" class="fas fa-check-circle" style="font-size:17px;"></i>
+    <div id="toast" class="toast bg-white px-5 py-3 rounded-lg shadow-lg border-l-4 border-emerald-500 text-[13px] font-semibold">
+        <i id="toastIcon" class="fas fa-check-circle text-[17px]"></i>
         <span id="toastMsg"></span>
     </div>
 
     <script>
-        const CLIENT_ID = <?= $client_id ?>;
-        const TOTAL_COST = <?= $total_cost ?>;
-        const REMAINING_BAL = <?= $remaining_balance ?>;
-        const SUGGESTED = <?= isset($suggested_amount) ? $suggested_amount : 0 ?>;
-        const SNAPSHOT_PCT = <?= isset($overall_pct) ? $overall_pct : 0 ?>;
-
-        // ── Amount input override hint ──
-        function onAmountInput(el) {
-            const hint = document.getElementById('overrideHint');
-            const v = parseFloat(el.value);
-            if (!v || Math.abs(v - SUGGESTED) < 0.01) {
-                hint.innerHTML = '';
-                el.classList.remove('overridden');
-            } else {
-                el.classList.add('overridden');
-                const diff = v - SUGGESTED;
-                const sign = diff > 0 ? '+' : '';
-                hint.innerHTML = '<span style="color:#f59e0b;font-weight:700;"><i class="fas fa-pen"></i> Overriding suggested amount (' + sign + '&#8369;' + Math.abs(diff).toLocaleString('en-PH', { minimumFractionDigits: 2 }) + ')</span>';
-            }
-        }
-        function resetSuggested() {
-            const el = document.getElementById('newCollAmount');
-            el.value = SUGGESTED;
-            el.classList.remove('overridden');
-            document.getElementById('overrideHint').innerHTML = '';
-        }
-
-        // ── Add new collection ──
-        async function submitNewCollection() {
-            const label = document.getElementById('newCollLabel').value.trim();
-            const amount = parseFloat(document.getElementById('newCollAmount').value);
-            const errDiv = document.getElementById('addCollErr');
-            errDiv.style.display = 'none';
-
-            if (!label) { errDiv.textContent = 'Please enter a billing label.'; errDiv.style.display = 'block'; return; }
-            if (!amount || amount <= 0) { errDiv.textContent = 'Please enter a valid amount greater than 0.'; errDiv.style.display = 'block'; return; }
-
-            const btn = document.getElementById('addCollBtn');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
-
-            try {
-                const res = await fetch('<?= BASE_URL ?>add-collection-billing', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        client_id: CLIENT_ID,
-                        label: label,
-                        amount: amount,
-                        total_cost: TOTAL_COST,
-                        remaining_bal: REMAINING_BAL,
-                        snapshot_pct: SNAPSHOT_PCT
-                    })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('Billing collection saved!', 'success');
-                    setTimeout(() => location.reload(), 1100);
-                } else {
-                    errDiv.textContent = data.error || 'Failed to save.';
-                    errDiv.style.display = 'block';
-                }
-            } catch (e) {
-                errDiv.textContent = 'Network error. Please try again.';
-                errDiv.style.display = 'block';
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-save"></i> Save Billing Entry';
-            }
-        }
-
-        // ── Confirm / Mark as Paid ──
-        function openConfirm(id, label, amount) {
-            document.getElementById('confirmId').value = id;
-            document.getElementById('confirmMsg').innerHTML =
-                'Mark <strong>' + label + '</strong> (&#8369;' +
-                parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 2 }) +
-                ') as <strong style="color:#059669;">Paid</strong>?';
-            document.getElementById('confirmModal').classList.add('open');
-        }
-        function closeConfirm() {
-            document.getElementById('confirmModal').classList.remove('open');
-        }
-        async function doMarkPaid() {
-            const id = document.getElementById('confirmId').value;
-            closeConfirm();
-            try {
-                const res = await fetch('<?= BASE_URL ?>update-payment-status', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payment_id: parseInt(id), status: 'Paid', client_id: CLIENT_ID })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('Payment marked as paid!', 'success');
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
-                }
-            } catch (e) {
-                showToast('Network error.', 'error');
-            }
-        }
-
-        // ── Edit amount modal ──
-        function openEditModal(id, amount, label) {
-            document.getElementById('editId').value = id;
-            document.getElementById('editAmt').value = amount;
-            document.getElementById('editModalLabel').textContent = label;
-            document.getElementById('editErr').style.display = 'none';
-            document.getElementById('editModal').classList.add('open');
-        }
-        function closeEditModal() {
-            document.getElementById('editModal').classList.remove('open');
-        }
-        async function submitEdit() {
-            const id = document.getElementById('editId').value;
-            const amount = parseFloat(document.getElementById('editAmt').value);
-            const errDiv = document.getElementById('editErr');
-            errDiv.style.display = 'none';
-            if (!amount || amount <= 0) {
-                errDiv.textContent = 'Please enter a valid amount.';
-                errDiv.style.display = 'block';
-                return;
-            }
-            try {
-                const res = await fetch('<?= BASE_URL ?>update-accomplishment-amount', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payment_id: parseInt(id), amount: amount, total_cost: TOTAL_COST })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    closeEditModal();
-                    showToast('Amount updated!', 'success');
-                    setTimeout(() => location.reload(), 1000);
-                } else {
-                    errDiv.textContent = data.error || 'Update failed.';
-                    errDiv.style.display = 'block';
-                }
-            } catch (e) {
-                errDiv.textContent = 'Network error.';
-                errDiv.style.display = 'block';
-            }
-        }
-
-        // Close modals on backdrop click
-        document.addEventListener('click', e => {
-            if (e.target.id === 'confirmModal') closeConfirm();
-            if (e.target.id === 'editModal') closeEditModal();
-        });
-
-        // ── Proof upload ──
-        function previewProof(input, paymentId) {
-            const img = document.getElementById('proofImg_' + paymentId);
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                if (file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        img.src = e.target.result;
-                        img.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    img.style.display = 'none';
-                }
-            }
-        }
-
-        async function submitProof(paymentId, clientId) {
-            const input = document.getElementById('proofFile_' + paymentId);
-            if (!input || !input.files || !input.files[0]) {
-                showToast('Please select a file first.', 'error');
-                return;
-            }
-            const formData = new FormData();
-            formData.append('payment_id', paymentId);
-            formData.append('client_id', clientId);
-            formData.append('proof_file', input.files[0]);
-
-            try {
-                const res = await fetch('<?= BASE_URL ?>upload-payment-proof', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (data.success) {
-                    showToast('Proof submitted! Awaiting accounting review.', 'success');
-                    setTimeout(() => location.reload(), 1200);
-                } else {
-                    showToast(data.error || 'Upload failed.', 'error');
-                }
-            } catch (e) {
-                showToast('Network error.', 'error');
-            }
-        }
-
-        // ── Accounting approve/reject ──
-        let pendingApprovePaymentId = null;
-        let pendingApproveClientId = null;
-
-        let ntpSubmitting = false; // guard flag
-let ntpMode = 'approve'; // 'approve' or 'update'
-
-// Quick approve WITHOUT NTP requirement (for collections & non-project payments)
-let pendingQuickApproveId = null;
-
-function quickApprove(paymentId) {
-    pendingQuickApproveId = paymentId;
-    document.getElementById('quickApproveModal').classList.add('open');
-}
-
-function closeQuickApproveModal() {
-    document.getElementById('quickApproveModal').classList.remove('open');
-    pendingQuickApproveId = null;
-    const btn = document.querySelector('#quickApproveModal .btn-green');
-    if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check"></i> Yes, Approve & Mark Paid';
-    }
-}
-
-async function doQuickApprove() {
-    const paymentId = pendingQuickApproveId;
-    if (!paymentId) return;
-
-    const btn = document.querySelector('#quickApproveModal .btn-green');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Approving...'; }
-
-    try {
-        const res = await fetch('<?= BASE_URL ?>check-ipo-approved?client_id=' + CLIENT_ID);
-
-        if (!res.ok) {
-            throw new Error('Server returned HTTP ' + res.status);
-        }
-
-        const data = await res.json();
-
-        if (!data.approved) {
-            showToast('Cannot approve: "Internal P.O to Accounting" stage must be fully approved first.', 'error');
-            closeQuickApproveModal();
-            return;
-        }
-    } catch (e) {
-        console.error('IPO verification failed:', e);
-        showToast('Could not verify Internal P.O status — please refresh and try again.', 'error');
-        closeQuickApproveModal();
-        return;
-    }
-
-    try {
-        const res = await fetch('<?= BASE_URL ?>review-payment-proof', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ payment_id: paymentId, action: 'approve' })
-        });
-        const data = await res.json();
-        if (data.success) {
-            closeQuickApproveModal();
-            showToast('Payment approved and marked paid!', 'success');
-            setTimeout(() => location.reload(), 1100);
-        } else {
-            showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Yes, Approve & Mark Paid'; }
-        }
-    } catch (e) {
-        showToast('Network error.', 'error');
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Yes, Approve & Mark Paid'; }
-    }
-}
-
-let pendingToggleAction = null;
-
-function openToggleConfirm(action) {
-    pendingToggleAction = action;
-    const msg = document.getElementById('toggleConfirmMsg');
-    if (action === 'merge') {
-        msg.innerHTML = 'Switch this client\'s remaining balance to a single <strong>50% Retention</strong> payment? The current 40% Before Installation and 10% After Installation stages will be merged.';
-    } else {
-        msg.innerHTML = 'Revert this client back to the <strong>40% Before Installation / 10% After Installation</strong> split?';
-    }
-    document.getElementById('toggleConfirmModal').classList.add('open');
-}
-
-function closeToggleConfirm() {
-    document.getElementById('toggleConfirmModal').classList.remove('open');
-    pendingToggleAction = null;
-}
-
-async function doToggleSplit() {
-    if (!pendingToggleAction) return;
-    const btn = document.querySelector('#toggleConfirmModal .btn-green');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...'; }
-
-    try {
-        const res = await fetch('<?= BASE_URL ?>toggle-payment-split', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ client_id: CLIENT_ID, action: pendingToggleAction })
-        });
-        const data = await res.json();
-        if (data.success) {
-            closeToggleConfirm();
-            showToast('Payment split updated!', 'success');
-            setTimeout(() => location.reload(), 1100);
-        } else {
-            showToast(data.error || 'Failed to update split.', 'error');
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Yes, Continue'; }
-        }
-    } catch (e) {
-        showToast('Network error.', 'error');
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Yes, Continue'; }
-    }
-}
-
-async function approvePayment(paymentId) {
-    try {
-        const res = await fetch('<?= BASE_URL ?>check-ipo-approved?client_id=' + CLIENT_ID);
-
-        if (!res.ok) {
-            throw new Error('Server returned HTTP ' + res.status);
-        }
-
-        const data = await res.json();
-
-        if (!data.approved) {
-            showToast('Cannot approve: "Internal P.O to Accounting" stage must be fully approved first.', 'error');
-            return;
-        }
-    } catch (e) {
-        console.error('IPO verification failed:', e);
-        showToast('Could not verify Internal P.O status — please refresh and try again.', 'error');
-        return;
-    }
-
-    ntpSubmitting = false;
-    ntpMode = 'approve'; // set mode
-    pendingApprovePaymentId = paymentId;
-    pendingApproveClientId = CLIENT_ID;
-    document.getElementById('ntpPaymentId').value = paymentId;
-    document.getElementById('ntpClientId').value = CLIENT_ID;
-    document.getElementById('ntpErr').style.display = 'none';
-    document.getElementById('ntpFile').value = '';
-    document.getElementById('ntpNotes').value = '';
-    document.getElementById('ntpPreview').style.display = 'none';
-    document.getElementById('ntpModal').classList.add('open');
-}
-
-        async function doApproveWithNTP() {
-    if (ntpSubmitting) return; // prevent double-submit
-    ntpSubmitting = true;
-
-    const paymentId = pendingApprovePaymentId;
-    const clientId = pendingApproveClientId;
-    const errDiv = document.getElementById('ntpErr');
-    errDiv.style.display = 'none';
-
-    const btn = document.querySelector('#ntpModal .btn-green');
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; }
-
-    const fileInput = document.getElementById('ntpFile');
-    if (!fileInput.files || !fileInput.files[0]) {
-        errDiv.textContent = 'NTP file is required. Please attach the NTP document.';
-        errDiv.style.display = 'block';
-        ntpSubmitting = false;
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = ntpMode === 'update'
-                ? '<i class="fas fa-upload"></i> Upload New NTP'
-                : '<i class="fas fa-check"></i> Approve &amp; Upload NTP';
-        }
-        return;
-    }
-
-            // Step 1: Upload NTP first
-            const notes = document.getElementById('ntpNotes').value.trim();
-            const formData = new FormData();
-            formData.append('payment_id', paymentId);
-            formData.append('client_id', clientId);
-            formData.append('notes', notes);
-            formData.append('ntp_file', fileInput.files[0]);
-
-            try {
-                const res = await fetch('<?= BASE_URL ?>upload-ntp', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (!data.success) {
-                    errDiv.textContent = data.error || 'NTP upload failed. Please try again.';
-            errDiv.style.display = 'block';
-            ntpSubmitting = false;
-            if (btn) { btn.disabled = false; btn.innerHTML = ntpMode === 'update' ? '<i class="fas fa-upload"></i> Upload New NTP' : '<i class="fas fa-check"></i> Approve &amp; Upload NTP'; }
-            return;
-                }
-            } catch (e) {
-                errDiv.textContent = 'Network error during NTP upload.';
-            errDiv.style.display = 'block';
-            ntpSubmitting = false;
-            if (btn) { btn.disabled = false; btn.innerHTML = ntpMode === 'update' ? '<i class="fas fa-upload"></i> Upload New NTP' : '<i class="fas fa-check"></i> Approve &amp; Upload NTP'; }
-            return;
-            }
-
-            // Step 2: Skip approval if this is just an NTP update
-            if (ntpMode === 'update') {
-                closeNTPModal();
-                showToast('NTP updated successfully!', 'success');
-                setTimeout(() => location.reload(), 1200);
-                return;
-            }
-
-            try {
-                const res = await fetch('<?= BASE_URL ?>review-payment-proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payment_id: paymentId, action: 'approve' })
-                });
-                const data = await res.json();
-                if (!data.success) {
-                    errDiv.textContent = data.error || 'Approval failed after NTP upload.';
-                errDiv.style.display = 'block';
-                ntpSubmitting = false;
-                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Approve &amp; Upload NTP'; }
-                return;
-                }
-            } catch (e) {
-                errDiv.textContent = 'Network error during approval.';
-                errDiv.style.display = 'block';
-                ntpSubmitting = false;
-                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-check"></i> Approve &amp; Upload NTP'; }
-                return;
-            }
-
-            closeNTPModal();
-            showToast('Payment approved and NTP uploaded!', 'success');
-            setTimeout(() => location.reload(), 1200);
-        }
-
-        function openUpdateNTP(paymentId) {
-    ntpSubmitting = false;
-    ntpMode = 'update'; // set mode
-    pendingApprovePaymentId = paymentId;
-    pendingApproveClientId = CLIENT_ID;
-    document.getElementById('ntpPaymentId').value = paymentId;
-    document.getElementById('ntpClientId').value = CLIENT_ID;
-    document.getElementById('ntpErr').style.display = 'none';
-    document.getElementById('ntpFile').value = '';
-    document.getElementById('ntpNotes').value = '';
-    document.getElementById('ntpPreview').style.display = 'none';
-
-    // Change modal title/button for update mode
-    document.querySelector('#ntpModal h3').innerHTML = '<i class="fas fa-sync-alt" style="color:#3b82f6;"></i> Update Notice to Proceed (NTP)';
-    document.querySelector('#ntpModal .modal-sub').innerHTML = 'Upload a new NTP file to replace the current one.';
-    document.querySelector('#ntpModal .btn-green').innerHTML = '<i class="fas fa-upload"></i> Upload New NTP';
-    document.getElementById('ntpModal').classList.add('open');
-}
-
-        function closeNTPModal() {
-            document.getElementById('ntpModal').classList.remove('open');
-            pendingApprovePaymentId = null;
-            pendingApproveClientId = null;
-            ntpSubmitting = false;
-            ntpMode = 'approve'; // reset mode
-            // Reset modal title back to default
-            document.querySelector('#ntpModal h3').innerHTML = '<i class="fas fa-file-signature" style="color:#059669;"></i> Upload Notice to Proceed (NTP)';
-            document.querySelector('#ntpModal .modal-sub').innerHTML = 'An NTP file is <strong style="color:#ef4444;">required</strong> before this payment can be approved. Please attach the NTP document below.';
-            document.querySelector('#ntpModal .btn-green').innerHTML = '<i class="fas fa-check"></i> Approve &amp; Upload NTP';
-        }
-
-        function openRejectModal(paymentId) {
-            document.getElementById('rejectPaymentId').value = paymentId;
-            document.getElementById('rejectNote').value = '';
-            document.getElementById('rejectErr').style.display = 'none';
-            document.getElementById('rejectModal').classList.add('open');
-        }
-        function closeRejectModal() {
-            document.getElementById('rejectModal').classList.remove('open');
-        }
-        async function submitReject() {
-            const paymentId = document.getElementById('rejectPaymentId').value;
-            const note = document.getElementById('rejectNote').value.trim();
-            const errDiv = document.getElementById('rejectErr');
-            errDiv.style.display = 'none';
-            if (!note) {
-                errDiv.textContent = 'Please enter a rejection reason.';
-                errDiv.style.display = 'block';
-                return;
-            }
-            try {
-                const res = await fetch('<?= BASE_URL ?>review-payment-proof', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ payment_id: parseInt(paymentId), action: 'reject', rejection_note: note })
-                });
-                const data = await res.json();
-                if (data.success) {
-                    closeRejectModal();
-                    showToast('Proof rejected. Submitter will be notified.', 'success');
-                    setTimeout(() => location.reload(), 1100);
-                } else {
-                    errDiv.textContent = data.error || 'Failed.';
-                    errDiv.style.display = 'block';
-                }
-            } catch (e) {
-                errDiv.textContent = 'Network error.';
-                errDiv.style.display = 'block';
-            }
-        }
-
-        // Close modals on backdrop
-        document.addEventListener('click', e => {
-            if (e.target.id === 'rejectModal') closeRejectModal();
-            if (e.target.id === 'ntpModal') closeNTPModal();
-            if (e.target.id === 'quickApproveModal') closeQuickApproveModal();
-            if (e.target.id === 'toggleConfirmModal') closeToggleConfirm();
-        });
-
-        function previewNTP(input) {
-            const img = document.getElementById('ntpPreview');
-            if (input.files && input.files[0] && input.files[0].type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = e => { img.src = e.target.result; img.style.display = 'block'; };
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                img.style.display = 'none';
-            }
-        }
-
-        // ── Lightbox ──
-        function openLightbox(src) {
-            document.getElementById('lightboxImg').src = src;
-            document.getElementById('lightboxOverlay').classList.add('open');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeLightbox() {
-            document.getElementById('lightboxOverlay').classList.remove('open');
-            document.getElementById('lightboxImg').src = '';
-            document.body.style.overflow = '';
-        }
-        document.addEventListener('keydown', e => {
-            if (e.key !== 'Escape') return;
-            if (document.getElementById('lightboxOverlay').classList.contains('open')) { closeLightbox(); return; }
-            if (document.getElementById('ntpModal').classList.contains('open')) { closeNTPModal(); return; }
-            if (document.getElementById('rejectModal').classList.contains('open')) { closeRejectModal(); return; }
-            if (document.getElementById('editModal').classList.contains('open')) { closeEditModal(); return; }
-            if (document.getElementById('confirmModal').classList.contains('open')) { closeConfirm(); return; }
-            if (document.getElementById('quickApproveModal').classList.contains('open')) { closeQuickApproveModal(); return; }
-            if (document.getElementById('toggleConfirmModal').classList.contains('open')) { closeToggleConfirm(); return; }
-        });
-
-        // ── Toast ──
-        function showToast(msg, type) {
-            const t = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
-            document.getElementById('toastMsg').textContent = msg;
-            t.className = 'toast show ' + type;
-            icon.style.color = type === 'success' ? '#10b981' : '#ef4444';
-            icon.className = 'fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle');
-            setTimeout(() => t.classList.remove('show'), 3000);
-        }
+        window.PAYMENT_TRACKER_CONFIG = {
+            baseUrl: '<?= BASE_URL ?>',
+            clientId: <?= $client_id ?>,
+            totalCost: <?= $total_cost ?>,
+            remainingBal: <?= $remaining_balance ?>,
+            suggested: <?= isset($suggested_amount) ? $suggested_amount : 0 ?>,
+            snapshotPct: <?= isset($overall_pct) ? $overall_pct : 0 ?>
+        };
     </script>
+    <script src="<?= BASE_ASSET ?>/realiving_admin/tracker-management/tracker-payment/js/payment_tracker.js"></script>
 </body>
 
 </html>

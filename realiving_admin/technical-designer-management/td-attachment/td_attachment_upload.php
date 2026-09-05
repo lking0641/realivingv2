@@ -121,28 +121,29 @@ $desTypeLabels = [
     'rendering' => ['label' => 'Rendering', 'icon' => 'fa-cube', 'color' => '#065f46', 'bg' => '#d1fae5'],
 ];
 
+// Approval panel state → Tailwind class groups
 if ($allApproved) {
-    $panelBg = '#f0fdf4';
-    $panelBorder = '#86efac';
-    $panelColor = '#166534';
+    $panelBorderClass = 'border-emerald-300';
+    $panelBgClass = 'bg-emerald-50';
+    $panelTextClass = 'text-emerald-900';
     $panelLabel = 'All Approved';
     $panelIcon = 'fa-check-circle';
 } elseif ($anyRejected) {
-    $panelBg = '#fff5f5';
-    $panelBorder = '#fca5a5';
-    $panelColor = '#991b1b';
+    $panelBorderClass = 'border-red-300';
+    $panelBgClass = 'bg-red-50';
+    $panelTextClass = 'text-red-900';
     $panelLabel = 'Has Rejection(s)';
     $panelIcon = 'fa-times-circle';
 } elseif ($approvalRequested) {
-    $panelBg = '#eff6ff';
-    $panelBorder = '#93c5fd';
-    $panelColor = '#1e40af';
+    $panelBorderClass = 'border-blue-300';
+    $panelBgClass = 'bg-blue-50';
+    $panelTextClass = 'text-blue-900';
     $panelLabel = 'Pending Review';
     $panelIcon = 'fa-hourglass-half';
 } else {
-    $panelBg = '#f8fafc';
-    $panelBorder = '#e2e8f0';
-    $panelColor = '#475569';
+    $panelBorderClass = 'border-line';
+    $panelBgClass = 'bg-[#F5F5F5]';
+    $panelTextClass = 'text-soft';
     $panelLabel = 'Not Requested';
     $panelIcon = 'fa-circle';
 }
@@ -160,618 +161,103 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TD Upload — <?= htmlspecialchars($locationLabel) ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        ink: '#0B0B0B',
+                        soft: '#6B6B6B',
+                        muted: '#9A9A9A',
+                        line: '#E2E2E2',
+                    },
+                },
+            },
+        };
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: #f0f4f8;
-            font-family: 'Segoe UI', sans-serif;
-            color: #1e293b;
-        }
-
-        .page-wrap {
-            max-width: 880px;
-            margin: 28px auto;
-            padding: 0 20px 60px;
-        }
-
-        .btn-back {
-            background: white;
-            color: #0c4a6e;
-            border: 1.5px solid #bfdbfe;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            text-decoration: none;
-            margin-bottom: 18px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-            transition: all 0.15s;
-        }
-
-        .btn-back:hover {
-            background: #0c4a6e;
-            color: white;
-            border-color: #0c4a6e;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, #0c4a6e, #0369a1);
-            padding: 22px 28px;
-            border-radius: 14px;
-            color: white;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .page-header .hicon {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .page-header h1 {
-            font-size: 19px;
-            font-weight: 700;
-            margin-bottom: 3px;
-        }
-
-        .page-header .sub {
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 1px;
-        }
-
-        .alert {
-            padding: 11px 16px;
-            border-radius: 9px;
-            margin-bottom: 16px;
-            font-size: 13px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #166534;
-            border-left: 4px solid #22c55e;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border-left: 4px solid #ef4444;
-        }
-
-        /* ── PANEL ── */
-        .panel {
-            background: white;
-            border-radius: 14px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
-            margin-bottom: 22px;
-            overflow: hidden;
-            border: 1px solid #f1f5f9;
-        }
-
-        .panel-head {
-            padding: 15px 22px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #0c4a6e;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* ── TABS (pill row) ── */
-        .tab-bar {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            padding: 14px 22px 0;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 14px;
-        }
-
-        .tab-pill {
-            padding: 7px 15px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            border: 1.5px solid #e2e8f0;
-            background: white;
-            color: #64748b;
-            transition: all 0.15s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            white-space: nowrap;
-            user-select: none;
-        }
-
-        .tab-pill:hover {
-            border-color: #0369a1;
-            color: #0369a1;
-            background: #eff6ff;
-        }
-
-        .tab-pill.active {
-            background: #0c4a6e;
-            color: white;
-            border-color: #0c4a6e;
-        }
-
-        .tab-pill .cnt {
-            font-size: 10px;
-            padding: 1px 6px;
-            border-radius: 10px;
-        }
-
-        .tab-pill.active .cnt {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .tab-pill:not(.active) .cnt {
-            background: #f1f5f9;
-            color: #64748b;
-        }
-
-        .tab-pill.upload-pill {
-            border-color: #0369a1;
-            color: #0369a1;
-        }
-
-        .tab-pill.upload-pill:hover,
-        .tab-pill.upload-pill.active {
-            background: #0c4a6e;
-            color: white;
-            border-color: #0c4a6e;
-        }
-
-        /* ── PANES ── */
-        .tab-pane {
-            display: none;
-            padding: 20px 22px;
-        }
-
-        .tab-pane.active {
-            display: block;
-        }
-
-        /* ── FILE ROW ── */
-        .file-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
-            border: 1.5px solid #f1f5f9;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            background: #fafcff;
-            transition: border-color 0.15s;
-        }
-
-        .file-row:hover {
-            border-color: #bfdbfe;
-            background: #f0f9ff;
-        }
-
-        .file-row:last-child {
-            margin-bottom: 0;
-        }
-
-        .f-thumb {
-            width: 44px;
-            height: 44px;
-            object-fit: cover;
-            border-radius: 8px;
-            flex-shrink: 0;
-            border: 1px solid #e0e7ff;
-        }
-
-        .f-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .f-info {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .f-name {
-            font-size: 13px;
-            font-weight: 600;
-            color: #1e293b;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .f-meta {
-            font-size: 11px;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-
-        .f-note {
-            font-size: 11px;
-            color: #92400e;
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-top: 4px;
-            display: inline-block;
-        }
-
-        .btn-view {
-            background: #eff6ff;
-            color: #1d4ed8;
-            border: 1.5px solid #bfdbfe;
-            border-radius: 7px;
-            padding: 6px 12px;
-            font-size: 11px;
-            font-weight: 700;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            white-space: nowrap;
-            transition: all 0.15s;
-        }
-
-        .btn-view:hover {
-            background: #1d4ed8;
-            color: white;
-            border-color: #1d4ed8;
-        }
-
-        .btn-del {
-            background: white;
-            color: #ef4444;
-            border: 1.5px solid #fecaca;
-            border-radius: 7px;
-            padding: 6px 10px;
-            font-size: 11px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            flex-shrink: 0;
-            transition: all 0.15s;
-        }
-
-        .btn-del:hover {
-            background: #ef4444;
-            color: white;
-            border-color: #ef4444;
-        }
-
-        /* ── UPLOAD FORM ── */
-        .upload-box {
-            background: #f8faff;
-            border: 1.5px dashed #bfdbfe;
-            border-radius: 12px;
-            padding: 22px;
-        }
-
-        .form-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            display: block;
-            margin-bottom: 7px;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-ctrl {
-            width: 100%;
-            padding: 9px 13px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 13px;
-            color: #1e293b;
-            font-family: inherit;
-            background: white;
-            transition: border-color 0.2s;
-        }
-
-        .form-ctrl:focus {
-            outline: none;
-            border-color: #0369a1;
-        }
-
-        .drop-zone {
-            border: 2px dashed #bfdbfe;
-            border-radius: 10px;
-            padding: 28px 20px;
-            text-align: center;
-            cursor: pointer;
-            background: white;
-            transition: all 0.2s;
-            margin-bottom: 4px;
-        }
-
-        .drop-zone:hover,
-        .drop-zone.drag-over {
-            border-color: #0369a1;
-            background: #eff6ff;
-        }
-
-        .drop-zone i.dz-icon {
-            font-size: 28px;
-            color: #0369a1;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .btn-upload {
-            background: linear-gradient(135deg, #0c4a6e, #0369a1);
-            color: white;
-            padding: 11px 24px;
-            border: none;
-            border-radius: 9px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: opacity 0.15s;
-        }
-
-        .btn-upload:hover {
-            opacity: 0.88;
-        }
-
-        /* ── EMPTY STATE ── */
-        .empty-state {
-            text-align: center;
-            padding: 36px 20px;
-            color: #94a3b8;
-        }
-
-        .empty-state i {
-            font-size: 30px;
-            margin-bottom: 10px;
-            display: block;
-            opacity: 0.4;
-        }
-
-        .empty-state p {
-            font-size: 13px;
-        }
-
-        /* ── APPROVAL ── */
-        .appr-panel {
-            border-radius: 14px;
-            border: 2px solid
-                <?= $panelBorder ?>
-            ;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .appr-head {
-            background:
-                <?= $panelBg ?>
-            ;
-            padding: 15px 22px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            border-bottom: 1px solid
-                <?= $panelBorder ?>
-                55;
-        }
-
-        .appr-title {
-            font-size: 14px;
-            font-weight: 700;
-            color:
-                <?= $panelColor ?>
-            ;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .appr-rows {
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            background: white;
-        }
-
-        .appr-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            padding: 12px 14px;
-            border-radius: 10px;
-            border: 1.5px solid;
-        }
-
-        input[list]::-webkit-calendar-picker-indicator {
-            display: none;
-        }
-
-        /* Upload mode toggle */
-        .upload-mode-toggle {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #f8fafc;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 9px;
-            padding: 8px 14px;
-            margin-bottom: 14px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #475569;
-            flex-wrap: wrap;
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 44px;
-            height: 24px;
-            flex-shrink: 0;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background: #d1d5db;
-            border-radius: 24px;
-            transition: .3s;
-        }
-
-        .toggle-slider:before {
-            content: '';
-            position: absolute;
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background: #fff;
-            border-radius: 50%;
-            transition: .3s;
-        }
-
-        .toggle-switch input:checked+.toggle-slider {
-            background: #0c4a6e;
-        }
-
-        .toggle-switch input:checked+.toggle-slider:before {
-            transform: translateX(20px);
-        }
-
-        .mode-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .mode-badge.direct {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-
-        .mode-badge.chunked {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
+        .tab-bar::-webkit-scrollbar { display: none; }
+
+        .tab-pill { display: inline-flex; align-items: center; gap: 6px; padding: 7px 15px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid #E2E2E2; background: white; color: #6B6B6B; transition: all .15s; white-space: nowrap; user-select: none; }
+        .tab-pill:hover { border-color: #0B0B0B; color: #0B0B0B; }
+        .tab-pill.active { background: #0B0B0B; color: white; border-color: #0B0B0B; }
+        .tab-pill .cnt { font-size: 10px; padding: 1px 6px; border-radius: 10px; background: #F5F5F5; color: #6B6B6B; }
+        .tab-pill.active .cnt { background: rgba(255,255,255,0.25); color: white; }
+        .tab-pill.upload-pill { border-color: #0369a1; color: #0369a1; }
+        .tab-pill.upload-pill:hover, .tab-pill.upload-pill.active { background: #0369a1; color: white; border-color: #0369a1; }
+
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider { position: absolute; cursor: pointer; inset: 0; background: #D1D5DB; border-radius: 999px; transition: .2s; }
+        .toggle-slider:before { content: ''; position: absolute; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+        .toggle-switch input:checked + .toggle-slider { background: #0B0B0B; }
+        .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
 
         @keyframes shimmer {
-            0% {
-                background-position: 200% 0;
-            }
-
-            100% {
-                background-position: -200% 0;
-            }
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
     </style>
 </head>
 
-<body>
-    <div class="page-wrap">
+<body class="font-sans bg-[#F5F5F5] text-ink">
+    <div class="max-w-[880px] mx-auto px-5 py-8">
 
-        <a href="<?= htmlspecialchars($backUrl) ?>" class="btn-back"><i class="fas fa-arrow-left"></i> Back</a>
+        <!-- Back button -->
+        <div class="mb-5">
+            <a href="<?= htmlspecialchars($backUrl) ?>"
+                class="inline-flex items-center gap-2 bg-white border border-line rounded-lg px-4 py-2 text-[13px] font-semibold hover:border-ink transition">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
 
-        <!-- Header -->
-        <div class="page-header">
-            <div class="hicon"><i class="fas fa-tools" style="font-size:22px;"></i></div>
-            <div>
-                <h1><?= htmlspecialchars($locationLabel) ?></h1>
-                <div class="sub"><i class="fas fa-map-marker-alt"></i>
-                    <?= htmlspecialchars($area) ?>
-                </div>
-                <div class="sub"><?= htmlspecialchars($clientInfo['clientname']) ?> —
-                    <?= htmlspecialchars($clientInfo['nameproject']) ?>
-                </div>
+        <!-- ── Page Header ── -->
+        <div class="bg-white border border-line rounded-[10px] p-6 mb-5">
+            <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-soft mb-2">
+                <i class="fas fa-tools"></i> TD Attachment Upload
             </div>
+            <h1 class="text-2xl font-bold tracking-[-0.01em]"><?= htmlspecialchars($locationLabel) ?></h1>
+            <p class="text-[13.5px] text-soft mt-1">
+                <i class="fas fa-map-marker-alt"></i> <?= htmlspecialchars($area) ?>
+            </p>
+            <p class="text-[13px] text-muted mt-1">
+                <?= htmlspecialchars($clientInfo['clientname']) ?> — <?= htmlspecialchars($clientInfo['nameproject']) ?>
+            </p>
         </div>
 
         <?php if ($success): ?>
-            <div class="alert alert-success"><i class="fas fa-check-circle"></i> <?= htmlspecialchars($success) ?></div>
+            <div class="bg-emerald-50 border border-emerald-300 text-emerald-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-check-circle"></i><?= htmlspecialchars($success) ?>
+            </div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> <?= htmlspecialchars($error) ?></div>
+            <div class="bg-red-50 border border-red-300 text-red-800 rounded-lg px-4 py-3 mb-4 text-[13px] font-medium flex items-center gap-2">
+                <i class="fas fa-exclamation-circle"></i><?= htmlspecialchars($error) ?>
+            </div>
         <?php endif; ?>
 
 
         <!-- ════════════════════════════════════════════
-         DESIGNER REFERENCE FILES
-    ═════════════════════════════════════════════ -->
+             DESIGNER REFERENCE FILES
+        ════════════════════════════════════════════ -->
         <?php if (!empty($designerFiles)): ?>
-            <div class="panel">
-                <div class="panel-head">
-                    <div class="panel-title" style="color:#475569;">
+            <div class="bg-white border border-line rounded-[10px] mb-5 overflow-hidden">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-line">
+                    <div class="flex items-center gap-2 text-[13px] font-bold text-soft">
                         <i class="fas fa-images"></i> Designer Reference Files
-                        <span style="font-size:11px; font-weight:400; color:#94a3b8;">read only</span>
+                        <span class="text-[11px] font-normal text-muted">read only</span>
                     </div>
-                    <span style="font-size:11px; color:#94a3b8;"><?= count($designerFiles) ?>
-                        file<?= count($designerFiles) !== 1 ? 's' : '' ?></span>
+                    <span class="text-[11px] text-muted"><?= count($designerFiles) ?> file<?= count($designerFiles) !== 1 ? 's' : '' ?></span>
                 </div>
 
                 <!-- Tab bar -->
-                <div class="tab-bar" id="desTabBar">
+                <div class="tab-bar flex gap-2 flex-wrap px-6 pt-4 pb-4 border-b border-line overflow-x-auto" id="desTabBar">
                     <?php $i = 0;
                     foreach ($desByType as $typeKey => $dFiles):
                         $ti = $desTypeLabels[$typeKey] ?? ['label' => ucwords(str_replace('_', ' ', $typeKey)), 'icon' => 'fa-file', 'color' => '#6b7280', 'bg' => '#f3f4f6'];
@@ -787,63 +273,70 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                 </div>
 
                 <!-- Panes -->
-                <?php $i = 0;
-                foreach ($desByType as $typeKey => $dFiles):
-                    $ti = $desTypeLabels[$typeKey] ?? ['label' => ucwords(str_replace('_', ' ', $typeKey)), 'icon' => 'fa-file', 'color' => '#6b7280', 'bg' => '#f3f4f6'];
-                    ?>
-                    <div class="tab-pane <?= $i === 0 ? 'active' : '' ?>"
-                        id="des-<?= htmlspecialchars($typeKey, ENT_QUOTES) ?>">
-                        <?php foreach ($dFiles as $df):
-                            $isImg = strpos($df['file_type'], 'image/') === 0;
-                            $fp = BASE_URL . 'uploads/layout_attachments/' . $df['file_path'];
-                            $ext = strtolower(pathinfo($df['file_name'], PATHINFO_EXTENSION));
-                            $fi = $iconMap[$ext] ?? 'fa-file';
-                            ?>
-                            <div class="file-row">
-                                <?php if ($isImg): ?>
-                                    <img src="<?= htmlspecialchars($fp) ?>" class="f-thumb" onerror="this.style.display='none'">
-                                <?php else: ?>
-                                    <div class="f-icon" style="background:<?= $ti['bg'] ?>;"><i class="fas <?= $fi ?>"
-                                            style="color:<?= $ti['color'] ?>; font-size:18px;"></i></div>
-                                <?php endif; ?>
-                                <div class="f-info">
-                                    <div class="f-name"><?= htmlspecialchars($df['file_name']) ?></div>
-                                    <div class="f-meta"><?= round($df['file_size'] / 1024, 1) ?> KB &nbsp;·&nbsp;
-                                        <?= htmlspecialchars($df['uploader_name'] ?? '') ?> &nbsp;·&nbsp;
-                                        <?= date('M d, Y', strtotime($df['created_at'])) ?>
-                                    </div>
-                                    <?php if (!empty($df['note'])): ?>
-                                        <div class="f-note"><?= htmlspecialchars($df['note']) ?></div><?php endif; ?>
-                                </div>
-                                <?php
-                                $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-                                $isViewable = $isImg || in_array($ext, $imageExts) || $ext === 'pdf';
+                <div class="p-6">
+                    <?php $i = 0;
+                    foreach ($desByType as $typeKey => $dFiles):
+                        $ti = $desTypeLabels[$typeKey] ?? ['label' => ucwords(str_replace('_', ' ', $typeKey)), 'icon' => 'fa-file', 'color' => '#6b7280', 'bg' => '#f3f4f6'];
+                        ?>
+                        <div class="tab-pane <?= $i === 0 ? 'active' : '' ?> flex flex-col gap-2.5"
+                            id="des-<?= htmlspecialchars($typeKey, ENT_QUOTES) ?>">
+                            <?php foreach ($dFiles as $df):
+                                $isImg = strpos($df['file_type'], 'image/') === 0;
+                                $fp = BASE_URL . 'uploads/layout_attachments/' . $df['file_path'];
+                                $ext = strtolower(pathinfo($df['file_name'], PATHINFO_EXTENSION));
+                                $fi = $iconMap[$ext] ?? 'fa-file';
                                 ?>
-                                <?php if ($isViewable): ?>
-                                    <a href="<?= htmlspecialchars($fp) ?>" target="_blank" class="btn-view">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                    <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($df['file_name']) ?>"
-                                        class="btn-view"
-                                        style="background:#dcfce7; color:#166534; border-color:#86efac; margin-left:4px;">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                <?php else: ?>
-                                    <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($df['file_name']) ?>"
-                                        class="btn-view" style="background:#dcfce7; color:#166534; border-color:#86efac;">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php $i++; endforeach; ?>
+                                <div class="flex items-center gap-3 p-3.5 border border-line rounded-lg bg-[#F5F5F5]">
+                                    <?php if ($isImg): ?>
+                                        <img src="<?= htmlspecialchars($fp) ?>" class="w-11 h-11 object-cover rounded-md border border-line flex-shrink-0" onerror="this.style.display='none'">
+                                    <?php else: ?>
+                                        <div class="w-11 h-11 rounded-md flex items-center justify-center flex-shrink-0" style="background:<?= $ti['bg'] ?>;">
+                                            <i class="fas <?= $fi ?> text-lg" style="color:<?= $ti['color'] ?>;"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[13px] font-semibold truncate"><?= htmlspecialchars($df['file_name']) ?></div>
+                                        <div class="text-[11px] text-muted mt-0.5">
+                                            <?= round($df['file_size'] / 1024, 1) ?> KB &nbsp;•&nbsp;
+                                            <?= htmlspecialchars($df['uploader_name'] ?? '') ?> &nbsp;•&nbsp;
+                                            <?= date('M d, Y', strtotime($df['created_at'])) ?>
+                                        </div>
+                                        <?php if (!empty($df['note'])): ?>
+                                            <span class="inline-block text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md mt-1.5">
+                                                <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($df['note']) ?>
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <?php
+                                    $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+                                    $isViewable = $isImg || in_array($ext, $imageExts) || $ext === 'pdf';
+                                    ?>
+                                    <?php if ($isViewable): ?>
+                                        <a href="<?= htmlspecialchars($fp) ?>" target="_blank"
+                                            class="flex-shrink-0 bg-white border border-line rounded-lg px-3 py-1.5 text-[11px] font-bold hover:border-ink transition">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($df['file_name']) ?>"
+                                            class="flex-shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg px-3 py-1.5 text-[11px] font-bold hover:bg-emerald-100 transition">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($df['file_name']) ?>"
+                                            class="flex-shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg px-3 py-1.5 text-[11px] font-bold hover:bg-emerald-100 transition">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                        <?php $i++; endforeach; ?>
+                </div>
             </div>
         <?php endif; ?>
 
         <!-- ════════════════════════════════════════════
-         REMARK ON DESIGNER FILES
-    ═════════════════════════════════════════════ -->
+             REMARK ON DESIGNER FILES
+        ════════════════════════════════════════════ -->
         <?php
         // Check if approval has been requested by the designer for this area/unit
         $desApprovalCheckStmt = $conn->prepare("
@@ -864,57 +357,53 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
         ?>
 
         <?php if ($desApprovalExists && $isAssigned): ?>
-            <div class="panel">
-                <div class="panel-head">
-                    <div class="panel-title" style="color:#d97706;">
+            <div class="bg-white border border-amber-300 rounded-[10px] mb-5 overflow-hidden">
+                <div class="px-6 py-4 border-b border-amber-200">
+                    <div class="flex items-center gap-2 text-[13px] font-bold text-amber-700">
                         <i class="fas fa-comment-medical"></i>
                         Your Remark on Designer Files
                         <?php if ($tdRemarkAlreadySet): ?>
-                            <span
-                                style="background:#d1fae5; color:#065f46; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:6px; font-weight:700;">
+                            <span class="bg-emerald-100 text-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
                                 <i class="fas fa-check"></i> Submitted
                             </span>
                         <?php else: ?>
-                            <span
-                                style="background:#fef3c7; color:#92400e; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:6px; font-weight:700;">
+                            <span class="bg-amber-100 text-amber-800 text-[10px] px-2 py-0.5 rounded-full font-bold">
                                 <i class="fas fa-exclamation-triangle"></i> Required
                             </span>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <div style="padding:18px 22px;">
+                <div class="p-6">
                     <?php if ($tdRemarkAlreadySet): ?>
                         <!-- Already submitted — show it with edit option -->
-                        <div style="background:#f0f9ff; border:1.5px solid #bfdbfe; border-radius:10px; padding:13px 16px; margin-bottom:14px;">
-                            <div style="font-size:11px; font-weight:700; color:#0c4a6e; margin-bottom:5px; text-transform:uppercase; letter-spacing:0.4px;">
+                        <div class="bg-sky-50 border border-sky-200 rounded-lg p-3.5 mb-3.5">
+                            <div class="text-[11px] font-bold text-sky-900 mb-1.5 uppercase tracking-[0.4px]">
                                 <i class="fas fa-comment-dots"></i> Your submitted remark
                             </div>
-                            <div style="font-size:13px; color:#1e293b; font-style:italic;">
+                            <div class="text-[13px] text-ink italic">
                                 "<?= htmlspecialchars($existingTDRemark) ?>"
                             </div>
-                            <div style="font-size:11px; color:#94a3b8; margin-top:6px;">
+                            <div class="text-[11px] text-muted mt-1.5">
                                 <i class="fas fa-clock"></i>
                                 Submitted on <?= $desApprovalRow['td_remark_submitted_at']
                                     ? date('M d, Y g:i A', strtotime($desApprovalRow['td_remark_submitted_at']))
                                     : '' ?>
                             </div>
                             <?php if ($existingRemarkFile): ?>
-                            <div style="margin-top:10px; display:flex; align-items:center; gap:10px; background:white; border:1.5px solid #bfdbfe; border-radius:8px; padding:10px 13px;">
-                                <i class="fas fa-file-pdf" style="color:#dc2626; font-size:22px; flex-shrink:0;"></i>
-                                <div style="flex:1; min-width:0;">
-                                    <div style="font-size:12px; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                        <?= htmlspecialchars($existingRemarkFileName ?: 'Remark Attachment') ?>
-                                    </div>
-                                    <div style="font-size:11px; color:#64748b; margin-top:2px;">PDF Attachment</div>
+                            <div class="mt-2.5 flex items-center gap-2.5 bg-white border border-sky-200 rounded-lg px-3.5 py-2.5">
+                                <i class="fas fa-file-pdf text-red-600 text-xl flex-shrink-0"></i>
+                                <div class="flex-1 min-w-0">
+                                    <div class="text-[12px] font-bold truncate"><?= htmlspecialchars($existingRemarkFileName ?: 'Remark Attachment') ?></div>
+                                    <div class="text-[11px] text-muted mt-0.5">PDF Attachment</div>
                                 </div>
                                 <a href="<?= BASE_URL ?><?= htmlspecialchars($existingRemarkFile) ?>" target="_blank"
-                                    style="background:#dbeafe; color:#1d4ed8; padding:6px 12px; border-radius:7px; font-size:11px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
+                                    class="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap">
                                     <i class="fas fa-eye"></i> View
                                 </a>
                                 <a href="<?= BASE_URL ?><?= htmlspecialchars($existingRemarkFile) ?>"
                                     download="<?= htmlspecialchars($existingRemarkFileName ?: 'remark.pdf') ?>"
-                                    style="background:#dcfce7; color:#166534; padding:6px 12px; border-radius:7px; font-size:11px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
+                                    class="bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap">
                                     <i class="fas fa-download"></i> Download
                                 </a>
                             </div>
@@ -923,15 +412,14 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
 
                         <button type="button" id="tdEditRemarkBtn"
                             onclick="document.getElementById('tdDesRemarkForm').style.display='block'; this.style.display='none';"
-                            style="background:none; border:1.5px solid #bfdbfe; color:#0369a1; padding:7px 14px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; display:inline-flex; align-items:center; gap:6px; margin-bottom:12px;">
+                            class="inline-flex items-center gap-2 bg-white border border-sky-300 text-sky-700 rounded-lg px-3.5 py-2 text-[12px] font-semibold mb-3 hover:bg-sky-50 transition">
                             <i class="fas fa-edit"></i> Edit Remark
                         </button>
 
                         <div id="tdDesRemarkForm" style="display:none;">
                     <?php else: ?>
                         <!-- Not yet submitted -->
-                        <div
-                            style="background:#fffbeb; border:1.5px solid #fcd34d; border-radius:8px; padding:10px 14px; font-size:12px; color:#92400e; margin-bottom:14px; display:flex; align-items:center; gap:8px;">
+                        <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-3.5 py-2.5 text-[12px] mb-3.5 flex items-center gap-2">
                             <i class="fas fa-exclamation-triangle"></i>
                             The designer has requested approval for this area. Please review the designer files above and
                             leave your technical remark. Approvers cannot proceed until your remark is submitted.
@@ -944,91 +432,79 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
                             <input type="hidden" name="redirect_url"
                                 value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
-                            <label
-                                style="font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.4px; display:block; margin-bottom:7px;">
+                            <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">
                                 <i class="fas fa-comment-alt"></i> Your Technical Remark
                             </label>
                             <textarea name="td_remark" rows="4" required
-                                style="width:100%; padding:10px 13px; border:1.5px solid #fcd34d; border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; margin-bottom:10px;"
+                                class="w-full border border-amber-300 rounded-lg px-3.5 py-2.5 text-[13px] font-sans resize-y mb-2.5 focus:outline-none focus:border-amber-500"
                                 placeholder="Review the designer's uploaded files above and leave your technical assessment, notes, or concerns…"><?= htmlspecialchars($existingTDRemark) ?></textarea>
                             <!-- PDF Attachment -->
-                            <div style="margin-bottom:14px;">
-                                <label
-                                    style="font-size:11px; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:7px;">
-                                    <i class="fas fa-file-pdf" style="color:#dc2626;"></i>
-                                    PDF Attachment <span
-                                        style="color:#94a3b8; normal-case font-normal; text-transform:none; font-weight:400;">(optional,
-                                        max 100MB)</span>
+                            <div class="mb-3.5">
+                                <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">
+                                    <i class="fas fa-file-pdf text-red-600"></i>
+                                    PDF Attachment <span class="text-muted font-normal normal-case">(optional, max 100MB)</span>
                                 </label>
                                 <div id="tdRemarkFileZone" onclick="document.getElementById('tdRemarkFileInput').click()"
-                                    style="border:2px dashed #fcd34d; border-radius:10px; padding:18px 16px; text-align:center; cursor:pointer; background:#fffbeb; transition:all 0.2s;"
-                                    onmouseover="this.style.borderColor='#d97706'; this.style.background='#fef9c3';"
-                                    onmouseout="this.style.borderColor='#fcd34d'; this.style.background='#fffbeb';">
-                                    <i class="fas fa-file-pdf"
-                                        style="font-size:24px; color:#dc2626; display:block; margin-bottom:6px;"></i>
-                                    <div id="tdRemarkFileLabel" style="font-size:13px; font-weight:600; color:#92400e;">
+                                    class="border-2 border-dashed border-amber-300 rounded-lg py-4.5 px-4 text-center cursor-pointer bg-amber-50 transition hover:border-amber-500 hover:bg-amber-100">
+                                    <i class="fas fa-file-pdf text-2xl text-red-600 mb-1.5 block"></i>
+                                    <div id="tdRemarkFileLabel" class="text-[13px] font-semibold text-amber-800">
                                         <?= $existingRemarkFile ? 'Replace PDF (click to choose)' : 'Click to attach a PDF' ?>
                                     </div>
-                                    <div style="font-size:11px; color:#b45309; margin-top:3px;">PDF only · max 100MB</div>
+                                    <div class="text-[11px] text-amber-700 mt-0.5">PDF only · max 100MB</div>
                                 </div>
                                 <input type="file" id="tdRemarkFileInput" name="td_remark_file"
                                     accept=".pdf,application/pdf" style="display:none;"
                                     onchange="onTdRemarkFileChange(this)">
                                 <div id="tdRemarkFilePreview"
-                                    style="display:none; margin-top:10px; background:#f0fdf4; border:1.5px solid #86efac; border-radius:8px; padding:10px 13px; display:none; align-items:center; gap:10px;">
-                                    <i class="fas fa-file-pdf" style="color:#dc2626; font-size:20px; flex-shrink:0;"></i>
-                                    <div style="flex:1; min-width:0;">
-                                        <div id="tdRemarkFileName"
-                                            style="font-size:12px; font-weight:700; color:#166534; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                        </div>
-                                        <div id="tdRemarkFileSize" style="font-size:11px; color:#4ade80; margin-top:1px;">
-                                        </div>
+                                    class="hidden mt-2.5 bg-emerald-50 border border-emerald-300 rounded-lg px-3.5 py-2.5 items-center gap-2.5">
+                                    <i class="fas fa-file-pdf text-red-600 text-xl flex-shrink-0"></i>
+                                    <div class="flex-1 min-w-0">
+                                        <div id="tdRemarkFileName" class="text-[12px] font-bold text-emerald-800 truncate"></div>
+                                        <div id="tdRemarkFileSize" class="text-[11px] text-emerald-600 mt-0.5"></div>
                                     </div>
                                     <button type="button" onclick="clearTdRemarkFile()"
-                                        style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:13px; padding:4px;">
+                                        class="bg-transparent border-none text-red-500 cursor-pointer text-[13px] p-1">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
                             </div>
 
                             <button type="submit" id="tdRemarkSubmitBtn"
-                                style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:10px 22px; border:none; border-radius:9px; cursor:pointer; font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:7px;">
+                                class="inline-flex items-center gap-2 bg-amber-600 text-white rounded-lg px-5.5 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
                                 <i class="fas fa-paper-plane"></i>
                                 <?= $tdRemarkAlreadySet ? 'Update Remark' : 'Submit Remark' ?>
                             </button>
                         </form>
                         </div><!-- end tdDesRemarkForm -->
-                </div><!-- end padding:18px 22px -->
+                </div><!-- end padding -->
             </div><!-- end panel -->
         <?php elseif ($desApprovalExists && !$isAssigned && $canViewAll): ?>
             <!-- Managers can see the remark status but cannot edit -->
             <?php if ($tdRemarkAlreadySet): ?>
-                <div class="panel">
-                    <div class="panel-head">
-                        <div class="panel-title" style="color:#0369a1;">
+                <div class="bg-white border border-line rounded-[10px] mb-5 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-line">
+                        <div class="flex items-center gap-2 text-[13px] font-bold text-blue-700">
                             <i class="fas fa-comment-dots"></i> Technical Designer Remark
                         </div>
                     </div>
-                    <div style="padding:16px 22px;">
-                        <div style="font-size:13px; color:#1e293b; font-style:italic; margin-bottom:10px;">
+                    <div class="p-6">
+                        <div class="text-[13px] text-ink italic mb-2.5">
                             "<?= htmlspecialchars($existingTDRemark) ?>"
                         </div>
                         <?php if ($existingRemarkFile): ?>
-                        <div style="display:flex; align-items:center; gap:10px; background:#fff7ed; border:1.5px solid #fed7aa; border-radius:8px; padding:10px 13px;">
-                            <i class="fas fa-file-pdf" style="color:#dc2626; font-size:20px; flex-shrink:0;"></i>
-                            <div style="flex:1; min-width:0;">
-                                <div style="font-size:12px; font-weight:700; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-                                    <?= htmlspecialchars($existingRemarkFileName ?: 'TD Remark Attachment') ?>
-                                </div>
-                                <div style="font-size:11px; color:#92400e; margin-top:1px;">PDF from Technical Designer</div>
+                        <div class="flex items-center gap-2.5 bg-orange-50 border border-orange-200 rounded-lg px-3.5 py-2.5">
+                            <i class="fas fa-file-pdf text-red-600 text-xl flex-shrink-0"></i>
+                            <div class="flex-1 min-w-0">
+                                <div class="text-[12px] font-bold truncate"><?= htmlspecialchars($existingRemarkFileName ?: 'TD Remark Attachment') ?></div>
+                                <div class="text-[11px] text-amber-700 mt-0.5">PDF from Technical Designer</div>
                             </div>
                             <a href="<?= BASE_URL ?><?= htmlspecialchars($existingRemarkFile) ?>" target="_blank"
-                               style="background:#dbeafe; color:#1d4ed8; padding:6px 12px; border-radius:7px; font-size:11px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
+                               class="bg-blue-100 text-blue-800 px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap">
                                 <i class="fas fa-eye"></i> View
                             </a>
                             <a href="<?= BASE_URL ?><?= htmlspecialchars($existingRemarkFile) ?>"
                                download="<?= htmlspecialchars($existingRemarkFileName ?: 'td_remark.pdf') ?>"
-                               style="background:#dcfce7; color:#166534; padding:6px 12px; border-radius:7px; font-size:11px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px; white-space:nowrap;">
+                               class="bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-md text-[11px] font-bold whitespace-nowrap">
                                 <i class="fas fa-download"></i>
                             </a>
                         </div>
@@ -1040,19 +516,19 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
 
 
         <!-- ════════════════════════════════════════════
-         YOUR TECHNICAL DOCUMENTS
-    ═════════════════════════════════════════════ -->
-        <div class="panel">
-            <div class="panel-head">
-                <div class="panel-title"><i class="fas fa-folder-open" style="color:#0369a1;"></i> Your Technical
-                    Documents</div>
-                <span style="font-size:12px; color:#94a3b8; font-weight:600;"><?= $fileCount ?> /
-                    <?= $maxFiles ?></span>
+             YOUR TECHNICAL DOCUMENTS
+        ════════════════════════════════════════════ -->
+        <div class="bg-white border border-line rounded-[10px] mb-5 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-line">
+                <div class="flex items-center gap-2 text-[13px] font-bold text-soft">
+                    <i class="fas fa-folder-open text-blue-600"></i> Your Technical Documents
+                </div>
+                <span class="text-[12px] text-muted font-semibold"><?= $fileCount ?> / <?= $maxFiles ?></span>
             </div>
 
             <?php if (!empty($filesByCategory)): ?>
                 <!-- Tab bar -->
-                <div class="tab-bar" id="tdTabBar">
+                <div class="tab-bar flex gap-2 flex-wrap px-6 pt-4 pb-4 border-b border-line overflow-x-auto" id="tdTabBar">
                     <?php $i = 0;
                     foreach ($filesByCategory as $catName => $catFiles):
                         $slug = 'cat-' . md5($catName); ?>
@@ -1071,206 +547,211 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                 </div>
 
                 <!-- File panes -->
-                <?php $i = 0;
-                foreach ($filesByCategory as $catName => $catFiles):
-                    $slug = 'cat-' . md5($catName); ?>
-                    <div class="tab-pane <?= $i === 0 ? 'active' : '' ?>" id="td-<?= $slug ?>">
-                        <?php foreach ($catFiles as $f):
-                            $isImg = strpos($f['file_type'], 'image/') === 0;
-                            $fp = BASE_URL . $f['file_path'];
-                            $ext = strtolower(pathinfo($f['file_name'], PATHINFO_EXTENSION));
-                            $fi = $iconMap[$ext] ?? 'fa-file';
-                            ?>
-                            <div class="file-row">
-                                <?php if ($isImg): ?>
-                                    <img src="<?= htmlspecialchars($fp) ?>" class="f-thumb" onerror="this.style.display='none'">
-                                <?php else: ?>
-                                    <div class="f-icon" style="background:#e0f2fe;"><i class="fas <?= $fi ?>"
-                                            style="color:#0369a1; font-size:18px;"></i></div>
-                                <?php endif; ?>
-                                <div class="f-info">
-                                    <div class="f-name"><?= htmlspecialchars($f['file_name']) ?></div>
-                                    <div class="f-meta"><?= round($f['file_size'] / 1024, 1) ?> KB &nbsp;·&nbsp;
-                                        <?= htmlspecialchars($f['uploader_name'] ?? '') ?> &nbsp;·&nbsp;
-                                        <?= date('M d, Y g:i A', strtotime($f['created_at'])) ?>
-                                    </div>
-                                    <?php if (!empty($f['note'])): ?>
-                                        <div class="f-note"><?= htmlspecialchars($f['note']) ?></div><?php endif; ?>
-                                </div>
-                                <?php
-                                $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-                                $isViewable = $isImg || in_array($ext, $imageExts) || $ext === 'pdf';
+                <div class="p-6">
+                    <?php $i = 0;
+                    foreach ($filesByCategory as $catName => $catFiles):
+                        $slug = 'cat-' . md5($catName); ?>
+                        <div class="tab-pane <?= $i === 0 ? 'active' : '' ?> flex flex-col gap-2.5" id="td-<?= $slug ?>">
+                            <?php foreach ($catFiles as $f):
+                                $isImg = strpos($f['file_type'], 'image/') === 0;
+                                $fp = BASE_URL . $f['file_path'];
+                                $ext = strtolower(pathinfo($f['file_name'], PATHINFO_EXTENSION));
+                                $fi = $iconMap[$ext] ?? 'fa-file';
                                 ?>
-                                <?php if ($isViewable): ?>
-                                    <a href="<?= htmlspecialchars($fp) ?>" target="_blank" class="btn-view">
-                                        <i class="fas fa-eye"></i> View
-                                    </a>
-                                    <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($f['file_name']) ?>"
-                                        class="btn-view"
-                                        style="background:#dcfce7; color:#166534; border-color:#86efac; margin-left:4px;">
-                                        <i class="fas fa-download"></i>
-                                    </a>
-                                <?php else: ?>
-                                    <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($f['file_name']) ?>"
-                                        class="btn-view" style="background:#dcfce7; color:#166534; border-color:#86efac;">
-                                        <i class="fas fa-download"></i> Download
-                                    </a>
-                                <?php endif; ?>
-                                <?php if (!$viewOnly): ?>
-                                    <button class="btn-del"
-                                        onclick="confirmDelete(<?= $f['id'] ?>,'<?= htmlspecialchars($f['file_name'], ENT_QUOTES) ?>','<?= $redirectBase ?>')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                <?php endif; ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                    <?php $i++; endforeach; ?>
-
-                <!-- Upload pane (when files exist) -->
-                <?php if (!$viewOnly && $canUpload): ?>
-                    <div class="tab-pane" id="td-upload" style="padding:20px 22px;">
-                    <?php endif; ?>
-
-                <?php else: ?>
-                    <!-- No files yet: show upload directly without tabs -->
-                    <div style="padding:20px 22px;">
-                    <?php endif; // endif !empty filesByCategory ?>
-
-                    <!-- ── Upload Form ── -->
-                    <?php if ($canUpload && !$viewOnly): ?>
-                        <div class="upload-box">
-                            <datalist id="catSuggestions">
-                                <?php foreach ($existingCategories as $ec): ?>
-                                    <option value="<?= htmlspecialchars($ec) ?>"><?php endforeach; ?>
-                                <option value="Cutting List">
-                                <option value="Shop Drawing">
-                                <option value="Sketch">
-                                <option value="Technical Drawing">
-                                <option value="Specification Sheet">
-                                <option value="BOQ">
-                                <option value="Site Photo">
-                            </datalist>
-
-                            <div class="form-group">
-                                <label class="form-label"><i class="fas fa-tag"></i> Category / Document Type <span
-                                        style="color:#ef4444;">*</span></label>
-                                <input type="text" id="tdCategoryName" class="form-ctrl" list="catSuggestions"
-                                    placeholder="e.g. Cutting List, Shop Drawing, Sketch…">
-                                <div style="font-size:11px; color:#94a3b8; margin-top:5px;"><i
-                                        class="fas fa-info-circle"></i> Files with the same category are grouped under
-                                    one tab.</div>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="drop-zone" id="uploadZone">
-                                    <i class="fas fa-cloud-upload-alt dz-icon"></i>
-                                    <p style="font-size:14px; font-weight:600; color:#1e293b; margin-bottom:3px;">Click
-                                        or drag files here</p>
-                                    <p style="font-size:11px; color:#94a3b8;" id="td-hint">Images, PDFs, DWG, DXF, Word,
-                                        Excel &amp; more &nbsp;·&nbsp; Max <?= $maxFiles - $fileCount ?> more
-                                        &nbsp;·&nbsp; Max 50MB (Direct) or 1.3GB (Chunked)</p>
-                                    <p style="font-size:12px; color:#0369a1; font-weight:600; margin-top:8px;"
-                                        id="fileCountLabel"></p>
-                                    <input type="file" multiple id="fileInput"
-                                        accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.dwg,.dxf,.txt,.zip"
-                                        style="display:none;" onclick="event.stopPropagation()"
-                                        onchange="tdAutoSuggestMode(this)">
-                                </div>
-
-                                <!-- Upload mode toggle -->
-                                <div class="upload-mode-toggle">
-                                    <div style="display:flex; align-items:center; gap:6px;">
-                                        <i class="fas fa-bolt" style="color:#1e40af;"></i>
-                                        <span>Upload Mode:</span>
+                                <div class="flex items-center gap-3 p-3.5 border border-line rounded-lg bg-[#F5F5F5]">
+                                    <?php if ($isImg): ?>
+                                        <img src="<?= htmlspecialchars($fp) ?>" class="w-11 h-11 object-cover rounded-md border border-line flex-shrink-0" onerror="this.style.display='none'">
+                                    <?php else: ?>
+                                        <div class="w-11 h-11 rounded-md flex items-center justify-center flex-shrink-0 bg-blue-50">
+                                            <i class="fas <?= $fi ?> text-lg text-blue-600"></i>
+                                        </div>
+                                    <?php endif; ?>
+                                    <div class="flex-1 min-w-0">
+                                        <div class="text-[13px] font-semibold truncate"><?= htmlspecialchars($f['file_name']) ?></div>
+                                        <div class="text-[11px] text-muted mt-0.5">
+                                            <?= round($f['file_size'] / 1024, 1) ?> KB &nbsp;•&nbsp;
+                                            <?= htmlspecialchars($f['uploader_name'] ?? '') ?> &nbsp;•&nbsp;
+                                            <?= date('M d, Y g:i A', strtotime($f['created_at'])) ?>
+                                        </div>
+                                        <?php if (!empty($f['note'])): ?>
+                                            <span class="inline-block text-[11px] text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md mt-1.5">
+                                                <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($f['note']) ?>
+                                            </span>
+                                        <?php endif; ?>
                                     </div>
-                                    <label class="toggle-switch">
-                                        <input type="checkbox" id="td-mode-toggle" onchange="tdOnModeChange()">
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                    <div id="td-mode-label">
-                                        <span class="mode-badge direct"><i class="fas fa-bolt"></i> Direct</span>
-                                        <span style="font-size:11px; color:#94a3b8; margin-left:4px;">Best for files
-                                            under 50MB · faster, no 405 errors</span>
-                                    </div>
+                                    <?php
+                                    $imageExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+                                    $isViewable = $isImg || in_array($ext, $imageExts) || $ext === 'pdf';
+                                    ?>
+                                    <?php if ($isViewable): ?>
+                                        <a href="<?= htmlspecialchars($fp) ?>" target="_blank"
+                                            class="flex-shrink-0 bg-white border border-line rounded-lg px-3 py-1.5 text-[11px] font-bold hover:border-ink transition">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                        <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($f['file_name']) ?>"
+                                            class="flex-shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg px-3 py-1.5 text-[11px] font-bold hover:bg-emerald-100 transition">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                    <?php else: ?>
+                                        <a href="<?= htmlspecialchars($fp) ?>" download="<?= htmlspecialchars($f['file_name']) ?>"
+                                            class="flex-shrink-0 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg px-3 py-1.5 text-[11px] font-bold hover:bg-emerald-100 transition">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    <?php endif; ?>
+                                    <?php if (!$viewOnly): ?>
+                                        <button
+                                            class="flex-shrink-0 bg-red-50 text-red-600 border border-red-200 rounded-lg px-2.5 py-1.5 text-[11px] font-bold hover:bg-red-100 transition"
+                                            onclick="confirmDelete(<?= $f['id'] ?>,'<?= htmlspecialchars($f['file_name'], ENT_QUOTES) ?>','<?= $redirectBase ?>')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    <?php endif; ?>
                                 </div>
-                            </div>
-
-                            <!-- Progress bar -->
-                            <div id="td-progress-wrap" style="display:none; margin-bottom:14px;">
-                                <div
-                                    style="display:flex; justify-content:space-between; font-size:12px; color:#374151; margin-bottom:5px;">
-                                    <span id="td-progress-label">Uploading...</span>
-                                    <span id="td-progress-pct">0%</span>
-                                </div>
-                                <div style="height:7px; background:#e9ecef; border-radius:99px; overflow:hidden;">
-                                    <div id="td-progress-bar"
-                                        style="height:100%; width:0%; border-radius:99px; transition:width .2s; background:linear-gradient(90deg,#0c4a6e,#0369a1);">
-                                    </div>
-                                </div>
-                                <div id="td-progress-sub" style="font-size:11px; color:#9ca3af; margin-top:4px;"></div>
-                            </div>
-
-                            <div id="td-upload-error"
-                                style="display:none; background:#fee2e2; color:#991b1b; padding:10px 14px; border-radius:8px; font-size:13px; margin-bottom:10px;">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label"><i class="fas fa-sticky-note"></i> Note (optional)</label>
-                                <textarea id="tdNote" class="form-ctrl" rows="2" placeholder="Any notes about these files…"
-                                    style="resize:vertical;"></textarea>
-                            </div>
-
-                            <button type="button" id="tdUploadBtn" onclick="startTDUpload()" class="btn-upload">
-                                <i class="fas fa-upload"></i> Upload Files
-                            </button>
+                            <?php endforeach; ?>
                         </div>
+                        <?php $i++; endforeach; ?>
 
-                    <?php elseif ($viewOnly): ?>
-                        <div
-                            style="background:#f8fafc; border-radius:8px; padding:12px 16px; font-size:13px; color:#64748b; display:inline-flex; align-items:center; gap:8px;">
-                            <i class="fas fa-eye"></i> View only — you cannot upload files
-                        </div>
+                    <!-- Upload pane (when files exist) -->
+                    <?php if (!$viewOnly && $canUpload): ?>
+                        <div class="tab-pane" id="td-upload">
+                        <?php endif; ?>
+
                     <?php else: ?>
-                        <div
-                            style="background:#fffbeb; border:1px solid #fcd34d; border-radius:8px; padding:12px 16px; font-size:13px; color:#92400e;">
-                            <i class="fas fa-exclamation-triangle"></i> Maximum of <?= $maxFiles ?> files reached.
-                            Delete a file to upload more.
+                        <!-- No files yet: show upload directly without tabs -->
+                        <div class="p-6">
+                        <?php endif; // endif !empty filesByCategory ?>
+
+                        <!-- ── Upload Form ── -->
+                        <?php if ($canUpload && !$viewOnly): ?>
+                            <div class="border-2 border-dashed border-blue-200 rounded-lg p-5.5 bg-blue-50/40">
+                                <datalist id="catSuggestions">
+                                    <?php foreach ($existingCategories as $ec): ?>
+                                        <option value="<?= htmlspecialchars($ec) ?>"><?php endforeach; ?>
+                                    <option value="Cutting List">
+                                    <option value="Shop Drawing">
+                                    <option value="Sketch">
+                                    <option value="Technical Drawing">
+                                    <option value="Specification Sheet">
+                                    <option value="BOQ">
+                                    <option value="Site Photo">
+                                </datalist>
+
+                                <div class="mb-4">
+                                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">
+                                        <i class="fas fa-tag"></i> Category / Document Type <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" id="tdCategoryName"
+                                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink"
+                                        list="catSuggestions" placeholder="e.g. Cutting List, Shop Drawing, Sketch…">
+                                    <div class="text-[11px] text-muted mt-1.5"><i class="fas fa-info-circle"></i> Files with the same category are grouped under one tab.</div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <div id="uploadZone"
+                                        class="border-2 border-dashed border-line rounded-lg py-8 px-5 text-center cursor-pointer bg-white transition hover:border-ink hover:bg-[#F5F5F5]">
+                                        <i class="fas fa-cloud-upload-alt text-3xl mb-2 block text-blue-600"></i>
+                                        <p class="text-sm font-semibold">Click or drag files here</p>
+                                        <p class="text-[11px] text-muted mt-1" id="td-hint">Images, PDFs, DWG, DXF, Word,
+                                            Excel &amp; more &nbsp;·&nbsp; Max <?= $maxFiles - $fileCount ?> more
+                                            &nbsp;·&nbsp; Max 50MB (Direct) or 1.3GB (Chunked)</p>
+                                        <p class="text-[13px] text-blue-700 font-semibold mt-2" id="fileCountLabel"></p>
+                                        <input type="file" multiple id="fileInput"
+                                            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.dwg,.dxf,.txt,.zip"
+                                            style="display:none;" onclick="event.stopPropagation()"
+                                            onchange="tdAutoSuggestMode(this)">
+                                    </div>
+
+                                    <!-- Upload mode toggle -->
+                                    <div class="flex items-center gap-2.5 bg-white border border-line rounded-lg px-3.5 py-2.5 mt-3 text-[12px] font-semibold flex-wrap">
+                                        <div class="flex items-center gap-1.5 text-soft">
+                                            <i class="fas fa-bolt text-blue-700"></i>
+                                            <span>Upload Mode:</span>
+                                        </div>
+                                        <label class="toggle-switch">
+                                            <input type="checkbox" id="td-mode-toggle" onchange="tdOnModeChange()">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <div id="td-mode-label">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800">
+                                                <i class="fas fa-bolt"></i> Direct
+                                            </span>
+                                            <span class="text-[11px] text-muted ml-1">Best for files under 50MB · faster, no 405 errors</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Progress bar -->
+                                <div id="td-progress-wrap" style="display:none;" class="mb-3.5">
+                                    <div class="flex justify-between text-[12px] text-soft mb-1.5">
+                                        <span id="td-progress-label">Uploading...</span>
+                                        <span id="td-progress-pct">0%</span>
+                                    </div>
+                                    <div class="h-[7px] bg-line rounded-full overflow-hidden">
+                                        <div id="td-progress-bar" style="height:100%; width:0%; border-radius:999px; transition:width .2s; background:linear-gradient(90deg,#0c4a6e,#0369a1);"></div>
+                                    </div>
+                                    <div id="td-progress-sub" class="text-[11px] text-muted mt-1"></div>
+                                </div>
+
+                                <div id="td-upload-error"
+                                    class="hidden bg-red-50 border border-red-300 text-red-800 rounded-lg px-3.5 py-2.5 text-[13px] mb-2.5"></div>
+
+                                <div class="mb-4">
+                                    <label class="text-[11px] font-semibold uppercase tracking-[0.4px] text-soft block mb-1.5">
+                                        <i class="fas fa-sticky-note"></i> Note (optional)
+                                    </label>
+                                    <textarea id="tdNote" rows="2"
+                                        class="w-full border border-line rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:border-ink resize-y"
+                                        placeholder="Any notes about these files…"></textarea>
+                                </div>
+
+                                <button type="button" id="tdUploadBtn" onclick="startTDUpload()"
+                                    class="inline-flex items-center gap-2 bg-blue-700 text-white rounded-lg px-6 py-3 text-sm font-semibold hover:opacity-90 transition">
+                                    <i class="fas fa-upload"></i> Upload Files
+                                </button>
+                            </div>
+
+                        <?php elseif ($viewOnly): ?>
+                            <div class="inline-flex items-center gap-2 bg-[#F5F5F5] border border-line rounded-lg px-4 py-2.5 text-[13px] text-soft">
+                                <i class="fas fa-eye"></i> View only — you cannot upload files
+                            </div>
+                        <?php else: ?>
+                            <div class="bg-amber-50 border border-amber-300 text-amber-800 rounded-lg px-4 py-3 text-[13px]">
+                                <i class="fas fa-exclamation-triangle"></i> Maximum of <?= $maxFiles ?> files reached.
+                                Delete a file to upload more.
+                            </div>
+                        <?php endif; ?>
+
+                        <!-- Close wrapper divs -->
+                        <?php if (!empty($filesByCategory)): ?>
+                            <?php if (!$viewOnly && $canUpload): ?>
+                            </div><?php endif; ?>
+                        <?php else: ?>
                         </div>
                     <?php endif; ?>
-
-                    <!-- Close wrapper divs -->
-                    <?php if (!empty($filesByCategory)): ?>
-                        <?php if (!$viewOnly && $canUpload): ?>
-                        </div><?php endif; ?>
-                <?php else: ?>
                 </div>
-            <?php endif; ?>
 
-            <!-- Empty state (view only with no files) -->
-            <?php if (empty($filesByCategory) && $viewOnly): ?>
-                <div class="empty-state">
-                    <i class="fas fa-folder-open"></i>
-                    <p>No files uploaded yet.</p>
-                </div>
-            <?php endif; ?>
+                <!-- Empty state (view only with no files) -->
+                <?php if (empty($filesByCategory) && $viewOnly): ?>
+                    <div class="text-center py-9 text-muted">
+                        <i class="fas fa-folder-open text-3xl mb-2.5 block opacity-40"></i>
+                        <p class="text-[13px]">No files uploaded yet.</p>
+                    </div>
+                <?php endif; ?>
 
-        </div><!-- /.panel -->
+        </div><!-- /panel -->
 
 
         <!-- ════════════════════════════════════════════
-         APPROVAL PANEL
-    ═════════════════════════════════════════════ -->
-        <div class="appr-panel">
-            <div class="appr-head">
+             APPROVAL PANEL
+        ════════════════════════════════════════════ -->
+        <div class="bg-white border <?= $panelBorderClass ?> rounded-[10px] overflow-hidden mb-5">
+            <div class="<?= $panelBgClass ?> border-b <?= $panelBorderClass ?> px-5 py-3.5 flex justify-between items-center gap-3 flex-wrap">
                 <div>
-                    <div class="appr-title">
+                    <div class="text-[13px] font-bold <?= $panelTextClass ?> flex items-center gap-2 flex-wrap">
                         <i class="fas <?= $panelIcon ?>"></i>
                         Approval Status — <?= htmlspecialchars($locationLabel) ?>
-                        <span
-                            style="font-size:11px; font-weight:700; background:<?= $panelBorder ?>44; color:<?= $panelColor ?>; padding:2px 10px; border-radius:20px;"><?= $panelLabel ?></span>
+                        <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/60 <?= $panelTextClass ?>"><?= $panelLabel ?></span>
                     </div>
-                    <div style="font-size:11px; color:<?= $panelColor ?>; opacity:0.75; margin-top:3px;">
+                    <div class="text-[11px] <?= $panelTextClass ?> opacity-75 mt-0.5">
                         <?= $approvalRequested ? '● Approval has been requested' : '○ No approval request yet' ?>
                     </div>
                 </div>
@@ -1282,7 +763,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                         <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
                         <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                         <button type="submit"
-                            style="background:linear-gradient(135deg,#d97706,#f59e0b); color:white; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                            class="inline-flex items-center gap-2 bg-amber-600 text-white rounded-lg px-4 py-2 text-[13px] font-semibold hover:opacity-90 transition">
                             <i class="fas fa-paper-plane"></i> Submit Revised
                         </button>
                     </form>
@@ -1293,12 +774,12 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                             <input type="hidden" name="area" value="<?= htmlspecialchars($area) ?>">
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <button type="submit"
-                                style="background:linear-gradient(135deg,#0c4a6e,#0369a1); color:white; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                                class="inline-flex items-center gap-2 bg-ink text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
                                 <i class="fas fa-paper-plane"></i> Request Approval
                             </button>
                         </form>
                     <?php elseif (!$approvalRequested): ?>
-                        <span style="font-size:12px; color:#94a3b8; font-style:italic;">Upload files first</span>
+                        <span class="text-[12px] text-muted italic">Upload files first</span>
                     <?php elseif ($anyRejected): ?>
                         <form method="POST" action="<?= BASE_URL ?>td-request-approval">
                             <input type="hidden" name="client_id" value="<?= $client_id ?>">
@@ -1306,7 +787,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                             <input type="hidden" name="redirect_url" value="<?= htmlspecialchars($_SERVER['REQUEST_URI']) ?>">
                             <input type="hidden" name="resubmit" value="1">
                             <button type="submit"
-                                style="background:linear-gradient(135deg,#dc2626,#ef4444); color:white; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:6px;">
+                                class="inline-flex items-center gap-2 bg-red-600 text-white rounded-lg px-4 py-2.5 text-[13px] font-semibold hover:opacity-90 transition">
                                 <i class="fas fa-redo"></i> Re-request Approval
                             </button>
                         </form>
@@ -1316,134 +797,123 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
 
             <!-- Revision banners -->
             <?php if ($hasActiveRevision && $revisionStatus === 'pending'): ?>
-                <div
-                    style="background:#fffbeb; border-bottom:1px solid #fde68a; padding:12px 22px; display:flex; align-items:flex-start; gap:10px;">
-                    <i class="fas fa-redo" style="color:#d97706; margin-top:1px; flex-shrink:0;"></i>
+                <div class="bg-amber-50 border-b border-amber-200 px-5 py-3.5 flex items-start gap-2.5">
+                    <i class="fas fa-redo text-amber-600 mt-0.5 flex-shrink-0"></i>
                     <div>
-                        <div style="font-size:13px; font-weight:700; color:#92400e; margin-bottom:2px;">
+                        <div class="text-[13px] font-bold text-amber-900 mb-0.5">
                             Revision #<?= $activeRevision['revision_number'] ?> Requested
-                            <span
-                                style="background:#f59e0b; color:white; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:6px;">Awaiting
-                                Resubmission</span>
+                            <span class="bg-amber-500 text-white text-[10px] px-2 py-0.5 rounded-full ml-1.5">Awaiting Resubmission</span>
                         </div>
-                        <div style="font-size:12px; color:#78350f;">
-                            <?= nl2br(htmlspecialchars($activeRevision['reason'])) ?>
-                        </div>
+                        <div class="text-[12px] text-amber-800"><?= nl2br(htmlspecialchars($activeRevision['reason'])) ?></div>
                     </div>
                 </div>
             <?php elseif ($hasActiveRevision && $revisionStatus === 'designer_resubmitted'): ?>
-                <div
-                    style="background:#eff6ff; border-bottom:1px solid #bfdbfe; padding:12px 22px; display:flex; align-items:center; gap:10px;">
-                    <i class="fas fa-clock" style="color:#2563eb;"></i>
+                <div class="bg-blue-50 border-b border-blue-200 px-5 py-3.5 flex items-center gap-2.5">
+                    <i class="fas fa-clock text-blue-600"></i>
                     <div>
-                        <div style="font-size:13px; font-weight:700; color:#1e40af; margin-bottom:2px;">
+                        <div class="text-[13px] font-bold text-blue-900 mb-0.5">
                             Revision #<?= $activeRevision['revision_number'] ?> — Revised Files Submitted
-                            <span
-                                style="background:#3b82f6; color:white; font-size:10px; padding:2px 8px; border-radius:10px; margin-left:6px;">Awaiting
-                                Approval</span>
+                            <span class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full ml-1.5">Awaiting Approval</span>
                         </div>
-                        <div style="font-size:12px; color:#1e3a8a;">
-                            <?= nl2br(htmlspecialchars($activeRevision['reason'])) ?>
-                        </div>
+                        <div class="text-[12px] text-blue-800"><?= nl2br(htmlspecialchars($activeRevision['reason'])) ?></div>
                     </div>
                 </div>
             <?php endif; ?>
 
             <!-- Per-approver rows -->
-            <div class="appr-rows">
+            <div class="p-5 flex flex-col gap-2.5">
                 <?php foreach ($approvers as $apr):
                     $rec = $approvalMap[$apr['id']] ?? null;
                     $aStatus = $rec ? $rec['status'] : 'not_requested';
                     if ($aStatus === 'approved') {
-                        $aBg = '#f0fdf4';
-                        $aBd = '#86efac';
-                        $aC = '#166534';
-                        $aIc = 'fa-check-circle';
-                        $aLb = 'Approved';
+                        $aRowBg = 'bg-emerald-50 border-emerald-200';
+                        $aIconWrap = 'bg-emerald-100 border-emerald-300';
+                        $aIconColor = 'text-emerald-700';
+                        $aIcon = 'fa-check-circle';
+                        $aBadge = 'bg-emerald-100 text-emerald-800 border-emerald-300';
+                        $aLabel = 'Approved';
                     } elseif ($aStatus === 'rejected') {
-                        $aBg = '#fff5f5';
-                        $aBd = '#fca5a5';
-                        $aC = '#991b1b';
-                        $aIc = 'fa-times-circle';
-                        $aLb = 'Rejected';
+                        $aRowBg = 'bg-red-50 border-red-200';
+                        $aIconWrap = 'bg-red-100 border-red-300';
+                        $aIconColor = 'text-red-700';
+                        $aIcon = 'fa-times-circle';
+                        $aBadge = 'bg-red-100 text-red-800 border-red-300';
+                        $aLabel = 'Rejected';
                     } elseif ($aStatus === 'pending') {
-                        $aBg = '#fffbeb';
-                        $aBd = '#fcd34d';
-                        $aC = '#92400e';
-                        $aIc = 'fa-hourglass-half';
-                        $aLb = 'Pending';
+                        $aRowBg = 'bg-amber-50 border-amber-200';
+                        $aIconWrap = 'bg-amber-100 border-amber-300';
+                        $aIconColor = 'text-amber-700';
+                        $aIcon = 'fa-hourglass-half';
+                        $aBadge = 'bg-amber-100 text-amber-800 border-amber-300';
+                        $aLabel = 'Pending';
                     } else {
-                        $aBg = '#f8fafc';
-                        $aBd = '#e2e8f0';
-                        $aC = '#64748b';
-                        $aIc = 'fa-minus-circle';
-                        $aLb = 'Not Requested';
+                        $aRowBg = 'bg-[#F5F5F5] border-line';
+                        $aIconWrap = 'bg-white border-line';
+                        $aIconColor = 'text-muted';
+                        $aIcon = 'fa-minus-circle';
+                        $aBadge = 'bg-white text-soft border-line';
+                        $aLabel = 'Not Requested';
                     }
                     $canAct = ($isApprover && $apr['id'] == $admin_id && $aStatus === 'pending')
                         && (!$hasActiveRevision || $revisionStatus === 'designer_resubmitted');
                     ?>
-                    <div class="appr-row" style="background:<?= $aBg ?>; border-color:<?= $aBd ?>;">
-                        <div style="display:flex; align-items:center; gap:11px; flex:1; min-width:0;">
-                            <div
-                                style="width:34px; height:34px; border-radius:50%; background:<?= $aBd ?>44; border:1.5px solid <?= $aBd ?>; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                                <i class="fas <?= $aIc ?>" style="color:<?= $aC ?>; font-size:13px;"></i>
+                    <div class="<?= $aRowBg ?> border rounded-lg px-3.5 py-2.5 flex justify-between items-center gap-3 flex-wrap">
+                        <div class="flex items-center gap-3 flex-1 min-w-0">
+                            <div class="w-9 h-9 <?= $aIconWrap ?> border rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas <?= $aIcon ?> <?= $aIconColor ?> text-sm"></i>
                             </div>
-                            <div>
-                                <div style="display:flex; align-items:center; gap:7px; flex-wrap:wrap;">
-                                    <span
-                                        style="font-weight:700; font-size:13px;"><?= htmlspecialchars($apr['full_name']) ?></span>
-                                    <span
-                                        style="font-size:10px; background:<?= $aBd ?>55; color:<?= $aC ?>; padding:2px 8px; border-radius:20px; font-weight:600; text-transform:capitalize;"><?= str_replace('_', ' ', $apr['role']) ?></span>
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <span class="font-bold text-[13px]"><?= htmlspecialchars($apr['full_name']) ?></span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-semibold capitalize <?= $aBadge ?>">
+                                        <?= str_replace('_', ' ', $apr['role']) ?>
+                                    </span>
                                 </div>
                                 <?php if ($rec && $rec['responded_at']): ?>
-                                    <div style="font-size:11px; color:#94a3b8; margin-top:2px;">
-                                        <?= date('M d, Y · g:i A', strtotime($rec['responded_at'])) ?>
-                                    </div><?php endif; ?>
+                                    <div class="text-[11px] text-muted mt-1"><?= date('M d, Y · g:i A', strtotime($rec['responded_at'])) ?></div>
+                                <?php endif; ?>
                                 <?php if ($rec && $rec['comment']): ?>
-                                    <div
-                                        style="font-size:11px; color:#92400e; background:#fffbeb; border:1px solid #fde68a; padding:3px 9px; border-radius:5px; margin-top:5px; display:inline-block;">
+                                    <div class="text-[11px] text-amber-800 bg-amber-50 border border-amber-300 px-2.5 py-1 rounded-md mt-1.5 inline-block">
                                         <?= htmlspecialchars($rec['comment']) ?>
-                                    </div><?php endif; ?>
+                                    </div>
+                                <?php endif; ?>
                             </div>
                         </div>
+
                         <?php if ($canAct): ?>
-                            <div style="display:flex; gap:7px; flex-shrink:0;">
+                            <div class="flex gap-2 items-center flex-shrink-0">
                                 <button
                                     onclick="openApproveModal(<?= $apr['id'] ?>,'<?= htmlspecialchars($apr['full_name'], ENT_QUOTES) ?>','approved')"
-                                    style="background:#10b981; color:white; border:none; padding:7px 13px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:5px;">
+                                    class="bg-emerald-600 text-white border-none px-4 py-1.5 rounded-lg text-[12px] font-bold hover:opacity-90 transition inline-flex items-center gap-1.5">
                                     <i class="fas fa-check"></i> Approve
                                 </button>
                                 <button
                                     onclick="openApproveModal(<?= $apr['id'] ?>,'<?= htmlspecialchars($apr['full_name'], ENT_QUOTES) ?>','rejected')"
-                                    style="background:#ef4444; color:white; border:none; padding:7px 13px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; display:inline-flex; align-items:center; gap:5px;">
+                                    class="bg-red-600 text-white border-none px-4 py-1.5 rounded-lg text-[12px] font-bold hover:opacity-90 transition inline-flex items-center gap-1.5">
                                     <i class="fas fa-times"></i> Reject
                                 </button>
                             </div>
                         <?php else: ?>
-                            <span
-                                style="font-size:11px; font-weight:700; color:<?= $aC ?>; background:<?= $aBd ?>44; padding:4px 12px; border-radius:20px; border:1px solid <?= $aBd ?>; flex-shrink:0; white-space:nowrap;"><?= $aLb ?></span>
+                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-full border whitespace-nowrap <?= $aBadge ?>"><?= $aLabel ?></span>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
         </div>
 
-    </div><!-- /.page-wrap -->
+    </div><!-- /container -->
 
     <!-- Approve/Reject Modal -->
-    <div id="approveModal"
-        style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.45); align-items:center; justify-content:center;">
-        <div
-            style="background:white; border-radius:14px; padding:28px; max-width:460px; width:90%; box-shadow:0 20px 50px rgba(0,0,0,0.18);">
-            <h3 id="approveModalTitle" style="font-size:15px; font-weight:700; color:#1e293b; margin-bottom:14px;">
-            </h3>
+    <div id="approveModal" class="hidden fixed inset-0 z-[3000] bg-black/50 items-center justify-center">
+        <div class="bg-white rounded-[14px] p-7 max-w-[480px] w-[90%]">
+            <h3 id="approveModalTitle" class="text-[17px] font-bold mb-4"></h3>
             <textarea id="approveComment" placeholder="Comment (required for rejection)…"
-                style="width:100%; padding:10px 13px; border:1.5px solid #e2e8f0; border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; min-height:80px; margin-bottom:16px;"></textarea>
-            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                class="w-full border border-line rounded-lg px-3.5 py-2.5 text-[13px] resize-y min-h-[90px] mb-4 focus:outline-none focus:border-ink"></textarea>
+            <div class="flex gap-2.5 justify-end">
                 <button onclick="closeApproveModal()"
-                    style="background:#f1f5f9; color:#475569; padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px;">Cancel</button>
+                    class="bg-white border border-line rounded-lg px-4.5 py-2.5 font-semibold text-[13px] hover:border-ink transition">Cancel</button>
                 <button id="approveConfirmBtn" onclick="submitApproval()"
-                    style="padding:9px 18px; border:none; border-radius:8px; cursor:pointer; font-weight:700; color:white; font-size:13px;"></button>
+                    class="rounded-lg px-4.5 py-2.5 font-semibold text-[13px] text-white"></button>
             </div>
         </div>
     </div>
@@ -1456,7 +926,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             clickedPill.classList.add('active');
 
             const targetId = clickedPill.dataset.target;
-            // Hide all panes that share the same prefix
             const prefix = targetId.split('-')[0] + '-'; // "des-" or "td-"
             document.querySelectorAll('.tab-pane').forEach(pane => {
                 if (pane.id.startsWith(prefix)) pane.classList.remove('active');
@@ -1471,10 +940,10 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
         const lbl = document.getElementById('fileCountLabel');
         if (zone) {
             zone.addEventListener('click', () => input.click());
-            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('border-ink'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('border-ink'));
             zone.addEventListener('drop', e => {
-                e.preventDefault(); zone.classList.remove('drag-over');
+                e.preventDefault(); zone.classList.remove('border-ink');
                 const filtered = Array.from(e.dataTransfer.files).filter(f => !f.type.startsWith('video/'));
                 const dt = new DataTransfer();
                 filtered.forEach(f => dt.items.add(f));
@@ -1498,12 +967,12 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             const label = document.getElementById('td-mode-label');
             const hint = document.getElementById('td-hint');
             if (isChunk) {
-                label.innerHTML = `<span class="mode-badge chunked"><i class="fas fa-layer-group"></i> Chunked</span>
-            <span style="font-size:11px;color:#94a3b8;margin-left:4px;">For large files up to 1.3GB · slower start</span>`;
+                label.innerHTML = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-100 text-amber-800"><i class="fas fa-layer-group"></i> Chunked</span>
+            <span class="text-[11px] text-muted ml-1">For large files up to 1.3GB · slower start</span>`;
                 if (hint) hint.textContent = 'Images, PDFs, DWG, DXF, Word, Excel & more · Max 1.3GB each (Chunked mode)';
             } else {
-                label.innerHTML = `<span class="mode-badge direct"><i class="fas fa-bolt"></i> Direct</span>
-            <span style="font-size:11px;color:#94a3b8;margin-left:4px;">Best for files under 50MB · faster, no 405 errors</span>`;
+                label.innerHTML = `<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-blue-800"><i class="fas fa-bolt"></i> Direct</span>
+            <span class="text-[11px] text-muted ml-1">Best for files under 50MB · faster, no 405 errors</span>`;
                 if (hint) hint.textContent = 'Images, PDFs, DWG, DXF, Word, Excel & more · Max 50MB (Direct) or 1.3GB (Chunked)';
             }
         }
@@ -1533,7 +1002,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             const oversized = files.filter(f => f.size > DIRECT_LIMIT);
             if (oversized.length > 0) {
                 errEl.textContent = oversized.map(f => f.name + ' exceeds 50MB — switch to Chunked mode.').join(' ');
-                errEl.style.display = 'block';
+                errEl.classList.remove('hidden');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-upload"></i> Upload Files';
                 return;
@@ -1544,7 +1013,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
 
-                // Shimmer per file
                 progressBar.style.width = '100%';
                 progressBar.style.transition = 'none';
                 progressBar.style.background = 'repeating-linear-gradient(90deg,#0c4a6e 0px,#38bdf8 20px,#0c4a6e 40px)';
@@ -1553,7 +1021,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                 progressPct.textContent = 'Uploading...';
                 progressLbl.textContent = `Sending file ${i + 1}/${files.length}: ${file.name}`;
 
-                // Build temporary hidden form
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = '<?= BASE_URL ?>td-attachment-direct-upload';
@@ -1561,7 +1028,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                 form.target = 'td_direct_frame';
                 form.style.display = 'none';
 
-                // Hidden fields
                 const fields = {
                     client_id: <?= $client_id ?>,
                     area: <?= json_encode($area) ?>,
@@ -1578,7 +1044,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                     form.appendChild(input);
                 }
 
-                // File input — transfer single file
                 const fileInput = document.createElement('input');
                 fileInput.type = 'file';
                 fileInput.name = 'file';
@@ -1589,7 +1054,6 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
 
                 document.body.appendChild(form);
 
-                // Wait for iframe response
                 const result = await new Promise((resolve) => {
                     const iframe = document.getElementById('td_direct_frame');
                     iframe.onload = function () {
@@ -1610,14 +1074,13 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                     progressBar.style.animation = 'none';
                     progressBar.style.width = '0%';
                     errEl.textContent = file.name + ': ' + (result.error || 'Upload failed');
-                    errEl.style.display = 'block';
+                    errEl.classList.remove('hidden');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-upload"></i> Upload Files';
                     return;
                 }
             }
 
-            // All done
             progressBar.style.animation = 'none';
             progressBar.style.background = '';
             progressBar.style.width = '100%';
@@ -1687,21 +1150,21 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             const files = Array.from(input.files);
             const btn = document.getElementById('tdUploadBtn');
             const errEl = document.getElementById('td-upload-error');
-            errEl.style.display = 'none';
+            errEl.classList.add('hidden');
 
             if (!categoryName) {
                 errEl.textContent = 'Please enter a category / document type.';
-                errEl.style.display = 'block';
+                errEl.classList.remove('hidden');
                 return;
             }
             if (files.length === 0) {
                 errEl.textContent = 'Please select at least one file.';
-                errEl.style.display = 'block';
+                errEl.classList.remove('hidden');
                 return;
             }
             if (files.some(f => f.type.startsWith('video/'))) {
                 errEl.textContent = 'Video files are not allowed.';
-                errEl.style.display = 'block';
+                errEl.classList.remove('hidden');
                 return;
             }
 
@@ -1724,18 +1187,18 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             const oversized = files.filter(f => f.size > 1.3 * 1024 * 1024 * 1024);
             if (oversized.length > 0) {
                 errEl.textContent = oversized.map(f => f.name + ' exceeds 1.3GB limit.').join(' ');
-                errEl.style.display = 'block';
+                errEl.classList.remove('hidden');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-upload"></i> Upload Files';
                 return;
             }
 
-            let CHUNK_SIZE = 2 * 1024 * 1024; // start at 2MB, auto-adjusts
+            let CHUNK_SIZE = 2 * 1024 * 1024;
 
-            const MIN_CHUNK = 512 * 1024;        // 512KB floor
-            const MAX_CHUNK = 32 * 1024 * 1024; // 32MB ceiling
-            const TARGET_MS = 8000;               // aim ~8s per chunk
-            const SERVER_OH = 250;                // ~250ms server overhead
+            const MIN_CHUNK = 512 * 1024;
+            const MAX_CHUNK = 32 * 1024 * 1024;
+            const TARGET_MS = 8000;
+            const SERVER_OH = 250;
 
             function adjustChunkSize(elapsedMs, bytesSent) {
                 const netMs = Math.max(elapsedMs - SERVER_OH, 50);
@@ -1757,7 +1220,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
 
             for (let fi = 0; fi < files.length; fi++) {
                 const file = files[fi];
-                CHUNK_SIZE = 2 * 1024 * 1024; // reset per file
+                CHUNK_SIZE = 2 * 1024 * 1024;
                 let bytesSent = 0;
                 let chunkIndex = 0;
                 const uploadId = 'td_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
@@ -1792,7 +1255,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
                                 ? 'Server rejected the upload (405). Please wait a moment and try again.'
                                 : 'Connection error after 5 attempts. Please try again.';
                             errEl.textContent = file.name + ': ' + msg;
-                            errEl.style.display = 'block';
+                            errEl.classList.remove('hidden');
                             anyError = true;
                             break;
                         }
@@ -1800,7 +1263,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
 
                         if (!data.success) {
                             errEl.textContent = file.name + ': ' + (data.error || 'Upload failed');
-                            errEl.style.display = 'block';
+                            errEl.classList.remove('hidden');
                             anyError = true;
                             break;
                         }
@@ -1821,7 +1284,7 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
 
                     } catch (e) {
                         errEl.textContent = file.name + ': Connection error. Please try again.';
-                        errEl.style.display = 'block';
+                        errEl.classList.remove('hidden');
                         anyError = true;
                         break;
                     }
@@ -1902,12 +1365,15 @@ $iconMap = ['pdf' => 'fa-file-pdf', 'doc' => 'fa-file-word', 'docx' => 'fa-file-
             }
             nameEl.textContent = file.name;
             sizeEl.textContent = (file.size / (1024 * 1024)).toFixed(1) + ' MB';
+            preview.classList.remove('hidden');
             preview.style.display = 'flex';
             label.textContent = file.name;
         }
         function clearTdRemarkFile() {
             document.getElementById('tdRemarkFileInput').value = '';
-            document.getElementById('tdRemarkFilePreview').style.display = 'none';
+            const preview = document.getElementById('tdRemarkFilePreview');
+            preview.classList.add('hidden');
+            preview.style.display = 'none';
             document.getElementById('tdRemarkFileLabel').textContent = 'Click to attach a PDF';
         }
     </script>

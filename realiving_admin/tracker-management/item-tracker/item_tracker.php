@@ -247,21 +247,47 @@ foreach ($allItems as $it) {
 $done_count = $statusCounts['Done'] ?? 0;
 $completion_percentage = $total_items > 0 ? ($done_count / $total_items) * 100 : 0;
 
-// Stage colors
-$stageColors = [
-    'Fabrication' => ['primary' => '#3b82f6', 'light' => '#eff6ff', 'border' => '#bfdbfe'],
-    'Delivery' => ['primary' => '#8b5cf6', 'light' => '#f5f3ff', 'border' => '#ddd6fe'],
-    'Installation' => ['primary' => '#10b981', 'light' => '#f0fdf4', 'border' => '#a7f3d0'],
-    'BILLING' => ['primary' => '#f59e0b', 'light' => '#fffbeb', 'border' => '#fde68a'],
-];
-$sc = $stageColors[$stage] ?? $stageColors['Fabrication'];
+// ── Icon per stage (unchanged) ──
+$stageIcon = $stage === 'Fabrication' ? 'tools' : ($stage === 'Delivery' ? 'truck' : ($stage === 'Installation' ? 'hard-hat' : 'file-invoice-dollar'));
 
-$statusConfig = [
-    'Pending' => ['bg' => '#fef3c7', 'color' => '#92400e', 'border' => '#f59e0b'],
-    'Ongoing' => ['bg' => '#dbeafe', 'color' => '#1e40af', 'border' => '#3b82f6'],
-    'Done' => ['bg' => '#d1fae5', 'color' => '#065f46', 'border' => '#10b981'],
-    'Incomplete' => ['bg' => '#fee2e2', 'color' => '#991b1b', 'border' => '#ef4444'],
-    'Punchlist' => ['bg' => '#fce7f3', 'color' => '#9d174d', 'border' => '#ec4899'],
+// ── Tailwind chrome constants — same black/white/gray palette as
+//    coordinator_timeline.php (ink #0B0B0B, soft #6B6B6B, line #E2E2E2,
+//    surface #F5F5F5). Every value below is a literal, fully-spelled-out
+//    Tailwind utility string (never built via concatenation) so the JIT
+//    scanner can find it in this file at build time. ──
+$C_CARD       = "bg-white border border-[#E2E2E2] rounded-[10px] overflow-hidden mb-5";
+$C_CARD_PAD   = "bg-white border border-[#E2E2E2] rounded-[10px] p-6 md:p-[26px] mb-5";
+$C_CARD_TITLE = "font-sans text-[15px] font-bold text-[#0B0B0B] mb-5 pb-3.5 border-b border-[#E2E2E2] flex items-center gap-2.5";
+$C_BTN_SAVE   = "bg-[#0B0B0B] text-white px-6 py-2.5 border-0 rounded-[9px] cursor-pointer text-[13px] font-bold font-sans inline-flex items-center gap-2 transition-opacity hover:opacity-85 tracking-[0.3px]";
+$C_BTN_BACK   = "bg-[#0B0B0B] text-white px-[18px] py-[9px] rounded-[9px] font-semibold text-[13px] inline-flex items-center gap-[7px] no-underline mb-[18px] hover:opacity-85 transition-opacity";
+$C_BADGE      = "px-3 py-[3px] rounded-full text-[11px] font-bold bg-[#F5F5F5] border border-[#E2E2E2] text-[#0B0B0B]";
+
+// ── Tailwind stage accent map. Only 4 fixed stages exist, so every class
+//    below is a literal string the JIT scanner can find in this file. ──
+$STAGE_TW = [
+    'Fabrication'  => ['icon' => 'text-blue-500',    'dot' => 'text-blue-500'],
+    'Delivery'     => ['icon' => 'text-violet-500',  'dot' => 'text-violet-500'],
+    'Installation' => ['icon' => 'text-emerald-500', 'dot' => 'text-emerald-500'],
+    'BILLING'      => ['icon' => 'text-amber-500',   'dot' => 'text-amber-500'],
+];
+$stw = $STAGE_TW[$stage] ?? $STAGE_TW['Fabrication'];
+
+// ── Status → Tailwind classes (mirrors old $statusConfig hex map) ──
+$STATUS_TW = [
+    'Pending'    => ['border' => 'border-amber-500',   'text' => 'text-amber-600',   'badgeBg' => 'bg-amber-100',   'badgeText' => 'text-amber-800',   'badgeBorder' => 'border-amber-500',   'rowBg' => 'bg-amber-50',   'btnBg' => 'bg-amber-100',   'btnText' => 'text-amber-800'],
+    'Ongoing'    => ['border' => 'border-blue-500',    'text' => 'text-blue-600',    'badgeBg' => 'bg-blue-100',    'badgeText' => 'text-blue-800',    'badgeBorder' => 'border-blue-500',    'rowBg' => 'bg-blue-50',    'btnBg' => 'bg-blue-100',    'btnText' => 'text-blue-800'],
+    'Done'       => ['border' => 'border-emerald-500', 'text' => 'text-emerald-600', 'badgeBg' => 'bg-emerald-100', 'badgeText' => 'text-emerald-800', 'badgeBorder' => 'border-emerald-500', 'rowBg' => 'bg-emerald-50', 'btnBg' => 'bg-emerald-100', 'btnText' => 'text-emerald-800'],
+    'Incomplete' => ['border' => 'border-red-500',     'text' => 'text-red-600',     'badgeBg' => 'bg-red-100',     'badgeText' => 'text-red-800',     'badgeBorder' => 'border-red-500',     'rowBg' => 'bg-red-50',     'btnBg' => 'bg-red-100',     'btnText' => 'text-red-800'],
+    'Punchlist'  => ['border' => 'border-pink-500',    'text' => 'text-pink-600',    'badgeBg' => 'bg-pink-100',    'badgeText' => 'text-pink-800',    'badgeBorder' => 'border-pink-500',    'rowBg' => 'bg-pink-50',    'btnBg' => 'bg-pink-100',    'btnText' => 'text-pink-800'],
+];
+
+// ── Unit-block header state → Tailwind classes. Mirrors the same
+//    done / partial / none language coordinator_timeline.php uses for
+//    its C_PILL_DONE / C_PILL_PARTIAL / C_PILL_NONE badges. ──
+$UNIT_STATE_TW = [
+    'done'    => ['hdrBg' => 'bg-emerald-50', 'hdrText' => 'text-emerald-800', 'hdrBorder' => 'border-emerald-300', 'badge' => 'bg-emerald-600', 'icon' => 'fa-check-circle'],
+    'ongoing' => ['hdrBg' => 'bg-amber-50',   'hdrText' => 'text-amber-800',   'hdrBorder' => 'border-amber-300',   'badge' => 'bg-amber-600',   'icon' => 'fa-spinner'],
+    'pending' => ['hdrBg' => 'bg-[#F5F5F5]',  'hdrText' => 'text-[#6B6B6B]',   'hdrBorder' => 'border-[#E2E2E2]',   'badge' => 'bg-[#0B0B0B]',   'icon' => 'fa-clock'],
 ];
 
 // Pre-check stage dependencies for UI locking
@@ -273,12 +299,15 @@ $stageDependencies = [
 ];
 // No full-stage lock — per-item locking is handled in the render below
 
+// ── Renders a group's Fab/Del/Ins date bar. Position/width are per-record
+//    percentages, so they still need an inline style — everything else
+//    (color, layout, typography) is a literal Tailwind class. ──
 function renderTimelineBar($tl)
 {
     $phases = [
-        'fab' => ['label' => 'Fab', 'color' => '#3b82f6'],
-        'del' => ['label' => 'Del', 'color' => '#8b5cf6'],
-        'ins' => ['label' => 'Ins', 'color' => '#10b981'],
+        'fab' => ['label' => 'Fab', 'bar' => 'bg-blue-500', 'text' => 'text-blue-600'],
+        'del' => ['label' => 'Del', 'bar' => 'bg-violet-500', 'text' => 'text-violet-600'],
+        'ins' => ['label' => 'Ins', 'bar' => 'bg-emerald-500', 'text' => 'text-emerald-600'],
     ];
     $dates = [];
     foreach ($phases as $k => $_) {
@@ -292,7 +321,8 @@ function renderTimelineBar($tl)
     $min = min($dates);
     $max = max($dates);
     $total = max(1, $max - $min);
-    $html = '<div class="tl-bar-wrap">';
+
+    $html = '<div class="relative h-5 bg-[#E2E2E2] rounded-[5px] overflow-visible mb-1.5">';
     foreach ($phases as $k => $ph) {
         if (empty($tl[$k . '_start']) || empty($tl[$k . '_end']))
             continue;
@@ -301,17 +331,18 @@ function renderTimelineBar($tl)
         $dur = $tl[$k . '_duration'] ?? 0;
         $l = round((strtotime($s) - $min) / $total * 100, 1);
         $w = max(round((strtotime($e) - strtotime($s)) / $total * 100, 1), 2);
-        $html .= '<div class="tl-phase" style="left:' . $l . '%;width:' . $w . '%;background:' . $ph['color'] . ';"
-                     title="' . $ph['label'] . ': ' . date('M d', strtotime($s)) . '–' . date('M d', strtotime($e)) . ' (' . $dur . 'd)">
-                  <span class="tl-label">' . $ph['label'] . '</span></div>';
+        $html .= '<div class="absolute top-0 h-full rounded-[5px] flex items-center overflow-hidden transition-opacity duration-150 hover:opacity-80 hover:z-10 cursor-default ' . $ph['bar'] . '"'
+               . ' style="left:' . $l . '%;width:' . $w . '%;"'
+               . ' title="' . $ph['label'] . ': ' . date('M d', strtotime($s)) . ' \xE2\x80\x93 ' . date('M d', strtotime($e)) . ' (' . $dur . 'd)">'
+               . '<span class="text-white text-[9px] font-extrabold pl-[5px] uppercase pointer-events-none">' . $ph['label'] . '</span></div>';
     }
-    $html .= '</div><div class="tl-dates">';
+    $html .= '</div><div class="flex gap-3 text-[10px] flex-wrap">';
     foreach ($phases as $k => $ph) {
         if (empty($tl[$k . '_start']))
             continue;
-        $html .= '<span style="color:' . $ph['color'] . ';font-weight:700;">' . $ph['label'] . ': '
-            . date('M d', strtotime($tl[$k . '_start'])) . '–' . date('M d', strtotime($tl[$k . '_end']))
-            . ' <em>(' . (($tl[$k . '_duration']) ?? 0) . 'd)</em></span>';
+        $html .= '<span class="font-bold ' . $ph['text'] . '">' . $ph['label'] . ': '
+            . date('M d', strtotime($tl[$k . '_start'])) . ' \xE2\x80\x93 ' . date('M d', strtotime($tl[$k . '_end']))
+            . ' <em class="not-italic opacity-70">(' . (($tl[$k . '_duration']) ?? 0) . 'd)</em></span>';
     }
     $html .= '</div>';
     return $html;
@@ -325,617 +356,27 @@ function renderTimelineBar($tl)
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title><?= htmlspecialchars($stage) ?> Tracker — <?= htmlspecialchars($client['clientname']) ?></title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!--
+      Pure Tailwind build. No custom classes below — only the keyframe
+      animation for the toast (Tailwind has no built-in slide-in-from-right
+      animation), plus the accent color for native checkboxes. Every other
+      dynamic state (row status colors, unit-block state, tab-like toggles)
+      is applied via literal Tailwind class strings, either straight from
+      PHP or from the JS class maps at the bottom of this file, so the JIT
+      compiler can find them all in this bundle.
+    -->
     <style>
-        :root {
-            --brand-dark: #3b1f0f;
-            --brand-mid: #8a5a44;
-            --brand-light: #f5f1ed;
-            --stage-primary:
-                <?= $sc['primary'] ?>
-            ;
-            --stage-light:
-                <?= $sc['light'] ?>
-            ;
-            --stage-border:
-                <?= $sc['border'] ?>
-            ;
-        }
-
-        *,
-        *::before,
-        *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: var(--brand-light);
-            font-family: 'Segoe UI', sans-serif;
-            color: #1f2937;
-        }
-
-        .wrap {
-            max-width: 1400px;
-            margin: 28px auto;
-            padding: 0 20px;
-        }
-
-        .page-header {
-            background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
-            border-radius: 16px;
-            padding: 26px 32px;
-            color: white;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 14px;
-        }
-
-        .page-header h1 {
-            font-size: 21px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .page-header .sub {
-            font-size: 13px;
-            opacity: .85;
-            margin-top: 4px;
-        }
-
-        .stage-badge {
-            background: rgba(255, 255, 255, .2);
-            border: 1px solid rgba(255, 255, 255, .35);
-            padding: 6px 18px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .btn-back {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
-            color: white;
-            padding: 9px 18px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            margin-bottom: 16px;
-            transition: opacity .2s;
-        }
-
-        .btn-back:hover {
-            opacity: .85;
-        }
-
-        /* Overall timeline banner */
-        .otl-banner {
-            background: white;
-            border-radius: 12px;
-            padding: 14px 22px;
-            margin-bottom: 18px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .otl-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--brand-dark);
-            text-transform: uppercase;
-            letter-spacing: .4px;
-        }
-
-        .otl-dates {
-            font-size: 13px;
-            font-weight: 600;
-            color: #374151;
-        }
-
-        .otl-chip {
-            background: var(--brand-dark);
-            color: white;
-            padding: 3px 12px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .otl-mini-bar {
-            flex: 1;
-            min-width: 180px;
-            position: relative;
-            height: 12px;
-            background: #f0ece8;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        /* Progress card */
-        .progress-card {
-            background: white;
-            border-radius: 12px;
-            padding: 20px 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
-            margin-bottom: 20px;
-        }
-
-        .progress-card h2 {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--brand-dark);
-            margin-bottom: 14px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .stat-grid {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 14px;
-        }
-
-        .stat-box {
-            flex: 1 1 90px;
-            background: var(--brand-light);
-            border-radius: 10px;
-            padding: 12px 14px;
-            text-align: center;
-            border: 2px solid transparent;
-            min-width: 80px;
-        }
-
-        .stat-box .num {
-            font-size: 28px;
-            font-weight: 800;
-            line-height: 1;
-        }
-
-        .stat-box .lbl {
-            font-size: 10px;
-            font-weight: 700;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-            margin-top: 3px;
-        }
-
-        .stat-Pending {
-            border-color: #f59e0b;
-        }
-
-        .stat-Pending .num {
-            color: #d97706;
-        }
-
-        .stat-Ongoing {
-            border-color: #3b82f6;
-        }
-
-        .stat-Ongoing .num {
-            color: #2563eb;
-        }
-
-        .stat-Done {
-            border-color: #10b981;
-        }
-
-        .stat-Done .num {
-            color: #059669;
-        }
-
-        .stat-Incomplete {
-            border-color: #ef4444;
-        }
-
-        .stat-Incomplete .num {
-            color: #dc2626;
-        }
-
-        .stat-Punchlist {
-            border-color: #ec4899;
-        }
-
-        .stat-Punchlist .num {
-            color: #db2777;
-        }
-
-        .stat-total {
-            border-color: var(--brand-mid);
-        }
-
-        .stat-total .num {
-            color: var(--brand-dark);
-        }
-
-        .prog-bar {
-            height: 10px;
-            background: #e9ecef;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .prog-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--brand-dark), var(--brand-mid));
-            transition: width .5s;
-            border-radius: 5px;
-        }
-
-        .prog-pct {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--brand-dark);
-            text-align: right;
-            margin-top: 4px;
-        }
-
-        /* Area card */
-        .area-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .07);
-            margin-bottom: 22px;
-            overflow: hidden;
-        }
-
-        .area-hdr {
-            background: linear-gradient(135deg, var(--brand-dark), var(--brand-mid));
-            color: white;
-            padding: 13px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .area-hdr-name {
-            font-size: 14px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .area-pills {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .area-pill {
-            padding: 3px 9px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 700;
-            background: rgba(255, 255, 255, .2);
-            border: 1px solid rgba(255, 255, 255, .3);
-        }
-
-        /* Timeline strip */
-        .area-tl {
-            padding: 11px 20px 10px;
-            background: #fafafa;
-            border-bottom: 1px solid #f0ece8;
-        }
-
-        .tl-bar-wrap {
-            position: relative;
-            height: 20px;
-            background: #f0ece8;
-            border-radius: 5px;
-            overflow: visible;
-            margin-bottom: 5px;
-        }
-
-        .tl-phase {
-            position: absolute;
-            top: 0;
-            height: 100%;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            overflow: hidden;
-            transition: opacity .15s;
-            cursor: default;
-        }
-
-        .tl-phase:hover {
-            opacity: .8;
-            z-index: 2;
-        }
-
-        .tl-label {
-            color: white;
-            font-size: 9px;
-            font-weight: 800;
-            padding-left: 5px;
-            text-transform: uppercase;
-            pointer-events: none;
-        }
-
-        .tl-dates {
-            display: flex;
-            gap: 12px;
-            font-size: 10px;
-            flex-wrap: wrap;
-        }
-
-        .tl-dates em {
-            font-style: normal;
-            opacity: .7;
-        }
-
-        .no-tl {
-            font-size: 11px;
-            color: #9ca3af;
-            font-style: italic;
-            padding: 8px 20px;
-            background: #fafafa;
-            border-bottom: 1px solid #f0ece8;
-        }
-
-        /* Monitoring table */
-        .mon-wrap {
-            overflow-x: auto;
-            padding: 14px 18px 18px;
-        }
-
-        .mon-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 12px;
-            min-width: 600px;
-        }
-
-        .mon-table th {
-            background: var(--brand-dark);
-            color: white;
-            padding: 8px 11px;
-            font-size: 11px;
-            font-weight: 700;
-            border: 1px solid rgba(255, 255, 255, .12);
-            white-space: nowrap;
-        }
-
-        .mon-table th.l {
-            text-align: left;
-        }
-
-        .mon-table th.c {
-            text-align: center;
-        }
-
-        .mon-table td {
-            padding: 7px 11px;
-            border: 1px solid #e9ecef;
-            vertical-align: middle;
-        }
-
-        .mon-table tr.item-row:hover td {
-            background: var(--stage-light);
-        }
-
-        /* Item name */
-        .item-name-td {
-            font-weight: 700;
-            color: #111;
-            font-size: 12px;
-        }
-
-        .item-color-sub {
-            font-size: 10px;
-            color: #6b7280;
-            margin-top: 2px;
-        }
-
-        .src-badge {
-            display: inline-block;
-            padding: 1px 6px;
-            border-radius: 7px;
-            font-size: 9px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-left: 4px;
-        }
-
-        .src-entry {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .src-fixed {
-            background: #fce7f3;
-            color: #9d174d;
-        }
-
-        /* Unit block */
-        .unit-block {
-            border-radius: 10px;
-            margin-bottom: 14px;
-            overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
-        }
-
-        .unit-block-hdr {
-            user-select: none;
-            transition: filter .15s;
-        }
-
-        .unit-block-hdr:hover {
-            filter: brightness(.97);
-        }
-
-        .unit-block-body .mon-table th {
-            background: #4b5563;
-        }
-
-        /* Status buttons */
-        .s-wrap {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .s-btn {
-            padding: 3px 9px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 700;
-            border: 2px solid transparent;
-            cursor: pointer;
-            transition: all .12s;
-            white-space: nowrap;
-            background: none;
-        }
-
-        .s-btn:hover {
-            transform: scale(1.06);
-        }
-
-        .s-btn.active {
-            transform: scale(1.08);
-        }
-
-        .s-Pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .s-Pending.active {
-            border-color: #f59e0b;
-        }
-
-        .s-Ongoing {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .s-Ongoing.active {
-            border-color: #3b82f6;
-        }
-
-        .s-Done {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .s-Done.active {
-            border-color: #10b981;
-        }
-
-        .s-Incomplete {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        .s-Incomplete.active {
-            border-color: #ef4444;
-        }
-
-        .s-Punchlist {
-            background: #fce7f3;
-            color: #9d174d;
-        }
-
-        .s-Punchlist.active {
-            border-color: #ec4899;
-        }
-
-        .upd-cell {
-            font-size: 10px;
-            color: #9ca3af;
-        }
-
-        .summary-row td {
-            background: #f0e6db !important;
-            font-weight: 700;
-            color: var(--brand-dark);
-        }
-
-        .no-units-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            margin: 16px 0 8px;
-            padding: 0 2px;
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: white;
-            padding: 13px 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, .14);
-            display: none;
-            align-items: center;
-            gap: 11px;
-            z-index: 9999;
-            animation: slideIn .3s ease;
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .toast.show {
-            display: flex;
-        }
-
-        .toast.success {
-            border-left: 4px solid #10b981;
-        }
-
-        .toast.error {
-            border-left: 4px solid #ef4444;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(360px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        @media(max-width:700px) {
-            .stat-grid {
-                gap: 8px;
-            }
-
-            .s-wrap {
-                flex-direction: column;
-            }
-        }
+        body { font-family: 'Inter', sans-serif; }
+        @keyframes toastSlideIn { from { transform: translateX(360px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .anim-toast-in { animation: toastSlideIn .3s ease; }
+        @keyframes popIn { from { transform: scale(.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .anim-pop-in { animation: popIn .2s ease; }
     </style>
 </head>
 
-<body>
-    <div class="wrap">
+<body class="bg-[#F5F5F5] text-[#0B0B0B] font-sans">
+    <div class="max-w-[1400px] mx-auto px-5 py-7">
 
         <?php
         if ($came_from === 'manager') {
@@ -946,51 +387,51 @@ function renderTimelineBar($tl)
             $backLabel = 'Back to Project Tracker';
         }
         ?>
-        <a href="<?= $backHref ?>" class="btn-back">
+        <a href="<?= $backHref ?>" class="<?= $C_BTN_BACK ?>">
             <i class="fas fa-arrow-left"></i> <?= $backLabel ?>
         </a>
 
         <?php if ($view_only): ?>
-            <div
-                style="background:#fef3c7; border:2px solid #f59e0b; border-radius:10px; padding:13px 18px; margin-bottom:16px; display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:#92400e;">
+            <div class="px-4 py-3 rounded-[10px] mb-4 text-[13px] font-semibold flex items-center gap-2 bg-amber-100 text-amber-800 border-l-4 border-amber-500">
                 <i class="fas fa-eye"></i> View Only — You can view this stage but cannot make changes.
             </div>
         <?php endif; ?>
 
         <!-- Header -->
-        <div class="page-header">
-            <div>
-                <h1>
-                    <i
-                        class="fas fa-<?= $stage === 'Fabrication' ? 'tools' : ($stage === 'Delivery' ? 'truck' : ($stage === 'Installation' ? 'hard-hat' : 'file-invoice-dollar')) ?>"></i>
-                    <?= htmlspecialchars($stage) ?> Tracker
-                </h1>
-                <div class="sub">
-                    <?= htmlspecialchars($client['clientname']) ?> &nbsp;·&nbsp;
-                    <?= htmlspecialchars($client['nameproject']) ?>
-                    <?php if ($client['reference_number']): ?>
-                        &nbsp;·&nbsp;<span
-                            style="font-family:monospace;"><?= htmlspecialchars($client['reference_number']) ?></span>
-                    <?php endif; ?>
+        <div class="bg-white border border-[#E2E2E2] px-[30px] py-6 rounded-[10px] text-[#0B0B0B] mb-6 relative">
+            <div class="flex items-start justify-between flex-wrap gap-3">
+                <div>
+                    <div class="text-[11px] font-semibold tracking-[1.5px] uppercase text-[#6B6B6B] mb-1.5">Item Tracking</div>
+                    <h1 class="font-sans text-2xl font-bold tracking-[-0.01em] flex items-center gap-2.5">
+                        <i class="fas fa-<?= $stageIcon ?>"></i>
+                        <?= htmlspecialchars($stage) ?> Tracker
+                    </h1>
+                    <p class="text-[13px] opacity-85 mt-1.5 text-[#6B6B6B]">
+                        <?= htmlspecialchars($client['clientname']) ?> &nbsp;·&nbsp;
+                        <?= htmlspecialchars($client['nameproject']) ?>
+                        <?php if ($client['reference_number']): ?>
+                            &nbsp;·&nbsp;<span class="font-mono"><?= htmlspecialchars($client['reference_number']) ?></span>
+                        <?php endif; ?>
+                    </p>
                 </div>
-            </div>
-            <div class="stage-badge">
-                <i class="fas fa-circle" style="font-size:8px;color:<?= $sc['primary'] ?>;"></i>
-                <?= htmlspecialchars($stage) ?> Stage
+                <span class="<?= $C_BADGE ?> flex items-center gap-[7px]">
+                    <i class="fas fa-circle text-[8px] <?= $stw['dot'] ?>"></i>
+                    <?= htmlspecialchars($stage) ?> Stage
+                </span>
             </div>
         </div>
 
         <!-- Overall Timeline Banner -->
         <?php if ($overallStart): ?>
-            <div class="otl-banner">
+            <div class="<?= $C_CARD_PAD ?> !py-3.5 !px-[22px] !mb-[18px] flex items-center gap-4 flex-wrap">
                 <div>
-                    <div class="otl-label"><i class="fas fa-calendar-alt"></i> Overall Project Timeline</div>
-                    <div class="otl-dates">
+                    <div class="text-[11px] font-bold text-[#0B0B0B] uppercase tracking-[0.4px]"><i class="fas fa-calendar-alt"></i> Overall Project Timeline</div>
+                    <div class="text-[13px] font-semibold text-[#6B6B6B]">
                         <?= date('F d, Y', strtotime($overallStart)) ?> &rarr;
                         <?= date('F d, Y', strtotime($overallEnd)) ?>
                     </div>
                 </div>
-                <span class="otl-chip"><?= $overallDuration ?> days</span>
+                <span class="bg-[#0B0B0B] text-white px-3 py-[3px] rounded-[10px] text-[11px] font-bold"><?= $overallDuration ?> days</span>
                 <?php
                 $allTlDates = [];
                 foreach ($timelines as $tl) {
@@ -1004,11 +445,11 @@ function renderTimelineBar($tl)
                 $oMin = $allTlDates ? min($allTlDates) : strtotime($overallStart);
                 $oMax = $allTlDates ? max($allTlDates) : strtotime($overallEnd);
                 $oTot = max(1, $oMax - $oMin);
-                $phColors = ['fab' => '#3b82f6', 'del' => '#8b5cf6', 'ins' => '#10b981'];
+                $phClasses = ['fab' => 'bg-blue-500', 'del' => 'bg-violet-500', 'ins' => 'bg-emerald-500'];
                 ?>
-                <div class="otl-mini-bar">
+                <div class="flex-1 min-w-[180px] relative h-3 bg-[#E2E2E2] rounded-md overflow-hidden">
                     <?php foreach ($timelines as $areaTl):
-                        foreach ($phColors as $k => $c):
+                        foreach ($phClasses as $k => $cls):
                             if (empty($areaTl[$k . '_start']))
                                 continue;
                             $s = strtotime($areaTl[$k . '_start']);
@@ -1016,409 +457,422 @@ function renderTimelineBar($tl)
                             $l = round(($s - $oMin) / $oTot * 100, 1);
                             $w = max(round(($e - $s) / $oTot * 100, 1), 1);
                             ?>
-                            <div
-                                style="position:absolute;top:0;height:100%;left:<?= $l ?>%;width:<?= $w ?>%;background:<?= $c ?>;opacity:.65;">
-                            </div>
+                            <div class="absolute top-0 h-full <?= $cls ?> opacity-65" style="left:<?= $l ?>%;width:<?= $w ?>%;"></div>
                         <?php endforeach; endforeach; ?>
                 </div>
-                <div style="display:flex;gap:10px;font-size:11px;font-weight:700;">
-                    <span style="color:#3b82f6;">● Fab</span>
-                    <span style="color:#8b5cf6;">● Del</span>
-                    <span style="color:#10b981;">● Ins</span>
+                <div class="flex gap-2.5 text-[11px] font-bold">
+                    <span class="text-blue-500">● Fab</span>
+                    <span class="text-violet-500">● Del</span>
+                    <span class="text-emerald-500">● Ins</span>
                 </div>
             </div>
         <?php endif; ?>
 
         <!-- Progress -->
-        <div class="progress-card">
-            <h2><i class="fas fa-chart-pie" style="color:<?= $sc['primary'] ?>;"></i> <?= htmlspecialchars($stage) ?>
-                Progress
-                <span style="font-size:11px;font-weight:400;color:#6b7280;margin-left:6px;">(counting per unit where
-                    distributed)</span>
+        <div class="<?= $C_CARD_PAD ?>">
+            <h2 class="<?= $C_CARD_TITLE ?> !mb-3.5">
+                <i class="fas fa-chart-pie <?= $stw['icon'] ?>"></i> <?= htmlspecialchars($stage) ?> Progress
+                <span class="text-[11px] font-normal text-[#6B6B6B] ml-1.5">(counting per unit where distributed)</span>
             </h2>
-            <div class="stat-grid">
-                <?php foreach ($stageStatuses as $st): ?>
-                    <div class="stat-box stat-<?= $st ?>">
-                        <div class="num"><?= $statusCounts[$st] ?? 0 ?></div>
-                        <div class="lbl"><?= $st ?></div>
+            <div class="flex gap-2.5 flex-wrap mb-3.5">
+                <?php foreach ($stageStatuses as $st): $stw2 = $STATUS_TW[$st]; ?>
+                    <div class="flex-1 basis-[90px] min-w-[80px] bg-[#F5F5F5] rounded-[10px] px-3.5 py-3 text-center border-2 <?= $stw2['border'] ?>">
+                        <div class="text-[28px] font-extrabold leading-none <?= $stw2['text'] ?>"><?= $statusCounts[$st] ?? 0 ?></div>
+                        <div class="text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.4px] mt-[3px]"><?= $st ?></div>
                     </div>
                 <?php endforeach; ?>
-                <div class="stat-box stat-total">
-                    <div class="num"><?= $total_items ?></div>
-                    <div class="lbl">Total</div>
+                <div class="flex-1 basis-[90px] min-w-[80px] bg-[#F5F5F5] rounded-[10px] px-3.5 py-3 text-center border-2 border-[#0B0B0B]">
+                    <div class="text-[28px] font-extrabold leading-none text-[#0B0B0B]"><?= $total_items ?></div>
+                    <div class="text-[10px] font-bold text-[#6B6B6B] uppercase tracking-[0.4px] mt-[3px]">Total</div>
                 </div>
             </div>
-            <div class="prog-bar">
-                <div class="prog-fill" style="width:<?= $completion_percentage ?>%;"></div>
+            <div class="h-2.5 bg-[#E2E2E2] rounded-[5px] overflow-hidden">
+                <div class="h-full bg-[#0B0B0B] transition-all duration-500 rounded-[5px]" style="width:<?= $completion_percentage ?>%;"></div>
             </div>
-            <div class="prog-pct"><?= number_format($completion_percentage, 1) ?>% Complete</div>
+            <div class="text-xs font-bold text-[#0B0B0B] text-right mt-1"><?= number_format($completion_percentage, 1) ?>% Complete</div>
         </div>
 
         <!-- Area Tables -->
         <?php
-// Build display order: grouped entries first, then ungrouped
-$displayOrder = [];
-foreach ($groupedDisplay as $lbl => $gEntry) {
-    $displayOrder[] = ['type' => 'group', 'label' => $lbl, 'areas' => $gEntry['areas']];
-}
-foreach ($ungroupedDisplay as $area => $items) {
-    $displayOrder[] = ['type' => 'single', 'label' => $area, 'areas' => [$area]];
-}
-?>
-
-<?php foreach ($displayOrder as $displayEntry):
-    $entryAreas = $displayEntry['areas'];
-    $entryLabel = $displayEntry['label'];
-    $isGroup = $displayEntry['type'] === 'group';
-
-    // Merge all items across areas in this group
-    $areaItemsMerged = [];
-    foreach ($entryAreas as $area) {
-        foreach (($areaGroups[$area] ?? []) as $item) {
-            $areaItemsMerged[] = $item;
+        // Build display order: grouped entries first, then ungrouped
+        $displayOrder = [];
+        foreach ($groupedDisplay as $lbl => $gEntry) {
+            $displayOrder[] = ['type' => 'group', 'label' => $lbl, 'areas' => $gEntry['areas']];
         }
-    }
+        foreach ($ungroupedDisplay as $area => $items) {
+            $displayOrder[] = ['type' => 'single', 'label' => $area, 'areas' => [$area]];
+        }
+        ?>
 
-    // Use first area's timeline (groups share same timeline)
-    $tl = $timelines[$entryAreas[0]] ?? [];
+        <?php foreach ($displayOrder as $displayEntry):
+            $entryAreas = $displayEntry['areas'];
+            $entryLabel = $displayEntry['label'];
+            $isGroup = $displayEntry['type'] === 'group';
 
-    // Build unit-grouped structure for all areas in group
-    $unitGroups = [];
-    $noUnitItems = [];
-
-    foreach ($areaItemsMerged as $item) {
-        $itemUnits = ($item['source'] === 'entry')
-            ? ($distByEntry[$item['id']] ?? [])
-            : ($distByFixed[$item['id']] ?? []);
-
-        if (empty($itemUnits)) {
-            $noUnitItems[] = $item;
-        } else {
-            foreach ($itemUnits as $dist) {
-                $uNum = $dist['room_unit_number'];
-                $uName = $dist['room_unit_name'] ?? '';
-                $uKey = $uNum . '|' . $uName;
-                if (!isset($unitGroups[$uKey])) {
-                    $unitGroups[$uKey] = ['number' => $uNum, 'name' => $uName, 'items' => []];
+            // Merge all items across areas in this group
+            $areaItemsMerged = [];
+            foreach ($entryAreas as $area) {
+                foreach (($areaGroups[$area] ?? []) as $item) {
+                    $areaItemsMerged[] = $item;
                 }
-                $unitGroups[$uKey]['items'][] = ['item' => $item, 'dist' => $dist];
             }
-        }
-    }
-    ksort($unitGroups);
 
-    // Area-level counts (across all areas in group)
-    $aCounts = array_fill_keys($stageStatuses, 0);
-    $aTotal = 0;
-    foreach ($areaItemsMerged as $it) {
-        $units = ($it['source'] === 'entry') ? ($distByEntry[$it['id']] ?? []) : ($distByFixed[$it['id']] ?? []);
-        if (!empty($units)) {
-            foreach ($units as $u) {
-                $s = $u['unit_status'] ?: 'Pending';
-                if (isset($aCounts[$s])) $aCounts[$s]++;
-                $aTotal++;
+            // Use first area's timeline (groups share same timeline)
+            $tl = $timelines[$entryAreas[0]] ?? [];
+
+            // Build unit-grouped structure for all areas in group
+            $unitGroups = [];
+            $noUnitItems = [];
+
+            foreach ($areaItemsMerged as $item) {
+                $itemUnits = ($item['source'] === 'entry')
+                    ? ($distByEntry[$item['id']] ?? [])
+                    : ($distByFixed[$item['id']] ?? []);
+
+                if (empty($itemUnits)) {
+                    $noUnitItems[] = $item;
+                } else {
+                    foreach ($itemUnits as $dist) {
+                        $uNum = $dist['room_unit_number'];
+                        $uName = $dist['room_unit_name'] ?? '';
+                        $uKey = $uNum . '|' . $uName;
+                        if (!isset($unitGroups[$uKey])) {
+                            $unitGroups[$uKey] = ['number' => $uNum, 'name' => $uName, 'items' => []];
+                        }
+                        $unitGroups[$uKey]['items'][] = ['item' => $item, 'dist' => $dist];
+                    }
+                }
             }
-        } else {
-            $s = $it['status'] ?: 'Pending';
-            if (isset($aCounts[$s])) $aCounts[$s]++;
-            $aTotal++;
-        }
-    }
-    $aDone = $aCounts['Done'] ?? 0;
-    $aPct = $aTotal > 0 ? round($aDone / $aTotal * 100) : 0;
-    $aAreaAmt = array_sum(array_column($areaItemsMerged, 'computed_tot_amount'));
-    $aAreaQty = array_sum(array_column($areaItemsMerged, 'quantity'));
-?>
-    <div class="area-card">
+            ksort($unitGroups);
 
-        <div class="area-hdr">
-            <div class="area-hdr-name">
-                <?php if ($isGroup): ?>
-                    <i class="fas fa-object-group"></i>
-                    <?= htmlspecialchars($entryLabel) ?>
-                    <span style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);padding:2px 10px;border-radius:10px;font-size:11px;font-weight:700;margin-left:6px;">
-                        <i class="fas fa-layer-group"></i>
-                        <?= count($entryAreas) ?> area<?= count($entryAreas) > 1 ? 's' : '' ?>:
-                        <?= htmlspecialchars(implode(', ', $entryAreas)) ?>
-                    </span>
-                <?php else: ?>
-                    <i class="fas fa-map-marker-alt"></i>
-                    <?= htmlspecialchars($entryLabel) ?>
-                <?php endif; ?>
-            </div>
-            <div class="area-pills">
-                <?php foreach ($stageStatuses as $st):
-                    if (!($aCounts[$st] ?? 0)) continue; ?>
-                    <span class="area-pill"><?= $st ?>: <?= $aCounts[$st] ?></span>
-                <?php endforeach; ?>
-                <span class="area-pill" style="background:rgba(255,255,255,.35);"><?= $aPct ?>% done</span>
-                <?php if (!empty($unitGroups)): ?>
-                    <span class="area-pill" style="background:rgba(255,255,255,.2);">
-                        <i class="fas fa-door-open"></i> <?= count($unitGroups) ?> unit<?= count($unitGroups) > 1 ? 's' : '' ?>
-                    </span>
-                <?php endif; ?>
-                <?php if (!empty($tl['ins_end'])): ?>
-                    <span class="area-pill" style="background:rgba(16,185,129,.3);border-color:rgba(16,185,129,.5);">
-                        <i class="fas fa-calendar-check"></i> Install by: <?= date('M d, Y', strtotime($tl['ins_end'])) ?>
-                    </span>
-                <?php endif; ?>
-            </div>
-        </div>
-
-        <?php if (!empty($tl)): ?>
-            <div class="area-tl"><?= renderTimelineBar($tl) ?></div>
-        <?php else: ?>
-            <div class="no-tl"><i class="fas fa-calendar-times"></i> No timeline set for this group yet.</div>
-        <?php endif; ?>
-
-        <div class="mon-wrap">
-
-            <?php if (!empty($unitGroups)): ?>
-                <?php foreach ($unitGroups as $uKey => $uGroup):
-                    $uNum = $uGroup['number'];
-                    $uName = $uGroup['name'];
-                    $uLabel = $uName ? 'Unit ' . $uNum . ' — ' . htmlspecialchars($uName) : 'Unit ' . $uNum;
-                    $uItems = $uGroup['items'];
-
-                    $uCounts = array_fill_keys($stageStatuses, 0);
-                    foreach ($uItems as $ui) {
-                        $s = $ui['dist']['unit_status'] ?: 'Pending';
-                        if (isset($uCounts[$s])) $uCounts[$s]++;
+            // Area-level counts (across all areas in group)
+            $aCounts = array_fill_keys($stageStatuses, 0);
+            $aTotal = 0;
+            foreach ($areaItemsMerged as $it) {
+                $units = ($it['source'] === 'entry') ? ($distByEntry[$it['id']] ?? []) : ($distByFixed[$it['id']] ?? []);
+                if (!empty($units)) {
+                    foreach ($units as $u) {
+                        $s = $u['unit_status'] ?: 'Pending';
+                        if (isset($aCounts[$s])) $aCounts[$s]++;
+                        $aTotal++;
                     }
-                    $uTotal = count($uItems);
-                    $uDone = $uCounts['Done'] ?? 0;
-                    $uPct = $uTotal > 0 ? round($uDone / $uTotal * 100) : 0;
-                    $anyOngoing = ($uCounts['Ongoing'] ?? 0) + ($uCounts['Incomplete'] ?? 0) + ($uCounts['Punchlist'] ?? 0);
-                    $allDone = ($uDone === $uTotal && $uTotal > 0);
+                } else {
+                    $s = $it['status'] ?: 'Pending';
+                    if (isset($aCounts[$s])) $aCounts[$s]++;
+                    $aTotal++;
+                }
+            }
+            $aDone = $aCounts['Done'] ?? 0;
+            $aPct = $aTotal > 0 ? round($aDone / $aTotal * 100) : 0;
+            $aAreaAmt = array_sum(array_column($areaItemsMerged, 'computed_tot_amount'));
+            $aAreaQty = array_sum(array_column($areaItemsMerged, 'quantity'));
+        ?>
+            <div class="<?= $C_CARD ?> !mb-[22px]">
 
-                    if ($allDone) {
-                        $uHdrBg = '#d1fae5'; $uHdrColor = '#065f46'; $uHdrBorder = '#10b981';
-                        $uBadgeBg = '#059669'; $uIcon = 'fa-check-circle';
-                    } elseif ($anyOngoing > 0) {
-                        $uHdrBg = '#dbeafe'; $uHdrColor = '#1e40af'; $uHdrBorder = '#3b82f6';
-                        $uBadgeBg = '#2563eb'; $uIcon = 'fa-spinner';
-                    } else {
-                        $uHdrBg = '#fef3c7'; $uHdrColor = '#92400e'; $uHdrBorder = '#f59e0b';
-                        $uBadgeBg = '#d97706'; $uIcon = 'fa-clock';
-                    }
-
-                    $slugUnit = 'ublk_' . preg_replace('/[^a-z0-9]/i', '_', $entryLabel) . '_' . $uNum;
-                    ?>
-                    <div class="unit-block" style="border:2px solid <?= $uHdrBorder ?>;">
-                        <div class="unit-block-hdr"
-                            style="background:<?= $uHdrBg ?>;border-bottom:2px solid <?= $uHdrBorder ?>;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;cursor:pointer;"
-                            onclick="toggleUnitBlock('<?= $slugUnit ?>', this)">
-                            <div style="display:flex;align-items:center;gap:12px;">
-                                <span style="background:<?= $uBadgeBg ?>;color:white;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,0,0,.15);">
-                                    <?= $uNum ?>
-                                </span>
-                                <div>
-                                    <div style="font-size:14px;font-weight:700;color:<?= $uHdrColor ?>;display:flex;align-items:center;gap:7px;">
-                                        <i class="fas fa-door-open" style="font-size:12px;opacity:.8;"></i>
-                                        <?= $uLabel ?>
-                                    </div>
-                                    <div style="font-size:11px;color:<?= $uHdrColor ?>;opacity:.7;margin-top:2px;">
-                                        <?= $uTotal ?> item<?= $uTotal > 1 ? 's' : '' ?> &nbsp;·&nbsp; <?= $uPct ?>% complete
-                                    </div>
-                                </div>
-                            </div>
-                            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                                <?php foreach ($stageStatuses as $st):
-                                    if (!($uCounts[$st] ?? 0)) continue; ?>
-                                    <span style="background:<?= $statusConfig[$st]['bg'] ?>;color:<?= $statusConfig[$st]['color'] ?>;border:1px solid <?= $statusConfig[$st]['border'] ?>;padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;">
-                                        <?= $st ?>: <?= $uCounts[$st] ?>
-                                    </span>
-                                <?php endforeach; ?>
-                                <div style="width:70px;height:6px;background:rgba(0,0,0,.12);border-radius:3px;overflow:hidden;">
-                                    <div style="width:<?= $uPct ?>%;height:100%;background:<?= $uBadgeBg ?>;border-radius:3px;transition:width .4s;"></div>
-                                </div>
-                                <span style="font-size:10px;font-weight:700;color:<?= $uHdrColor ?>;min-width:32px;"><?= $uPct ?>%</span>
-                                <i class="fas fa-chevron-down" id="chev-<?= $slugUnit ?>" style="color:<?= $uHdrColor ?>;font-size:13px;transition:transform .25s;margin-left:2px;"></i>
-                            </div>
-                        </div>
-
-                        <div id="<?= $slugUnit ?>" style="display:none;">
-                            <table class="mon-table" style="width:100%;">
-                                <thead>
-                                    <tr>
-                                        <th class="l" style="min-width:180px;">Item Name</th>
-                                        <?php if ($isGroup): ?>
-                                            <th class="c" style="min-width:80px;">Area</th>
-                                        <?php endif; ?>
-                                        <th class="c" style="min-width:60px;">Type</th>
-                                        <th class="c" style="min-width:45px;">Qty</th>
-                                        <th class="l" style="min-width:<?= $isInstallation ? '320px' : '220px' ?>;">Status</th>
-                                        <th class="c" style="min-width:100px;">Amount</th>
-                                        <th class="l" style="min-width:120px;">Last Updated</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($uItems as $ui):
-                                        $item = $ui['item'];
-                                        $dist = $ui['dist'];
-                                        $uStatus = $dist['unit_status'] ?: 'Pending';
-                                        $rowBg = $statusConfig[$uStatus]['bg'] ?? '#fff';
-                                        ?>
-                                        <tr class="item-row" style="background:<?= $rowBg ?>;">
-                                            <td>
-                                                <div class="item-name-td">
-                                                    <?= htmlspecialchars($item['item_name'] ?? 'N/A') ?>
-                                                    <span class="src-badge <?= $item['source'] === 'entry' ? 'src-entry' : 'src-fixed' ?>">
-                                                        <?= $item['source'] === 'entry' ? 'Entry' : 'Fixed' ?>
-                                                    </span>
-                                                </div>
-                                                <button onclick="viewRemarks(<?= $item['id'] ?>, '<?= $item['source'] ?>', <?= $dist['distribution_id'] ?>, '<?= htmlspecialchars($item['item_name'] ?? '', ENT_QUOTES) ?>')"
-                                                    style="margin-top:4px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;">
-                                                    <i class="fas fa-history"></i> Remarks
-                                                </button>
-                                                <?php if (!empty($item['color_label'])): ?>
-                                                    <div class="item-color-sub"><i class="fas fa-palette"></i> <?= htmlspecialchars($item['color_label']) ?></div>
-                                                <?php endif; ?>
-                                            </td>
-                                            <?php if ($isGroup): ?>
-                                                <td style="text-align:center;font-size:11px;font-weight:700;color:#6b7280;">
-                                                    <?= htmlspecialchars($item['area']) ?>
-                                                </td>
-                                            <?php endif; ?>
-                                            <td style="text-align:center;font-weight:700;color:#374151;"><?= htmlspecialchars($item['unit'] ?? '—') ?></td>
-                                            <td style="text-align:center;font-weight:700;color:var(--brand-dark);"><?= $dist['quantity'] ?></td>
-                                            <td>
-                                                <div class="s-wrap">
-                                                    <?php foreach ($stageStatuses as $st):
-                                                        $active = ($uStatus === $st) ? ' active' : '';
-                                                        $itemPrevKey = $item['source'] . ':' . $item['id'];
-                                                        $itemPrevStatus = $prevStageStatusMap[$itemPrevKey] ?? 'Done';
-                                                        $itemDepLocked = isset($stageDependencies[$stage]) && ($itemPrevStatus !== 'Done');
-                                                        ?>
-                                                        <button class="s-btn s-<?= $st ?><?= $active ?>"
-                                                            <?= ($view_only || $itemDepLocked) ? 'disabled style="cursor:not-allowed; opacity:0.6;"' : "onclick=\"updateUnitStatus({$dist['distribution_id']}, '{$st}', this, {$item['id']}, '{$item['source']}')\"" ?>>
-                                                            <?= $st ?>
-                                                        </button>
-                                                    <?php endforeach; ?>
-                                                </div>
-                                            </td>
-                                            <td style="text-align:right;font-weight:600;font-size:11px;color:#374151;">₱<?= number_format($item['computed_tot_amount'], 2) ?></td>
-                                            <td class="upd-cell">
-                                                <?= (!empty($dist['unit_updated_at']) && $dist['unit_updated_at'] !== '0000-00-00 00:00:00')
-                                                    ? '<i class="fas fa-clock"></i> ' . date('M d, Y g:i A', strtotime($dist['unit_updated_at']))
-                                                    : '—' ?>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="flex items-center justify-between gap-2.5 flex-wrap w-full bg-[#F5F5F5] px-5 py-[15px] border-b border-[#E2E2E2]">
+                    <div class="text-sm font-bold text-[#0B0B0B] flex items-center gap-2">
+                        <?php if ($isGroup): ?>
+                            <i class="fas fa-object-group text-[#6B6B6B]"></i>
+                            <?= htmlspecialchars($entryLabel) ?>
+                            <span class="bg-amber-100 text-amber-800 px-2.5 py-0.5 rounded-full text-[11px] font-bold ml-1.5">
+                                <i class="fas fa-layer-group"></i>
+                                <?= count($entryAreas) ?> area<?= count($entryAreas) > 1 ? 's' : '' ?>:
+                                <?= htmlspecialchars(implode(', ', $entryAreas)) ?>
+                            </span>
+                        <?php else: ?>
+                            <i class="fas fa-map-marker-alt text-[#6B6B6B]"></i>
+                            <?= htmlspecialchars($entryLabel) ?>
+                        <?php endif; ?>
                     </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-
-            <?php if (!empty($noUnitItems)): ?>
-                <?php if (!empty($unitGroups)): ?>
-                    <div class="no-units-label" style="display:flex;align-items:center;gap:6px;">
-                        <i class="fas fa-box"></i> Individual Items
-                        <span style="font-size:10px;font-weight:400;color:#9ca3af;">(no unit distribution)</span>
-                    </div>
-                <?php endif; ?>
-                <table class="mon-table" style="width:100%;">
-                    <thead>
-                        <tr>
-                            <th class="l" style="min-width:180px;">Item Name</th>
-                            <?php if ($isGroup): ?>
-                                <th class="c" style="min-width:80px;">Area</th>
-                            <?php endif; ?>
-                            <th class="c" style="min-width:60px;">Type</th>
-                            <th class="c" style="min-width:45px;">Qty</th>
-                            <th class="l" style="min-width:<?= $isInstallation ? '320px' : '220px' ?>;">Status</th>
-                            <th class="c" style="min-width:100px;">Amount</th>
-                            <th class="l" style="min-width:120px;">Last Updated</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($noUnitItems as $item):
-                            $status = $item['status'] ?: 'Pending';
-                            $rowBg = $statusConfig[$status]['bg'] ?? '#fff';
+                    <div class="flex gap-1.5 flex-wrap">
+                        <?php foreach ($stageStatuses as $st):
+                            if (!($aCounts[$st] ?? 0)) continue;
+                            $stw2 = $STATUS_TW[$st];
                             ?>
-                            <tr class="item-row" style="background:<?= $rowBg ?>;">
-                                <td>
-                                    <div class="item-name-td">
-                                        <?= htmlspecialchars($item['item_name'] ?? 'N/A') ?>
-                                        <span class="src-badge <?= $item['source'] === 'entry' ? 'src-entry' : 'src-fixed' ?>">
-                                            <?= $item['source'] === 'entry' ? 'Entry' : 'Fixed' ?>
-                                        </span>
+                            <span class="px-2.5 py-[3px] rounded-full text-[10px] font-bold <?= $stw2['badgeBg'] ?> <?= $stw2['badgeText'] ?>"><?= $st ?>: <?= $aCounts[$st] ?></span>
+                        <?php endforeach; ?>
+                        <span class="px-2.5 py-[3px] rounded-full text-[10px] font-bold bg-[#0B0B0B] text-white"><?= $aPct ?>% done</span>
+                        <?php if (!empty($unitGroups)): ?>
+                            <span class="<?= $C_BADGE ?>">
+                                <i class="fas fa-door-open"></i> <?= count($unitGroups) ?> unit<?= count($unitGroups) > 1 ? 's' : '' ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($tl['ins_end'])): ?>
+                            <span class="px-2.5 py-[3px] rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                <i class="fas fa-calendar-check"></i> Install by: <?= date('M d, Y', strtotime($tl['ins_end'])) ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <?php if (!empty($tl)): ?>
+                    <div class="px-5 pt-[11px] pb-2.5 bg-white border-b border-[#E2E2E2]"><?= renderTimelineBar($tl) ?></div>
+                <?php else: ?>
+                    <div class="text-[11px] text-[#6B6B6B] italic px-5 py-2 bg-white border-b border-[#E2E2E2]"><i class="fas fa-calendar-times"></i> No timeline set for this group yet.</div>
+                <?php endif; ?>
+
+                <div class="overflow-x-auto px-[18px] pb-[18px] pt-3.5">
+
+                    <?php if (!empty($unitGroups)): ?>
+                        <?php foreach ($unitGroups as $uKey => $uGroup):
+                            $uNum = $uGroup['number'];
+                            $uName = $uGroup['name'];
+                            $uLabel = $uName ? 'Unit ' . $uNum . ' — ' . htmlspecialchars($uName) : 'Unit ' . $uNum;
+                            $uItems = $uGroup['items'];
+
+                            $uCounts = array_fill_keys($stageStatuses, 0);
+                            foreach ($uItems as $ui) {
+                                $s = $ui['dist']['unit_status'] ?: 'Pending';
+                                if (isset($uCounts[$s])) $uCounts[$s]++;
+                            }
+                            $uTotal = count($uItems);
+                            $uDone = $uCounts['Done'] ?? 0;
+                            $uPct = $uTotal > 0 ? round($uDone / $uTotal * 100) : 0;
+                            $anyOngoing = ($uCounts['Ongoing'] ?? 0) + ($uCounts['Incomplete'] ?? 0) + ($uCounts['Punchlist'] ?? 0);
+                            $allDone = ($uDone === $uTotal && $uTotal > 0);
+
+                            if ($allDone) {
+                                $ust = $UNIT_STATE_TW['done'];
+                            } elseif ($anyOngoing > 0) {
+                                $ust = $UNIT_STATE_TW['ongoing'];
+                            } else {
+                                $ust = $UNIT_STATE_TW['pending'];
+                            }
+
+                            $slugUnit = 'ublk_' . preg_replace('/[^a-z0-9]/i', '_', $entryLabel) . '_' . $uNum;
+                        ?>
+                        <div class="rounded-[10px] mb-3.5 overflow-hidden shadow-sm border-2 <?= $ust['hdrBorder'] ?>">
+                            <div class="<?= $ust['hdrBg'] ?> border-b-2 <?= $ust['hdrBorder'] ?> px-4 py-[11px] flex items-center justify-between gap-2.5 flex-wrap cursor-pointer select-none transition duration-150 hover:brightness-95"
+                                onclick="toggleUnitBlock('<?= $slugUnit ?>')">
+                                <div class="flex items-center gap-3">
+                                    <span class="<?= $ust['badge'] ?> text-white w-[34px] h-[34px] rounded-full inline-flex items-center justify-center font-extrabold text-sm shrink-0 shadow-[0_2px_6px_rgba(0,0,0,.15)]">
+                                        <?= $uNum ?>
+                                    </span>
+                                    <div>
+                                        <div class="text-sm font-bold <?= $ust['hdrText'] ?> flex items-center gap-[7px]">
+                                            <i class="fas fa-door-open text-xs opacity-80"></i>
+                                            <?= $uLabel ?>
+                                        </div>
+                                        <div class="text-[11px] <?= $ust['hdrText'] ?> opacity-70 mt-0.5">
+                                            <?= $uTotal ?> item<?= $uTotal > 1 ? 's' : '' ?> &nbsp;·&nbsp; <?= $uPct ?>% complete
+                                        </div>
                                     </div>
-                                    <button onclick="viewRemarks(<?= $item['id'] ?>, '<?= $item['source'] ?>', null, '<?= htmlspecialchars($item['item_name'] ?? '', ENT_QUOTES) ?>')"
-                                        style="margin-top:4px;background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;cursor:pointer;">
-                                        <i class="fas fa-history"></i> Remarks
-                                    </button>
-                                    <?php if (!empty($item['color_label'])): ?>
-                                        <div class="item-color-sub"><i class="fas fa-palette"></i> <?= htmlspecialchars($item['color_label']) ?></div>
-                                    <?php endif; ?>
-                                </td>
-                                <?php if ($isGroup): ?>
-                                    <td style="text-align:center;font-size:11px;font-weight:700;color:#6b7280;">
-                                        <?= htmlspecialchars($item['area']) ?>
-                                    </td>
-                                <?php endif; ?>
-                                <td style="text-align:center;font-weight:700;color:#374151;"><?= htmlspecialchars($item['unit'] ?? '—') ?></td>
-                                <td style="text-align:center;font-weight:700;color:var(--brand-dark);"><?= $item['quantity'] ?></td>
-                                <td>
-                                    <div class="s-wrap">
-                                        <?php foreach ($stageStatuses as $st):
-                                            $active = ($status === $st) ? ' active' : '';
-                                            $itemPrevKey = $item['source'] . ':' . $item['id'];
-                                            $itemPrevStatus = $prevStageStatusMap[$itemPrevKey] ?? 'Done';
-                                            $itemDepLocked = isset($stageDependencies[$stage]) && ($itemPrevStatus !== 'Done');
+                                </div>
+                                <div class="flex items-center gap-2 flex-wrap">
+                                    <?php foreach ($stageStatuses as $st):
+                                        if (!($uCounts[$st] ?? 0)) continue;
+                                        $stw2 = $STATUS_TW[$st];
+                                        ?>
+                                        <span class="<?= $stw2['badgeBg'] ?> <?= $stw2['badgeText'] ?> border <?= $stw2['badgeBorder'] ?> px-2.5 py-[3px] rounded-[10px] text-[10px] font-bold">
+                                            <?= $st ?>: <?= $uCounts[$st] ?>
+                                        </span>
+                                    <?php endforeach; ?>
+                                    <div class="w-[70px] h-1.5 bg-black/10 rounded-[3px] overflow-hidden">
+                                        <div class="h-full <?= $ust['badge'] ?> rounded-[3px] transition-all duration-500" style="width:<?= $uPct ?>%;"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold <?= $ust['hdrText'] ?> min-w-[32px]"><?= $uPct ?>%</span>
+                                    <i class="fas fa-chevron-down <?= $ust['hdrText'] ?> text-[13px] transition-transform duration-200 ml-0.5" id="chev-<?= $slugUnit ?>"></i>
+                                </div>
+                            </div>
+
+                            <div id="<?= $slugUnit ?>" class="hidden">
+                                <table class="w-full border-collapse text-xs min-w-[600px]">
+                                    <thead>
+                                        <tr>
+                                            <th class="bg-[#6B6B6B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-left min-w-[180px]">Item Name</th>
+                                            <?php if ($isGroup): ?>
+                                                <th class="bg-[#6B6B6B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[80px]">Area</th>
+                                            <?php endif; ?>
+                                            <th class="bg-[#6B6B6B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[60px]">Type</th>
+                                            <th class="bg-[#6B6B6B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[45px]">Qty</th>
+                                            <th class="bg-[#6B6B6B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-left <?= $isInstallation ? 'min-w-[320px]' : 'min-w-[220px]' ?>">Status</th>
+                                            <th class="bg-[#6B6B6B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[100px]">Amount</th>
+                                            <th class="bg-[#6B6B6B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-left min-w-[120px]">Last Updated</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($uItems as $ui):
+                                            $item = $ui['item'];
+                                            $dist = $ui['dist'];
+                                            $uStatus = $dist['unit_status'] ?: 'Pending';
+                                            $rowStw = $STATUS_TW[$uStatus];
                                             ?>
-                                            <button class="s-btn s-<?= $st ?><?= $active ?>"
-                                                <?= ($view_only || $itemDepLocked) ? 'disabled style="cursor:not-allowed; opacity:0.6;"' : "onclick=\"updateItemStatus({$item['id']}, '{$st}', this, '{$item['source']}')\"" ?>>
-                                                <?= $st ?>
+                                            <tr class="item-row <?= $rowStw['rowBg'] ?>" data-rowbg="<?= $rowStw['rowBg'] ?>">
+                                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle">
+                                                    <div class="font-bold text-gray-900 text-xs">
+                                                        <?= htmlspecialchars($item['item_name'] ?? 'N/A') ?>
+                                                        <span class="inline-block px-1.5 py-px rounded-[7px] text-[9px] font-bold uppercase ml-1 <?= $item['source'] === 'entry' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' ?>">
+                                                            <?= $item['source'] === 'entry' ? 'Entry' : 'Fixed' ?>
+                                                        </span>
+                                                    </div>
+                                                    <button onclick="viewRemarks(<?= $item['id'] ?>, '<?= $item['source'] ?>', <?= $dist['distribution_id'] ?>, '<?= htmlspecialchars($item['item_name'] ?? '', ENT_QUOTES) ?>')"
+                                                        class="mt-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-md px-2 py-0.5 text-[10px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">
+                                                        <i class="fas fa-history"></i> Remarks
+                                                    </button>
+                                                    <?php if (!empty($item['color_label'])): ?>
+                                                        <div class="text-[10px] text-gray-500 mt-0.5"><i class="fas fa-palette"></i> <?= htmlspecialchars($item['color_label']) ?></div>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <?php if ($isGroup): ?>
+                                                    <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-center text-[11px] font-bold text-gray-500">
+                                                        <?= htmlspecialchars($item['area']) ?>
+                                                    </td>
+                                                <?php endif; ?>
+                                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-center font-bold text-gray-700"><?= htmlspecialchars($item['unit'] ?? '—') ?></td>
+                                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-center font-bold text-[#0B0B0B]"><?= $dist['quantity'] ?></td>
+                                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle">
+                                                    <div class="flex gap-1 flex-wrap max-[700px]:flex-col">
+                                                        <?php foreach ($stageStatuses as $st):
+                                                            $btnStw = $STATUS_TW[$st];
+                                                            $active = ($uStatus === $st);
+                                                            $itemPrevKey = $item['source'] . ':' . $item['id'];
+                                                            $itemPrevStatus = $prevStageStatusMap[$itemPrevKey] ?? 'Done';
+                                                            $itemDepLocked = isset($stageDependencies[$stage]) && ($itemPrevStatus !== 'Done');
+                                                            $locked = $view_only || $itemDepLocked;
+                                                            $btnClasses = "s-btn px-[9px] py-[3px] rounded-full text-[10px] font-bold border-2 transition-transform duration-150 whitespace-nowrap "
+                                                                . $btnStw['btnBg'] . " " . $btnStw['btnText'] . " "
+                                                                . ($active ? $btnStw['badgeBorder'] . ' scale-105' : 'border-transparent')
+                                                                . ($locked ? ' cursor-not-allowed opacity-60' : ' cursor-pointer hover:scale-105');
+                                                            ?>
+                                                            <button class="<?= $btnClasses ?>"
+                                                                data-status="<?= $st ?>"
+                                                                <?= $locked ? 'disabled' : "onclick=\"updateUnitStatus({$dist['distribution_id']}, '{$st}', this, {$item['id']}, '{$item['source']}')\"" ?>>
+                                                                <?= $st ?>
+                                                            </button>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </td>
+                                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-right font-semibold text-[11px] text-gray-700">₱<?= number_format($item['computed_tot_amount'], 2) ?></td>
+                                                <td class="upd-cell px-[11px] py-[7px] border border-gray-200 align-middle text-[10px] text-gray-400">
+                                                    <?= (!empty($dist['unit_updated_at']) && $dist['unit_updated_at'] !== '0000-00-00 00:00:00')
+                                                        ? '<i class="fas fa-clock"></i> ' . date('M d, Y g:i A', strtotime($dist['unit_updated_at']))
+                                                        : '—' ?>
+                                                </td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+
+                    <?php if (!empty($noUnitItems)): ?>
+                        <?php if (!empty($unitGroups)): ?>
+                            <div class="text-[11px] font-bold text-gray-500 uppercase tracking-[0.4px] my-4 mx-0.5 flex items-center gap-1.5">
+                                <i class="fas fa-box"></i> Individual Items
+                                <span class="text-[10px] font-normal text-gray-400">(no unit distribution)</span>
+                            </div>
+                        <?php endif; ?>
+                        <table class="w-full border-collapse text-xs min-w-[600px]">
+                            <thead>
+                                <tr>
+                                    <th class="bg-[#0B0B0B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-left min-w-[180px]">Item Name</th>
+                                    <?php if ($isGroup): ?>
+                                        <th class="bg-[#0B0B0B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[80px]">Area</th>
+                                    <?php endif; ?>
+                                    <th class="bg-[#0B0B0B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[60px]">Type</th>
+                                    <th class="bg-[#0B0B0B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[45px]">Qty</th>
+                                    <th class="bg-[#0B0B0B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-left <?= $isInstallation ? 'min-w-[320px]' : 'min-w-[220px]' ?>">Status</th>
+                                    <th class="bg-[#0B0B0B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-center min-w-[100px]">Amount</th>
+                                    <th class="bg-[#0B0B0B] text-white px-[11px] py-2 text-[11px] font-bold border border-white/10 whitespace-nowrap text-left min-w-[120px]">Last Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($noUnitItems as $item):
+                                    $status = $item['status'] ?: 'Pending';
+                                    $rowStw = $STATUS_TW[$status];
+                                    ?>
+                                    <tr class="item-row <?= $rowStw['rowBg'] ?>" data-rowbg="<?= $rowStw['rowBg'] ?>">
+                                        <td class="px-[11px] py-[7px] border border-gray-200 align-middle">
+                                            <div class="font-bold text-gray-900 text-xs">
+                                                <?= htmlspecialchars($item['item_name'] ?? 'N/A') ?>
+                                                <span class="inline-block px-1.5 py-px rounded-[7px] text-[9px] font-bold uppercase ml-1 <?= $item['source'] === 'entry' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' ?>">
+                                                    <?= $item['source'] === 'entry' ? 'Entry' : 'Fixed' ?>
+                                                </span>
+                                            </div>
+                                            <button onclick="viewRemarks(<?= $item['id'] ?>, '<?= $item['source'] ?>', null, '<?= htmlspecialchars($item['item_name'] ?? '', ENT_QUOTES) ?>')"
+                                                class="mt-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-md px-2 py-0.5 text-[10px] font-bold cursor-pointer hover:bg-blue-100 transition-colors">
+                                                <i class="fas fa-history"></i> Remarks
                                             </button>
+                                            <?php if (!empty($item['color_label'])): ?>
+                                                <div class="text-[10px] text-gray-500 mt-0.5"><i class="fas fa-palette"></i> <?= htmlspecialchars($item['color_label']) ?></div>
+                                            <?php endif; ?>
+                                        </td>
+                                        <?php if ($isGroup): ?>
+                                            <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-center text-[11px] font-bold text-gray-500">
+                                                <?= htmlspecialchars($item['area']) ?>
+                                            </td>
+                                        <?php endif; ?>
+                                        <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-center font-bold text-gray-700"><?= htmlspecialchars($item['unit'] ?? '—') ?></td>
+                                        <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-center font-bold text-[#0B0B0B]"><?= $item['quantity'] ?></td>
+                                        <td class="px-[11px] py-[7px] border border-gray-200 align-middle">
+                                            <div class="flex gap-1 flex-wrap max-[700px]:flex-col">
+                                                <?php foreach ($stageStatuses as $st):
+                                                    $btnStw = $STATUS_TW[$st];
+                                                    $active = ($status === $st);
+                                                    $itemPrevKey = $item['source'] . ':' . $item['id'];
+                                                    $itemPrevStatus = $prevStageStatusMap[$itemPrevKey] ?? 'Done';
+                                                    $itemDepLocked = isset($stageDependencies[$stage]) && ($itemPrevStatus !== 'Done');
+                                                    $locked = $view_only || $itemDepLocked;
+                                                    $btnClasses = "s-btn px-[9px] py-[3px] rounded-full text-[10px] font-bold border-2 transition-transform duration-150 whitespace-nowrap "
+                                                        . $btnStw['btnBg'] . " " . $btnStw['btnText'] . " "
+                                                        . ($active ? $btnStw['badgeBorder'] . ' scale-105' : 'border-transparent')
+                                                        . ($locked ? ' cursor-not-allowed opacity-60' : ' cursor-pointer hover:scale-105');
+                                                    ?>
+                                                    <button class="<?= $btnClasses ?>"
+                                                        data-status="<?= $st ?>"
+                                                        <?= $locked ? 'disabled' : "onclick=\"updateItemStatus({$item['id']}, '{$st}', this, '{$item['source']}')\"" ?>>
+                                                        <?= $st ?>
+                                                    </button>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        </td>
+                                        <td class="px-[11px] py-[7px] border border-gray-200 align-middle text-right font-semibold text-gray-700">₱<?= number_format($item['computed_tot_amount'], 2) ?></td>
+                                        <td class="upd-cell px-[11px] py-[7px] border border-gray-200 align-middle text-[10px] text-gray-400">
+                                            <?= (!empty($item['updated_at']) && $item['updated_at'] !== '0000-00-00 00:00:00')
+                                                ? '<i class="fas fa-clock"></i> ' . date('M d, Y g:i A', strtotime($item['updated_at']))
+                                                : '—' ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    <?php endif; ?>
+
+                    <!-- Area Summary Footer -->
+                    <table class="w-full border-collapse text-xs mt-2.5">
+                        <tfoot>
+                            <tr>
+                                <td colspan="<?= $isGroup ? '3' : '2' ?>" class="px-[11px] py-[7px] border border-gray-200 align-middle bg-[#F5F5F5] font-bold text-[#0B0B0B] text-right text-[11px]">
+                                    <?= $isGroup ? htmlspecialchars($entryLabel) . ' Totals' : 'Area Totals' ?>
+                                </td>
+                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle bg-[#F5F5F5] font-bold text-[#0B0B0B] text-center"><?= $aAreaQty ?></td>
+                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle bg-[#F5F5F5] font-bold text-[#0B0B0B]">
+                                    <div class="flex gap-[5px] flex-wrap">
+                                        <?php foreach ($stageStatuses as $st):
+                                            if (!($aCounts[$st] ?? 0)) continue;
+                                            $stw2 = $STATUS_TW[$st];
+                                            ?>
+                                            <span class="<?= $stw2['badgeBg'] ?> <?= $stw2['badgeText'] ?> px-[7px] py-0.5 rounded-lg font-bold text-[10px]">
+                                                <?= $st ?>: <?= $aCounts[$st] ?>
+                                            </span>
                                         <?php endforeach; ?>
                                     </div>
                                 </td>
-                                <td style="text-align:right;font-weight:600;">₱<?= number_format($item['computed_tot_amount'], 2) ?></td>
-                                <td class="upd-cell">
-                                    <?= (!empty($item['updated_at']) && $item['updated_at'] !== '0000-00-00 00:00:00')
-                                        ? '<i class="fas fa-clock"></i> ' . date('M d, Y g:i A', strtotime($item['updated_at']))
-                                        : '—' ?>
-                                </td>
+                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle bg-[#F5F5F5] font-bold text-[#0B0B0B] text-right">₱<?= number_format($aAreaAmt, 2) ?></td>
+                                <td class="px-[11px] py-[7px] border border-gray-200 align-middle bg-[#F5F5F5]"></td>
                             </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
+                        </tfoot>
+                    </table>
 
-            <!-- Area Summary Footer -->
-            <table class="mon-table" style="width:100%;margin-top:10px;">
-                <tfoot>
-                    <tr class="summary-row">
-                        <td colspan="<?= $isGroup ? '3' : '2' ?>" style="text-align:right;font-size:11px;">
-                            <?= $isGroup ? htmlspecialchars($entryLabel) . ' Totals' : 'Area Totals' ?>
-                        </td>
-                        <td style="text-align:center;"><?= $aAreaQty ?></td>
-                        <td>
-                            <div style="display:flex;gap:5px;flex-wrap:wrap;">
-                                <?php foreach ($stageStatuses as $st):
-                                    if (!($aCounts[$st] ?? 0)) continue; ?>
-                                    <span style="background:<?= $statusConfig[$st]['bg'] ?>;color:<?= $statusConfig[$st]['color'] ?>;padding:2px 7px;border-radius:8px;font-weight:700;font-size:10px;">
-                                        <?= $st ?>: <?= $aCounts[$st] ?>
-                                    </span>
-                                <?php endforeach; ?>
-                            </div>
-                        </td>
-                        <td style="text-align:right;">₱<?= number_format($aAreaAmt, 2) ?></td>
-                        <td></td>
-                    </tr>
-                </tfoot>
-            </table>
-
-        </div>
-    </div>
-<?php endforeach; ?>
+                </div>
+            </div>
+        <?php endforeach; ?>
 
         <?php if (empty($areaGroups)): ?>
-            <div style="text-align:center;padding:50px;color:#9ca3af;background:white;border-radius:12px;">
-                <i class="fas fa-inbox" style="font-size:40px;display:block;margin-bottom:12px;"></i>
+            <div class="text-center py-[50px] text-gray-400 bg-white rounded-xl">
+                <i class="fas fa-inbox text-4xl block mb-3"></i>
                 No items found for this client yet.
             </div>
         <?php endif; ?>
@@ -1426,32 +880,25 @@ foreach ($ungroupedDisplay as $area => $items) {
     </div>
 
     <!-- Remarks Modal -->
-    <div id="remarkModal"
-        style="display:none;position:fixed;z-index:9998;inset:0;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
-        <div
-            style="background:white;border-radius:14px;padding:26px;max-width:480px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.2);">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-                <h3 id="remarkModalTitle"
-                    style="font-size:15px;font-weight:700;color:#1f2937;display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-comment-alt" style="color:#3b82f6;"></i> Add Remark
+    <div id="remarkModal" class="hidden fixed inset-0 z-[9998] bg-black/45 items-center justify-center p-5">
+        <div class="anim-pop-in bg-white rounded-2xl p-6 max-w-[480px] w-[90%] shadow-2xl">
+            <div class="flex items-center justify-between mb-3.5">
+                <h3 id="remarkModalTitle" class="text-[15px] font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-comment-alt text-blue-500"></i> Add Remark
                 </h3>
-                <button onclick="closeRemarkModal()"
-                    style="background:none;border:none;font-size:18px;color:#6b7280;cursor:pointer;line-height:1;">&times;</button>
+                <button onclick="closeRemarkModal()" class="bg-transparent border-0 text-lg text-gray-500 cursor-pointer leading-none">&times;</button>
             </div>
-            <div id="remarkStatusBadge" style="margin-bottom:12px;"></div>
+            <div id="remarkStatusBadge" class="mb-3"></div>
             <textarea id="remarkText" rows="4" placeholder="Enter your remark here… (optional)"
-                style="width:100%;padding:10px 13px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;resize:vertical;margin-bottom:14px;"></textarea>
-            <div style="display:flex;gap:10px;justify-content:flex-end;">
-                <button onclick="closeRemarkModal()"
-                    style="background:#f1f5f9;color:#475569;padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
+                class="w-full px-[13px] py-2.5 border-[1.5px] border-gray-200 rounded-lg text-[13px] font-sans resize-y mb-3.5 outline-none focus:border-[#0B0B0B]"></textarea>
+            <div class="flex gap-2.5 justify-end">
+                <button onclick="closeRemarkModal()" class="bg-slate-100 text-slate-600 px-[18px] py-2.5 border-0 rounded-lg cursor-pointer font-semibold text-[13px] hover:bg-slate-200 transition-colors">
                     Cancel
                 </button>
-                <button onclick="skipRemark()"
-                    style="background:#e2e8f0;color:#374151;padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;">
+                <button onclick="skipRemark()" class="bg-slate-200 text-slate-700 px-[18px] py-2.5 border-0 rounded-lg cursor-pointer font-semibold text-[13px] hover:bg-slate-300 transition-colors">
                     <i class="fas fa-forward"></i> Skip
                 </button>
-                <button onclick="submitRemark()"
-                    style="background:linear-gradient(135deg,#3b1f0f,#8a5a44);color:white;padding:9px 18px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;">
+                <button onclick="submitRemark()" class="bg-gradient-to-br from-[#3b1f0f] to-[#8a5a44] text-white px-[18px] py-2.5 border-0 rounded-lg cursor-pointer font-bold text-[13px] hover:opacity-90 transition-opacity">
                     <i class="fas fa-paper-plane"></i> Save & Update
                 </button>
             </div>
@@ -1459,24 +906,21 @@ foreach ($ungroupedDisplay as $area => $items) {
     </div>
 
     <!-- Remarks History Modal -->
-    <div id="historyModal"
-        style="display:none;position:fixed;z-index:9998;inset:0;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
-        <div
-            style="background:white;border-radius:14px;padding:26px;max-width:500px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,.2);max-height:80vh;overflow-y:auto;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-                <h3 style="font-size:15px;font-weight:700;color:#1f2937;display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-history" style="color:#8a5a44;"></i> Remark History
+    <div id="historyModal" class="hidden fixed inset-0 z-[9998] bg-black/45 items-center justify-center p-5">
+        <div class="anim-pop-in bg-white rounded-2xl p-6 max-w-[500px] w-[90%] shadow-2xl max-h-[80vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-[15px] font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-history text-[#6B6B6B]"></i> Remark History
                 </h3>
-                <button onclick="closeHistoryModal()"
-                    style="background:none;border:none;font-size:18px;color:#6b7280;cursor:pointer;">&times;</button>
+                <button onclick="closeHistoryModal()" class="bg-transparent border-0 text-lg text-gray-500 cursor-pointer">&times;</button>
             </div>
             <div id="historyContent">Loading...</div>
         </div>
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="toast">
-        <i id="toastIcon" class="fas fa-check-circle" style="font-size:18px;color:#10b981;"></i>
+    <div id="toast" class="hidden fixed top-5 right-5 bg-white px-5 py-3 rounded-[10px] shadow-[0_4px_20px_rgba(0,0,0,.14)] items-center gap-[11px] z-[9999] text-[13px] font-semibold anim-toast-in">
+        <i id="toastIcon" class="fas fa-check-circle text-lg text-emerald-500"></i>
         <span id="toastMsg">Status updated!</span>
     </div>
 
@@ -1487,62 +931,61 @@ foreach ($ungroupedDisplay as $area => $items) {
         // ── Pending action — stored while modal is open ──
         let _pendingAction = null;
 
-        // ── Status color map for badge ──
-        const statusColors = {
-            Pending: { bg: '#fef3c7', color: '#92400e', border: '#f59e0b' },
-            Ongoing: { bg: '#dbeafe', color: '#1e40af', border: '#3b82f6' },
-            Done: { bg: '#d1fae5', color: '#065f46', border: '#10b981' },
-            Incomplete: { bg: '#fee2e2', color: '#991b1b', border: '#ef4444' },
-            Punchlist: { bg: '#fce7f3', color: '#9d174d', border: '#ec4899' },
+        // ── Status → Tailwind class maps (mirrors PHP $STATUS_TW) ──
+        const STATUS_BADGE = {
+            Pending: { badge: 'bg-amber-100 text-amber-800 border-amber-500', border: 'border-amber-500' },
+            Ongoing: { badge: 'bg-blue-100 text-blue-800 border-blue-500', border: 'border-blue-500' },
+            Done: { badge: 'bg-emerald-100 text-emerald-800 border-emerald-500', border: 'border-emerald-500' },
+            Incomplete: { badge: 'bg-red-100 text-red-800 border-red-500', border: 'border-red-500' },
+            Punchlist: { badge: 'bg-pink-100 text-pink-800 border-pink-500', border: 'border-pink-500' },
         };
+        const STATUS_ROW_BG = {
+            Pending: 'bg-amber-50', Ongoing: 'bg-blue-50', Done: 'bg-emerald-50',
+            Incomplete: 'bg-red-50', Punchlist: 'bg-pink-50',
+        };
+        const ALL_ROW_BG_CLASSES = Object.values(STATUS_ROW_BG);
 
-        function toggleUnitBlock(slugId, hdrEl) {
+        function toggleUnitBlock(slugId) {
             const body = document.getElementById(slugId);
             const chev = document.getElementById('chev-' + slugId);
             if (!body) return;
-            const isOpen = body.style.display !== 'none';
-            body.style.display = isOpen ? 'none' : 'block';
-            if (chev) chev.style.transform = isOpen ? '' : 'rotate(180deg)';
+            const isOpen = !body.classList.contains('hidden');
+            body.classList.toggle('hidden', isOpen);
+            if (chev) chev.classList.toggle('rotate-180', !isOpen);
         }
 
         // Called when a status button is clicked — opens modal first
         function updateItemStatus(itemId, newStatus, btn, source) {
-            _pendingAction = {
-                type: 'item', itemId, newStatus, btn, source,
-                distId: null
-            };
+            _pendingAction = { type: 'item', itemId, newStatus, btn, source, distId: null };
             openRemarkModal(newStatus);
         }
 
         function updateUnitStatus(distId, newStatus, btn, itemId, source) {
-            _pendingAction = {
-                type: 'unit', distId, newStatus, btn, itemId, source
-            };
+            _pendingAction = { type: 'unit', distId, newStatus, btn, itemId, source };
             openRemarkModal(newStatus);
         }
 
         // ── Modal controls ──
+        function openOverlay(el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+        function closeOverlay(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+
         function openRemarkModal(status) {
-            const sc = statusColors[status] || { bg: '#f1f5f9', color: '#374151', border: '#e2e8f0' };
+            const sb = STATUS_BADGE[status] || { badge: 'bg-slate-100 text-slate-600 border-slate-300', border: 'border-slate-300' };
             document.getElementById('remarkModalTitle').innerHTML =
-                `<i class="fas fa-comment-alt" style="color:${sc.border};"></i> Add Remark for Status Change`;
+                `<i class="fas fa-comment-alt ${sb.border.replace('border-', 'text-')}"></i> Add Remark for Status Change`;
             document.getElementById('remarkStatusBadge').innerHTML =
-                `<span style="background:${sc.bg};color:${sc.color};border:1.5px solid ${sc.border};
-         padding:4px 14px;border-radius:12px;font-size:12px;font-weight:700;">
-         → ${status}</span>`;
+                `<span class="${sb.badge} border-[1.5px] px-3.5 py-1 rounded-xl text-xs font-bold">→ ${status}</span>`;
             document.getElementById('remarkText').value = '';
-            const modal = document.getElementById('remarkModal');
-            modal.style.display = 'flex';
+            openOverlay(document.getElementById('remarkModal'));
             setTimeout(() => document.getElementById('remarkText').focus(), 100);
         }
 
         function closeRemarkModal() {
-            document.getElementById('remarkModal').style.display = 'none';
+            closeOverlay(document.getElementById('remarkModal'));
             _pendingAction = null;
         }
 
         function skipRemark() {
-            // Proceed without saving a remark
             executeStatusUpdate('');
         }
 
@@ -1552,7 +995,7 @@ foreach ($ungroupedDisplay as $area => $items) {
         }
 
         async function executeStatusUpdate(remark) {
-            document.getElementById('remarkModal').style.display = 'none';
+            closeOverlay(document.getElementById('remarkModal'));
             if (!_pendingAction) return;
 
             const { type, itemId, distId, newStatus, btn, source } = _pendingAction;
@@ -1561,8 +1004,15 @@ foreach ($ungroupedDisplay as $area => $items) {
             // Optimistic UI update
             const row = btn.closest('tr.item-row');
             const allBtns = row.querySelectorAll('.s-btn');
-            allBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            allBtns.forEach(b => {
+                const bStw = STATUS_BADGE[b.dataset.status];
+                b.classList.remove('scale-105', 'border-transparent', ...(bStw ? [bStw.border] : []));
+                b.classList.add('border-transparent');
+            });
+            const activeStw = STATUS_BADGE[newStatus];
+            btn.classList.remove('border-transparent');
+            if (activeStw) btn.classList.add(activeStw.border);
+            btn.classList.add('scale-105');
             applyRowBg(row, newStatus);
 
             const updCell = row.querySelector('.upd-cell');
@@ -1592,10 +1042,9 @@ foreach ($ungroupedDisplay as $area => $items) {
                 let badge = row.querySelector('.remark-badge');
                 if (!badge) {
                     badge = document.createElement('button');
-                    badge.className = 'remark-badge';
-                    badge.style.cssText = 'background:#eff6ff;border:1px solid #bfdbfe;color:#1d4ed8;border-radius:6px;padding:2px 7px;font-size:10px;font-weight:700;cursor:pointer;margin-left:6px;';
+                    badge.className = 'remark-badge bg-blue-50 border border-blue-200 text-blue-700 rounded-md px-[7px] py-0.5 text-[10px] font-bold cursor-pointer ml-1.5';
                     badge.innerHTML = '<i class="fas fa-comment-dots"></i> <span class="remark-count">1</span>';
-                    const nameDiv = row.querySelector('.item-name-td');
+                    const nameDiv = row.querySelector('.font-bold.text-gray-900');
                     if (nameDiv) nameDiv.appendChild(badge);
                 } else {
                     const countEl = badge.querySelector('.remark-count');
@@ -1628,8 +1077,8 @@ foreach ($ungroupedDisplay as $area => $items) {
         // ── Remark History ──
         async function viewRemarks(itemId, source, distId = null, itemName = '') {
             document.getElementById('historyContent').innerHTML =
-                '<div style="text-align:center;padding:20px;color:#9ca3af;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
-            document.getElementById('historyModal').style.display = 'flex';
+                '<div class="text-center py-5 text-gray-400"><i class="fas fa-spinner fa-spin"></i> Loading...</div>';
+            openOverlay(document.getElementById('historyModal'));
 
             try {
                 const params = new URLSearchParams({
@@ -1641,36 +1090,40 @@ foreach ($ungroupedDisplay as $area => $items) {
 
                 if (!data.success || !data.remarks.length) {
                     document.getElementById('historyContent').innerHTML =
-                        '<div style="text-align:center;padding:24px;color:#9ca3af;"><i class="fas fa-comment-slash" style="font-size:28px;display:block;margin-bottom:8px;"></i>No remarks yet.</div>';
+                        '<div class="text-center py-6 text-gray-400"><i class="fas fa-comment-slash text-[28px] block mb-2"></i>No remarks yet.</div>';
                     return;
                 }
 
-                const bgMap = { Pending: '#fef3c7', Ongoing: '#dbeafe', Done: '#d1fae5', Incomplete: '#fee2e2', Punchlist: '#fce7f3' };
-                const clMap = { Pending: '#92400e', Ongoing: '#1e40af', Done: '#065f46', Incomplete: '#991b1b', Punchlist: '#9d174d' };
-                const bdMap = { Pending: '#f59e0b', Ongoing: '#3b82f6', Done: '#10b981', Incomplete: '#ef4444', Punchlist: '#ec4899' };
+                const badgeMap = {
+                    Pending: 'bg-amber-100 text-amber-800 border-amber-500',
+                    Ongoing: 'bg-blue-100 text-blue-800 border-blue-500',
+                    Done: 'bg-emerald-100 text-emerald-800 border-emerald-500',
+                    Incomplete: 'bg-red-100 text-red-800 border-red-500',
+                    Punchlist: 'bg-pink-100 text-pink-800 border-pink-500',
+                };
 
-                let html = `<div style="font-size:12px;color:#6b7280;margin-bottom:12px;">${data.remarks.length} remark(s) for <strong>${itemName}</strong></div>`;
+                let html = `<div class="text-xs text-gray-500 mb-3">${data.remarks.length} remark(s) for <strong>${itemName}</strong></div>`;
                 data.remarks.forEach(r => {
-                    const sc = { bg: bgMap[r.status] || '#f1f5f9', color: clMap[r.status] || '#374151', border: bdMap[r.status] || '#e2e8f0' };
+                    const badgeCls = badgeMap[r.status] || 'bg-slate-100 text-slate-600 border-slate-300';
                     html += `
-            <div style="border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fafcff;">
-                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:7px;">
-                    <span style="background:${sc.bg};color:${sc.color};border:1px solid ${sc.border};padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700;">${r.status}</span>
-                    <span style="font-size:11px;color:#9ca3af;"><i class="fas fa-user"></i> ${r.created_by_name} &nbsp;·&nbsp; <i class="fas fa-clock"></i> ${r.created_at}</span>
+            <div class="border-[1.5px] border-slate-200 rounded-[10px] px-3.5 py-3 mb-2.5 bg-slate-50">
+                <div class="flex items-center justify-between flex-wrap gap-1.5 mb-[7px]">
+                    <span class="${badgeCls} border px-2.5 py-0.5 rounded-[10px] text-[10px] font-bold">${r.status}</span>
+                    <span class="text-[11px] text-gray-400"><i class="fas fa-user"></i> ${r.created_by_name} &nbsp;·&nbsp; <i class="fas fa-clock"></i> ${r.created_at}</span>
                 </div>
-                <div style="font-size:13px;color:#1f2937;font-style:${r.remark ? 'normal' : 'italic'};color:${r.remark ? '#1f2937' : '#9ca3af'};">
+                <div class="text-[13px] ${r.remark ? 'text-gray-800' : 'text-gray-400 italic'}">
                     ${r.remark ? r.remark.replace(/\n/g, '<br>') : 'No remark entered.'}
                 </div>
             </div>`;
                 });
                 document.getElementById('historyContent').innerHTML = html;
             } catch (e) {
-                document.getElementById('historyContent').innerHTML = '<div style="color:#ef4444;padding:16px;">Failed to load remarks.</div>';
+                document.getElementById('historyContent').innerHTML = '<div class="text-red-500 p-4">Failed to load remarks.</div>';
             }
         }
 
         function closeHistoryModal() {
-            document.getElementById('historyModal').style.display = 'none';
+            closeOverlay(document.getElementById('historyModal'));
         }
 
         // Close modals on backdrop click
@@ -1680,18 +1133,19 @@ foreach ($ungroupedDisplay as $area => $items) {
         });
 
         function applyRowBg(row, status) {
-            const bgMap = { Pending: '#fef3c7', Ongoing: '#dbeafe', Done: '#d1fae5', Incomplete: '#fee2e2', Punchlist: '#fce7f3' };
-            if (row) row.style.background = bgMap[status] || '#fff';
+            if (!row) return;
+            row.classList.remove(...ALL_ROW_BG_CLASSES);
+            row.classList.add(STATUS_ROW_BG[status] || 'bg-white');
         }
 
         function showToast(msg, type) {
             const t = document.getElementById('toast');
             const icon = document.getElementById('toastIcon');
             document.getElementById('toastMsg').textContent = msg;
-            t.className = 'toast show ' + type;
-            icon.style.color = type === 'success' ? '#10b981' : '#ef4444';
-            icon.className = 'fas ' + (type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle');
-            setTimeout(() => t.classList.remove('show'), 3000);
+            t.classList.remove('hidden', 'border-l-4', 'border-emerald-500', 'border-red-500');
+            t.classList.add('flex', type === 'success' ? 'border-l-4' : 'border-l-4', type === 'success' ? 'border-emerald-500' : 'border-red-500');
+            icon.className = 'fas text-lg ' + (type === 'success' ? 'fa-check-circle text-emerald-500' : 'fa-exclamation-circle text-red-500');
+            setTimeout(() => { t.classList.remove('flex'); t.classList.add('hidden'); }, 3000);
         }
     </script>
 </body>

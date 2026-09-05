@@ -232,6 +232,36 @@ function fileIcon($ext)
     $m = ['pdf' => ['fa-file-pdf', '#ef4444'], 'doc' => ['fa-file-word', '#3b82f6'], 'docx' => ['fa-file-word', '#3b82f6'], 'xls' => ['fa-file-excel', '#10b981'], 'xlsx' => ['fa-file-excel', '#10b981'], 'ppt' => ['fa-file-powerpoint', '#f59e0b'], 'pptx' => ['fa-file-powerpoint', '#f59e0b'], 'png' => ['fa-file-image', '#8b5cf6'], 'jpg' => ['fa-file-image', '#8b5cf6'], 'jpeg' => ['fa-file-image', '#8b5cf6'], 'gif' => ['fa-file-image', '#8b5cf6'], 'txt' => ['fa-file-alt', '#6b7280'], 'csv' => ['fa-file-csv', '#6b7280']];
     return $m[$ext] ?? ['fa-file', '#6b7280'];
 }
+
+// ── Tailwind helper class bundles (matches sales_dashboard.php design tokens) ──
+// adm-bg #F5F5F5 · adm-surface #FFFFFF · adm-ink #0B0B0B · adm-soft #6B6B6B · adm-muted #9A9A9A · adm-line #E2E2E2
+function fstatusClasses($status)
+{
+    $m = [
+        'approved' => 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+        'rejected' => 'bg-red-50 text-red-700 border border-red-200',
+        'pending' => 'bg-amber-50 text-amber-700 border border-amber-200',
+    ];
+    return $m[$status] ?? $m['pending'];
+}
+function apbadgeClasses($status)
+{
+    $m = [
+        'approved' => 'bg-emerald-50 text-emerald-700 border border-emerald-300',
+        'rejected' => 'bg-red-50 text-red-700 border border-red-300',
+        'pending' => 'bg-[#F5F5F5] text-[#9A9A9A] border border-[#E2E2E2]',
+    ];
+    return $m[$status] ?? $m['pending'];
+}
+function fcardBorder($status)
+{
+    $m = [
+        'approved' => 'border-l-2 border-l-emerald-500',
+        'rejected' => 'border-l-2 border-l-red-500',
+        'pending' => 'border-l-2 border-l-amber-400',
+    ];
+    return $m[$status] ?? '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -240,806 +270,125 @@ function fileIcon($ext)
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Review — <?= htmlspecialchars($stage) ?></title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        :root {
-            --bg: #f0ebe4;
-            --surface: #faf8f5;
-            --border: #e2d9ce;
-            --brown-dk: #3b1f0f;
-            --brown-md: #7a4528;
-            --brown-lt: #c49a78;
-            --brown-pale: #ecddd0;
-            --text-dk: #1c1007;
-            --text-md: #5c4033;
-            --text-lt: #9c7b6a;
-            --pending: #f59e0b;
-            --ongoing: #3b82f6;
-            --done: #10b981;
-            --radius: 10px;
-            --shadow: 0 1px 3px rgba(59, 31, 15, .08), 0 4px 16px rgba(59, 31, 15, .06);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         body {
-            background: var(--bg);
-            font-family: 'DM Sans', sans-serif;
-            color: var(--text-dk);
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
         }
 
-        .page {
-            max-width: 860px;
-            margin: 0 auto;
-            padding: 32px 20px 60px;
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--brown-md);
-            text-decoration: none;
-            margin-bottom: 24px;
-            transition: color .2s;
-        }
-
-        .back-link:hover {
-            color: var(--brown-dk);
-        }
-
-        /* Hero header */
-        .hero {
-            background: var(--brown-dk);
-            border-radius: 14px;
-            padding: 26px 28px;
-            color: #fff;
-            margin-bottom: 20px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(ellipse at top right, rgba(196, 154, 120, .2) 0%, transparent 60%);
-            pointer-events: none;
-        }
-
-        .hero-inner {
-            position: relative;
-            z-index: 1;
-        }
-
-        .hero-top {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .hero-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, .12);
-            border: 1px solid rgba(255, 255, 255, .2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 17px;
-            flex-shrink: 0;
-        }
-
-        .hero-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 2px;
-            letter-spacing: -.2px;
-        }
-
-        .hero-sub {
-            font-size: 12px;
-            opacity: .65;
-        }
-
-        .hero-status {
-            text-align: right;
-            flex-shrink: 0;
-        }
-
-        .hero-status-label {
-            font-size: 10px;
-            opacity: .55;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            margin-bottom: 3px;
-        }
-
-        .hero-status-value {
-            font-size: 14px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            justify-content: flex-end;
-        }
-
-        .hero-badges {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-top: 14px;
-        }
-
-        .hbadge {
-            background: rgba(255, 255, 255, .1);
-            border: 1px solid rgba(255, 255, 255, .16);
-            border-radius: 7px;
-            padding: 4px 11px;
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-        }
-
-        .hbadge.approval {
-            background: rgba(245, 158, 11, .2);
-            border-color: rgba(245, 158, 11, .4);
-        }
-
-        .hbadge.upload {
-            background: rgba(139, 92, 246, .2);
-            border-color: rgba(139, 92, 246, .4);
-        }
-
-        .hbadge.receipt {
-            background: rgba(14, 165, 233, .2);
-            border-color: rgba(14, 165, 233, .4);
-        }
-
-        /* Summary row */
-        .summary-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .sum-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px 16px;
-            box-shadow: var(--shadow);
-            text-align: center;
-        }
-
-        .sum-num {
-            font-size: 24px;
-            font-weight: 700;
-            font-family: 'DM Mono', monospace;
-        }
-
-        .sum-num.p {
-            color: var(--pending);
-        }
-
-        .sum-num.a {
-            color: var(--done);
-        }
-
-        .sum-num.r {
-            color: #ef4444;
-        }
-
-        .sum-label {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: var(--text-lt);
-            margin-top: 3px;
-        }
-
-        /* My action banner */
-        .my-action {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            border-radius: var(--radius);
-            padding: 13px 16px;
-            margin-bottom: 18px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .my-action i {
-            color: #f59e0b;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        .my-action-text {
-            font-size: 13px;
-            font-weight: 600;
-            color: #92400e;
-        }
-
-        /* Section label */
-        .sec-label {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .7px;
-            color: var(--text-lt);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .sec-label::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: var(--border);
-        }
-
-        /* Empty state */
-        .empty {
-            text-align: center;
-            padding: 44px 20px;
-            background: var(--surface);
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-        }
-
-        .empty i {
-            font-size: 32px;
-            color: var(--border);
-            margin-bottom: 10px;
-            display: block;
-        }
-
-        .empty-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-md);
-            margin-bottom: 5px;
-        }
-
-        .empty-sub {
-            font-size: 12px;
-            color: var(--text-lt);
-        }
-
-        /* File card */
-        .file-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 18px 20px;
-            margin-bottom: 10px;
-            box-shadow: var(--shadow);
-            transition: box-shadow .2s;
-        }
-
-        .file-card:hover {
-            box-shadow: 0 4px 20px rgba(59, 31, 15, .11);
-        }
-
-        .file-card.approved {
-            border-left: 3px solid var(--done);
-        }
-
-        .file-card.rejected {
-            border-left: 3px solid #ef4444;
-        }
-
-        .file-card.pending {
-            border-left: 3px solid var(--pending);
-        }
-
-        .file-card.po-mirror {
-            border-left: 3px solid #0ea5e9;
-            background: #f0f9ff;
-        }
-
-        /* Already-reviewed banner */
-        .reviewed-banner {
-            background: #f0fdf4;
-            border: 1px solid #a7f3d0;
-            border-radius: 7px;
-            padding: 8px 12px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #065f46;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .reviewed-banner.rejected-banner {
-            background: #fff5f5;
-            border-color: #fca5a5;
-            color: #991b1b;
-        }
-
-        .file-row {
-            display: flex;
-            gap: 14px;
-            align-items: flex-start;
-        }
-
-        .file-icon {
-            font-size: 26px;
-            flex-shrink: 0;
-            margin-top: 2px;
-        }
-
-        .file-body {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .file-label-tag {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: var(--brown-md);
-            margin-bottom: 3px;
-        }
-
-        .file-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dk);
-            margin-bottom: 4px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .file-meta {
-            font-size: 11px;
-            color: var(--text-lt);
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-
-        .file-meta span {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-        }
-
-        /* Approval badges row */
-        .approval-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-            margin-bottom: 8px;
-        }
-
-        .apbadge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 9px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .apbadge.approved {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-        }
-
-        .apbadge.rejected {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-        }
-
-        .apbadge.pending {
-            background: #f3f4f6;
-            color: #9ca3af;
-            border: 1px solid #e5e7eb;
-        }
-
-        .apbadge.mine {
-            box-shadow: 0 0 0 2px var(--brown-lt);
-        }
-
-        .apbadge-date {
-            font-size: 9px;
-            font-weight: 500;
-            opacity: .8;
-            margin-left: 3px;
-        }
-
-        /* Rejection notes */
-        .reject-note {
-            background: #fee2e2;
-            border-radius: 6px;
-            padding: 8px 12px;
-            font-size: 12px;
-            color: #991b1b;
-            margin-top: 6px;
-        }
-
-        /* File status pill */
-        .fstatus {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            flex-shrink: 0;
-        }
-
-        .fstatus.approved {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-        }
-
-        .fstatus.rejected {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-        }
-
-        .fstatus.pending {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
-        }
-
-        /* Action row */
-        .file-actions {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-            margin-top: 10px;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 6px 14px;
-            border-radius: 7px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            border: none;
-            transition: all .2s;
-            text-decoration: none;
-        }
-
-        .btn-view {
-            background: #eff6ff;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
-        }
-
-        .btn-view:hover {
-            background: #bfdbfe;
-        }
-
-        .btn-approve {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
-            font-size: 13px;
-            padding: 7px 16px;
-        }
-
-        .btn-approve:hover {
-            background: #a7f3d0;
-        }
-
-        .btn-reject {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
-            font-size: 13px;
-            padding: 7px 16px;
-        }
-
-        .btn-reject:hover {
-            background: #fca5a5;
-        }
-
-        /* Reject inline form */
-        .reject-form {
-            display: none;
-            margin-top: 12px;
-            background: #fff5f5;
-            border: 1px solid #fecaca;
-            border-radius: 8px;
-            padding: 14px;
-        }
-
-        .reject-form textarea {
-            width: 100%;
-            padding: 9px 12px;
-            border: 1px solid #fca5a5;
-            border-radius: 7px;
-            font-size: 13px;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 80px;
-            margin-bottom: 10px;
-        }
-
-        .reject-form textarea:focus {
-            outline: none;
-            border-color: #ef4444;
-        }
-
-        .reject-form-actions {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-
-        .btn-cancel-reject {
-            background: #f3f4f6;
-            color: #6b7280;
-            padding: 6px 14px;
-            border-radius: 7px;
-            cursor: pointer;
-            border: none;
-            font-weight: 600;
-            font-size: 12px;
-        }
-
-        .btn-confirm-reject {
-            background: #ef4444;
-            color: #fff;
-            padding: 6px 14px;
-            border-radius: 7px;
-            cursor: pointer;
-            border: none;
-            font-weight: 700;
-            font-size: 12px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-form-error {
-            font-size: 12px;
-            color: #dc2626;
-            margin-bottom: 8px;
-            display: none;
-        }
-
-        /* Category filter */
-        .cat-bar {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .cat-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 5px 13px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: var(--surface);
-            color: var(--text-md);
-            border: 1px solid var(--border);
-            cursor: pointer;
-            transition: all .2s;
-        }
-
-        .cat-btn:hover {
-            background: var(--brown-pale);
-            border-color: var(--brown-lt);
-        }
-
-        .cat-btn.active {
-            background: var(--brown-dk);
-            color: #fff;
-            border-color: var(--brown-dk);
-        }
-
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.show {
-            display: flex;
-        }
-
-        .modal-box {
-            background: #fff;
-            border-radius: 16px;
-            padding: 32px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, .25);
-            animation: popIn .25s ease;
-        }
-
-        @keyframes popIn {
+        @keyframes admFade {
             from {
-                transform: scale(.94);
                 opacity: 0;
+                transform: translateY(8px);
             }
 
             to {
-                transform: scale(1);
                 opacity: 1;
+                transform: translateY(0);
             }
         }
 
-        .modal-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: var(--brown-dk);
-            margin-bottom: 4px;
+        .adm-fade {
+            animation: admFade .4s ease both;
         }
 
-        .modal-sub {
-            font-size: 13px;
-            color: var(--text-lt);
-            margin-bottom: 22px;
+        @media (prefers-reduced-motion: reduce) {
+            .adm-fade {
+                animation: none;
+            }
         }
 
-        .btn-submit {
-            background: var(--brown-dk);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: none;
-            font-weight: 700;
-            font-size: 13px;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-submit:hover {
-            background: var(--brown-md);
-        }
-
-        /* Toast */
-        .toast {
-            position: fixed;
-            bottom: 28px;
-            right: 28px;
-            background: var(--brown-dk);
-            color: #fff;
-            padding: 13px 22px;
-            border-radius: var(--radius);
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 8px 32px rgba(59, 31, 15, .3);
-            transform: translateY(80px);
-            opacity: 0;
-            transition: all .35s cubic-bezier(.34, 1.56, .64, 1);
-            z-index: 9999;
-            pointer-events: none;
-        }
-
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .toast.error {
-            background: #dc2626;
+        .adm-section-label::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #E2E2E2;
         }
     </style>
 </head>
 
-<body>
-    <div class="page">
+<body class="min-h-screen bg-[#F5F5F5] text-[#0B0B0B]">
+    <div class="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-10 pb-16">
 
-        <a href="manager-project-detail?client_id=<?= $client_id ?>" class="back-link">
+        <a href="manager-project-detail?client_id=<?= $client_id ?>"
+            class="inline-flex items-center gap-2 text-[13px] font-semibold text-[#6B6B6B] hover:text-[#0B0B0B] transition-colors mb-6">
             <i class="fas fa-arrow-left"></i> Back to Project Dashboard
         </a>
 
-        <!-- Hero -->
-        <div class="hero">
-            <div class="hero-inner">
-                <div class="hero-top">
-                    <div style="display:flex;align-items:center;gap:14px;">
-                        <div class="hero-icon"><i
-                                class="fas fa-<?= $isApproval ? 'stamp' : ($isAccounting ? 'receipt' : 'file-upload') ?>"></i>
+        <!-- Header -->
+        <div class="mb-6 adm-fade">
+            <div class="bg-[#0B0B0B] rounded-xl p-6 sm:p-7 text-white">
+                <div class="flex items-start justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-11 h-11 rounded-[9px] bg-white/10 border border-white/15 flex items-center justify-center text-[17px] flex-shrink-0">
+                            <i class="fas fa-<?= $isApproval ? 'stamp' : ($isAccounting ? 'receipt' : 'file-upload') ?>"></i>
                         </div>
                         <div>
-                            <div class="hero-title"><?= htmlspecialchars($stage) ?></div>
-                            <div class="hero-sub"><?= htmlspecialchars($client['clientname']) ?> ·
-                                <?= htmlspecialchars($client['nameproject']) ?>
+                            <div class="text-[11px] font-semibold uppercase tracking-[1.5px] text-white/50 mb-0.5">Stage
+                                Review</div>
+                            <div class="text-[19px] font-bold tracking-tight"><?= htmlspecialchars($stage) ?></div>
+                            <div class="text-[12.5px] text-white/60 mt-0.5"><?= htmlspecialchars($client['clientname']) ?>
+                                &middot; <?= htmlspecialchars($client['nameproject']) ?>
                             </div>
                         </div>
                     </div>
-                    <div class="hero-status">
-                        <div class="hero-status-label">Stage Status</div>
-                        <div class="hero-status-value">
-                            <?php if ($stageStatus === 'Done'): ?><i class="fas fa-check-circle"
-                                    style="color:#6ee7b7;"></i>
-                            <?php elseif ($stageStatus === 'Ongoing'): ?><i class="fas fa-circle-notch fa-spin"
-                                    style="color:#93c5fd;"></i>
-                            <?php else: ?><i class="fas fa-clock" style="color:#fde68a;"></i>
+                    <div class="text-right flex-shrink-0">
+                        <div class="text-[10px] uppercase tracking-wide text-white/45 mb-1">Stage Status</div>
+                        <div class="text-[14px] font-bold flex items-center gap-1.5 justify-end">
+                            <?php if ($stageStatus === 'Done'): ?>
+                                <i class="fas fa-check-circle text-emerald-400"></i>
+                            <?php elseif ($stageStatus === 'Ongoing'): ?>
+                                <i class="fas fa-circle-notch fa-spin text-sky-400"></i>
+                            <?php else: ?>
+                                <i class="fas fa-clock text-amber-300"></i>
                             <?php endif; ?>
                             <?= $stageStatus ?>
                         </div>
                     </div>
                 </div>
-                <div class="hero-badges">
-                    <span class="hbadge"><?= htmlspecialchars(str_replace('_', ' ', $admin_role)) ?></span>
+                <div class="flex flex-wrap gap-2 mt-4">
+                    <span
+                        class="bg-white/10 border border-white/15 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"><?= htmlspecialchars(str_replace('_', ' ', $admin_role)) ?></span>
                     <?php if ($isApproval): ?>
-                        <span class="hbadge approval"><i class="fas fa-stamp"></i> Approval Required</span>
+                        <span
+                            class="bg-amber-400/15 border border-amber-300/30 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"><i
+                                class="fas fa-stamp"></i> Approval Required</span>
                         <?php
                         $gmOmStages = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)', 'Production Data Submittals'];
                         $required = $requiredApproversList[$stage] ?? [];
                         if (in_array($stage, $gmOmStages)):
-                            // Show non-GM/OM roles individually, then GM/OM as one combined badge
                             foreach ($required as $role):
                                 if (in_array($role, ['general_manager', 'operational_manager']))
                                     continue;
                                 ?>
-                                <span class="hbadge"><i class="fas fa-user-check"></i> <?= getRoleDisplayName($role) ?></span>
+                                <span
+                                    class="bg-white/10 border border-white/15 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"><i
+                                        class="fas fa-user-check"></i> <?= getRoleDisplayName($role) ?></span>
                             <?php endforeach; ?>
-                            <span class="hbadge" style="background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.4);">
-                                <i class="fas fa-user-check"></i> GM <em
-                                    style="opacity:.6;font-size:10px;font-style:normal;">or</em> OM <em
-                                    style="opacity:.6;font-size:10px;font-style:normal;">(one required)</em>
+                            <span
+                                class="bg-indigo-400/15 border border-indigo-300/30 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide">
+                                <i class="fas fa-user-check"></i> GM <em class="opacity-60 text-[10px] not-italic">or</em>
+                                OM <em class="opacity-60 text-[10px] not-italic">(one required)</em>
                             </span>
                         <?php else:
                             foreach ($required as $role):
                                 ?>
-                                <span class="hbadge"><i class="fas fa-user-check"></i> <?= getRoleDisplayName($role) ?></span>
+                                <span
+                                    class="bg-white/10 border border-white/15 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"><i
+                                        class="fas fa-user-check"></i> <?= getRoleDisplayName($role) ?></span>
                             <?php endforeach; endif; ?>
-                    <?php elseif ($isFileUpload): ?><span class="hbadge upload"><i class="fas fa-file-upload"></i> File
-                            Upload Stage</span>
-                    <?php elseif ($isAccounting): ?><span class="hbadge receipt"><i class="fas fa-receipt"></i> Delivery
-                            Receipt</span>
+                    <?php elseif ($isFileUpload): ?>
+                        <span
+                            class="bg-violet-400/15 border border-violet-300/30 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"><i
+                                class="fas fa-file-upload"></i> File Upload Stage</span>
+                    <?php elseif ($isAccounting): ?>
+                        <span
+                            class="bg-sky-400/15 border border-sky-300/30 rounded-md px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide"><i
+                                class="fas fa-receipt"></i> Delivery Receipt</span>
                     <?php endif; ?>
                 </div>
             </div>
@@ -1047,18 +396,21 @@ function fileIcon($ext)
 
         <!-- Summary counts -->
         <?php if ($isApproval && !empty($files)): ?>
-            <div class="summary-row">
-                <div class="sum-card">
-                    <div class="sum-num p"><?= $pendingCount ?></div>
-                    <div class="sum-label"><i class="fas fa-clock"></i> Pending</div>
+            <div class="grid grid-cols-3 gap-3 mb-6 adm-fade">
+                <div class="bg-white border border-[#E2E2E2] rounded-[10px] px-4 py-3.5 text-center">
+                    <div class="text-2xl font-bold font-mono text-amber-500"><?= $pendingCount ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-[#9A9A9A] mt-0.5"><i
+                            class="fas fa-clock"></i> Pending</div>
                 </div>
-                <div class="sum-card">
-                    <div class="sum-num a"><?= $approvedCount ?></div>
-                    <div class="sum-label"><i class="fas fa-check-circle"></i> Approved</div>
+                <div class="bg-white border border-[#E2E2E2] rounded-[10px] px-4 py-3.5 text-center">
+                    <div class="text-2xl font-bold font-mono text-emerald-600"><?= $approvedCount ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-[#9A9A9A] mt-0.5"><i
+                            class="fas fa-check-circle"></i> Approved</div>
                 </div>
-                <div class="sum-card">
-                    <div class="sum-num r"><?= $rejectedCount ?></div>
-                    <div class="sum-label"><i class="fas fa-times-circle"></i> Rejected</div>
+                <div class="bg-white border border-[#E2E2E2] rounded-[10px] px-4 py-3.5 text-center">
+                    <div class="text-2xl font-bold font-mono text-red-500"><?= $rejectedCount ?></div>
+                    <div class="text-[11px] font-semibold uppercase tracking-wide text-[#9A9A9A] mt-0.5"><i
+                            class="fas fa-times-circle"></i> Rejected</div>
                 </div>
             </div>
         <?php endif; ?>
@@ -1068,9 +420,9 @@ function fileIcon($ext)
         $myPendingFiles = array_filter($files, fn($f) => $f['approval_status'] === 'pending' && !myReviewDone($f, $admin_role));
         if ($canApprove && count($myPendingFiles) > 0):
             ?>
-            <div class="my-action">
-                <i class="fas fa-exclamation-circle"></i>
-                <div class="my-action-text">
+            <div class="bg-amber-50 border border-amber-200 rounded-[10px] px-4 py-3.5 mb-5 flex items-center gap-3 adm-fade">
+                <i class="fas fa-exclamation-circle text-amber-500"></i>
+                <div class="text-[13px] font-semibold text-amber-800">
                     <?= count($myPendingFiles) ?> file<?= count($myPendingFiles) !== 1 ? 's' : '' ?>
                     need<?= count($myPendingFiles) === 1 ? 's' : '' ?> your review. Use the Approve or Reject buttons below.
                 </div>
@@ -1079,12 +431,13 @@ function fileIcon($ext)
 
         <!-- PO Mirror (Accounting) — grouped with receipts -->
         <?php if ($isAccounting): ?>
-            <div class="sec-label"><i class="fas fa-file-import"></i> Purchase Orders & Receipts</div>
+            <div class="adm-section-label flex items-center gap-2.5 text-xs font-semibold text-[#0B0B0B] mb-4"><i
+                    class="fas fa-file-import"></i> Purchase Orders &amp; Receipts</div>
             <?php if (empty($poApprovedFiles)): ?>
-                <div class="empty" style="margin-bottom:24px;">
-                    <i class="fas fa-hourglass-half"></i>
-                    <div class="empty-title">Waiting for PO Approval</div>
-                    <div class="empty-sub">Purchase Order files will appear here once approved.</div>
+                <div class="text-center py-11 px-5 bg-white border-2 border-dashed border-[#E2E2E2] rounded-[10px] mb-6">
+                    <i class="fas fa-hourglass-half text-3xl text-[#E2E2E2] mb-2.5 block"></i>
+                    <div class="text-sm font-semibold text-[#0B0B0B] mb-1">Waiting for PO Approval</div>
+                    <div class="text-xs text-[#9A9A9A]">Purchase Order files will appear here once approved.</div>
                 </div>
             <?php else: ?>
                 <?php foreach ($poApprovedFiles as $pof):
@@ -1093,16 +446,18 @@ function fileIcon($ext)
                     $linkedReceipts = $receiptsByPo[$pof['id']] ?? [];
                     $hasReceipt = !empty($linkedReceipts);
                     ?>
-                    <div style="margin-bottom:18px;">
-                        <div class="file-card po-mirror"
-                            style="margin-bottom:0;border-radius:<?= $hasReceipt ? '10px 10px 0 0' : '10px' ?>;<?= $hasReceipt ? 'border-bottom:1px dashed #bae6fd;' : '' ?>">
-                            <div class="file-row">
-                                <i class="fas <?= $fi ?> file-icon" style="color:<?= $fc ?>;"></i>
-                                <div class="file-body">
+                    <div class="mb-4">
+                        <div
+                            class="bg-sky-50 border border-sky-200 border-l-2 border-l-sky-500 p-4 sm:p-5 <?= $hasReceipt ? 'rounded-t-[10px] border-b-0' : 'rounded-[10px]' ?>">
+                            <div class="flex gap-3.5 items-start">
+                                <i class="fas <?= $fi ?> text-2xl flex-shrink-0 mt-0.5" style="color:<?= $fc ?>;"></i>
+                                <div class="flex-1 min-w-0">
                                     <?php if ($pof['label']): ?>
-                                        <div class="file-label-tag"><?= htmlspecialchars($pof['label']) ?></div><?php endif; ?>
-                                    <div class="file-name"><?= htmlspecialchars($pof['file_name']) ?></div>
-                                    <div class="file-meta">
+                                        <div class="text-[10px] font-bold uppercase tracking-wide text-[#6B6B6B] mb-0.5">
+                                            <?= htmlspecialchars($pof['label']) ?>
+                                        </div><?php endif; ?>
+                                    <div class="text-sm font-semibold truncate"><?= htmlspecialchars($pof['file_name']) ?></div>
+                                    <div class="text-[11px] text-[#9A9A9A] flex flex-wrap gap-2.5 mt-1">
                                         <span><i class="fas fa-user"></i> <?= htmlspecialchars($pof['uploaded_by_name']) ?></span>
                                         <span><i class="fas fa-calendar"></i>
                                             <?= date('M d, Y', strtotime($pof['uploaded_at'])) ?></span>
@@ -1110,14 +465,17 @@ function fileIcon($ext)
                                             KB</span>
                                     </div>
                                 </div>
-                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
-                                    <span class="fstatus approved"><i class="fas fa-check-circle"></i> Approved PO</span>
+                                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase <?= fstatusClasses('approved') ?>"><i
+                                            class="fas fa-check-circle"></i> Approved PO</span>
                                     <a href="<?= BASE_URL . htmlspecialchars($pof['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $pof['file_path']) ? filemtime(ROOT_PATH . $pof['file_path']) : time() ?>"
-                                        target="_blank" class="btn btn-view">
+                                        target="_blank"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors">
                                         <i class="fas fa-eye"></i> View
                                     </a>
                                     <span
-                                        style="font-size:11px;font-weight:700;color:<?= $hasReceipt ? '#0369a1' : '#9ca3af' ?>;display:flex;align-items:center;gap:4px;">
+                                        class="text-[11px] font-bold flex items-center gap-1 <?= $hasReceipt ? 'text-sky-700' : 'text-[#9A9A9A]' ?>">
                                         <i class="fas fa-receipt"></i>
                                         <?= count($linkedReceipts) ?> receipt<?= count($linkedReceipts) !== 1 ? 's' : '' ?>
                                     </span>
@@ -1126,10 +484,9 @@ function fileIcon($ext)
                         </div>
 
                         <?php if ($hasReceipt): ?>
-                            <div
-                                style="background:#f0f9ff;border:1px solid #bae6fd;border-top:none;border-radius:0 0 10px 10px;padding:10px 16px 14px;">
+                            <div class="bg-sky-50/60 border border-sky-200 border-t-0 rounded-b-[10px] px-4 pt-2.5 pb-3.5">
                                 <div
-                                    style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0369a1;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                                    class="text-[10px] font-bold uppercase tracking-wide text-sky-700 mb-2.5 flex items-center gap-1.5">
                                     <i class="fas fa-receipt"></i> Receipts for this PO
                                 </div>
                                 <?php foreach ($linkedReceipts as $rc):
@@ -1137,20 +494,17 @@ function fileIcon($ext)
                                     [$rcIc, $rcCo] = fileIcon($rcExt);
                                     ?>
                                     <div
-                                        style="background:#fff;border:1px solid #bae6fd;border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:center;">
-                                        <i class="fas <?= $rcIc ?>" style="color:<?= $rcCo ?>;font-size:20px;flex-shrink:0;"></i>
-                                        <div style="flex:1;min-width:0;">
+                                        class="bg-white border border-sky-200 rounded-lg px-4 py-3 mb-2 flex gap-3 items-center">
+                                        <i class="fas <?= $rcIc ?> text-xl flex-shrink-0" style="color:<?= $rcCo ?>;"></i>
+                                        <div class="flex-1 min-w-0">
                                             <?php if ($rc['label']): ?>
-                                                <div
-                                                    style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#0369a1;margin-bottom:2px;">
+                                                <div class="text-[10px] font-bold uppercase tracking-wide text-sky-700 mb-0.5">
                                                     <?= htmlspecialchars($rc['label']) ?>
                                                 </div>
                                             <?php endif; ?>
-                                            <div
-                                                style="font-size:13px;font-weight:600;color:#1c1007;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                                <?= htmlspecialchars($rc['file_name']) ?>
+                                            <div class="text-[13px] font-semibold truncate"><?= htmlspecialchars($rc['file_name']) ?>
                                             </div>
-                                            <div style="font-size:11px;color:#9c7b6a;display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;">
+                                            <div class="text-[11px] text-[#9A9A9A] flex gap-2.5 flex-wrap mt-0.5">
                                                 <span><i class="fas fa-user"></i> <?= htmlspecialchars($rc['uploaded_by_name']) ?></span>
                                                 <span><i class="fas fa-calendar"></i>
                                                     <?= date('M d, Y · g:i A', strtotime($rc['uploaded_at'])) ?></span>
@@ -1159,7 +513,8 @@ function fileIcon($ext)
                                             </div>
                                         </div>
                                         <a href="<?= BASE_URL . htmlspecialchars($rc['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $rc['file_path']) ? filemtime(ROOT_PATH . $rc['file_path']) : time() ?>"
-                                            target="_blank" class="btn btn-view" style="flex-shrink:0;">
+                                            target="_blank"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors flex-shrink-0">
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                     </div>
@@ -1172,7 +527,8 @@ function fileIcon($ext)
 
         <?php elseif ($stage === 'Purchase Order (Submit to accounting)'): ?>
             <?php if (!empty($poApprovedFiles)): ?>
-                <div class="sec-label"><i class="fas fa-calculator"></i> Approved Bills of Materials</div>
+                <div class="adm-section-label flex items-center gap-2.5 text-xs font-semibold text-[#0B0B0B] mb-4"><i
+                        class="fas fa-calculator"></i> Approved Bills of Materials</div>
             <?php endif; ?>
             <?php if (!empty($poApprovedFiles)):
                 foreach ($poApprovedFiles as $pof):
@@ -1181,17 +537,19 @@ function fileIcon($ext)
                     $linkedReceipts = $receiptsByPo[$pof['id']] ?? [];
                     $hasReceipt = !empty($linkedReceipts);
                     ?>
-                    <div style="margin-bottom:18px;">
+                    <div class="mb-4">
                         <!-- PO Card -->
-                        <div class="file-card po-mirror"
-                            style="margin-bottom:0;border-radius:<?= $hasReceipt ? '10px 10px 0 0' : '10px' ?>;<?= $hasReceipt ? 'border-bottom:1px dashed #bae6fd;' : '' ?>">
-                            <div class="file-row">
-                                <i class="fas <?= $fi ?> file-icon" style="color:<?= $fc ?>;"></i>
-                                <div class="file-body">
+                        <div
+                            class="bg-sky-50 border border-sky-200 border-l-2 border-l-sky-500 p-4 sm:p-5 <?= $hasReceipt ? 'rounded-t-[10px] border-b-0' : 'rounded-[10px]' ?>">
+                            <div class="flex gap-3.5 items-start">
+                                <i class="fas <?= $fi ?> text-2xl flex-shrink-0 mt-0.5" style="color:<?= $fc ?>;"></i>
+                                <div class="flex-1 min-w-0">
                                     <?php if ($pof['label']): ?>
-                                        <div class="file-label-tag"><?= htmlspecialchars($pof['label']) ?></div><?php endif; ?>
-                                    <div class="file-name"><?= htmlspecialchars($pof['file_name']) ?></div>
-                                    <div class="file-meta">
+                                        <div class="text-[10px] font-bold uppercase tracking-wide text-[#6B6B6B] mb-0.5">
+                                            <?= htmlspecialchars($pof['label']) ?>
+                                        </div><?php endif; ?>
+                                    <div class="text-sm font-semibold truncate"><?= htmlspecialchars($pof['file_name']) ?></div>
+                                    <div class="text-[11px] text-[#9A9A9A] flex flex-wrap gap-2.5 mt-1">
                                         <span><i class="fas fa-user"></i> <?= htmlspecialchars($pof['uploaded_by_name']) ?></span>
                                         <span><i class="fas fa-calendar"></i>
                                             <?= date('M d, Y', strtotime($pof['uploaded_at'])) ?></span>
@@ -1199,13 +557,16 @@ function fileIcon($ext)
                                             KB</span>
                                     </div>
                                 </div>
-                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
-                                    <span class="fstatus approved"><i class="fas fa-check-circle"></i> Approved PO</span>
-                                    <a href="<?= BASE_URL . htmlspecialchars($pof['file_path']) ?>" target="_blank" class="btn btn-view">
+                                <div class="flex flex-col items-end gap-2 flex-shrink-0">
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase <?= fstatusClasses('approved') ?>"><i
+                                            class="fas fa-check-circle"></i> Approved PO</span>
+                                    <a href="<?= BASE_URL . htmlspecialchars($pof['file_path']) ?>" target="_blank"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors">
                                         <i class="fas fa-eye"></i> View
                                     </a>
                                     <span
-                                        style="font-size:11px;font-weight:700;color:<?= $hasReceipt ? '#0369a1' : '#9ca3af' ?>;display:flex;align-items:center;gap:4px;">
+                                        class="text-[11px] font-bold flex items-center gap-1 <?= $hasReceipt ? 'text-sky-700' : 'text-[#9A9A9A]' ?>">
                                         <i class="fas fa-receipt"></i>
                                         <?= count($linkedReceipts) ?> receipt<?= count($linkedReceipts) !== 1 ? 's' : '' ?>
                                     </span>
@@ -1215,10 +576,9 @@ function fileIcon($ext)
 
                         <!-- Receipts nested under this PO -->
                         <?php if ($hasReceipt): ?>
-                            <div
-                                style="background:#f0f9ff;border:1px solid #bae6fd;border-top:none;border-radius:0 0 10px 10px;padding:10px 16px 14px;">
+                            <div class="bg-sky-50/60 border border-sky-200 border-t-0 rounded-b-[10px] px-4 pt-2.5 pb-3.5">
                                 <div
-                                    style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0369a1;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                                    class="text-[10px] font-bold uppercase tracking-wide text-sky-700 mb-2.5 flex items-center gap-1.5">
                                     <i class="fas fa-receipt"></i> Receipts for this PO
                                 </div>
                                 <?php foreach ($linkedReceipts as $rc):
@@ -1226,20 +586,17 @@ function fileIcon($ext)
                                     [$rcIc, $rcCo] = fileIcon($rcExt);
                                     ?>
                                     <div
-                                        style="background:#fff;border:1px solid #bae6fd;border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;gap:12px;align-items:center;">
-                                        <i class="fas <?= $rcIc ?>" style="color:<?= $rcCo ?>;font-size:20px;flex-shrink:0;"></i>
-                                        <div style="flex:1;min-width:0;">
+                                        class="bg-white border border-sky-200 rounded-lg px-4 py-3 mb-2 flex gap-3 items-center">
+                                        <i class="fas <?= $rcIc ?> text-xl flex-shrink-0" style="color:<?= $rcCo ?>;"></i>
+                                        <div class="flex-1 min-w-0">
                                             <?php if ($rc['label']): ?>
-                                                <div
-                                                    style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#0369a1;margin-bottom:2px;">
+                                                <div class="text-[10px] font-bold uppercase tracking-wide text-sky-700 mb-0.5">
                                                     <?= htmlspecialchars($rc['label']) ?>
                                                 </div>
                                             <?php endif; ?>
-                                            <div
-                                                style="font-size:13px;font-weight:600;color:#1c1007;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                                <?= htmlspecialchars($rc['file_name']) ?>
+                                            <div class="text-[13px] font-semibold truncate"><?= htmlspecialchars($rc['file_name']) ?>
                                             </div>
-                                            <div style="font-size:11px;color:#9c7b6a;display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;">
+                                            <div class="text-[11px] text-[#9A9A9A] flex gap-2.5 flex-wrap mt-0.5">
                                                 <span><i class="fas fa-user"></i> <?= htmlspecialchars($rc['uploaded_by_name']) ?></span>
                                                 <span><i class="fas fa-calendar"></i>
                                                     <?= date('M d, Y · g:i A', strtotime($rc['uploaded_at'])) ?></span>
@@ -1247,8 +604,8 @@ function fileIcon($ext)
                                                     KB</span>
                                             </div>
                                         </div>
-                                        <a href="<?= BASE_URL . htmlspecialchars($rc['file_path']) ?>" target="_blank" class="btn btn-view"
-                                            style="flex-shrink:0;">
+                                        <a href="<?= BASE_URL . htmlspecialchars($rc['file_path']) ?>" target="_blank"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors flex-shrink-0">
                                             <i class="fas fa-eye"></i> View
                                         </a>
                                     </div>
@@ -1258,26 +615,29 @@ function fileIcon($ext)
                     </div>
                 <?php endforeach; endif; ?>
         <?php elseif ($isApproval): ?>
-            <div class="sec-label"><i class="fas fa-folder-open"></i> Submitted Files for Approval</div>
+            <div class="adm-section-label flex items-center gap-2.5 text-xs font-semibold text-[#0B0B0B] mb-4"><i
+                    class="fas fa-folder-open"></i> Submitted Files for Approval</div>
         <?php else: ?>
-            <div class="sec-label"><i class="fas fa-folder-open"></i> Uploaded Files</div>
+            <div class="adm-section-label flex items-center gap-2.5 text-xs font-semibold text-[#0B0B0B] mb-4"><i
+                    class="fas fa-folder-open"></i> Uploaded Files</div>
         <?php endif; ?>
 
         <!-- PO Stage: BOM-grouped view -->
         <?php if ($stage === 'Purchase Order (Submit to accounting)'): ?>
             <?php if (empty($bomApprovedFiles)): ?>
-                <div class="empty" style="margin-bottom:24px;">
-                    <i class="fas fa-hourglass-half"></i>
-                    <div class="empty-title">No Approved BOMs Yet</div>
-                    <div class="empty-sub">BOMs will appear here once approved in the Bill of Materials stage.</div>
+                <div class="text-center py-11 px-5 bg-white border-2 border-dashed border-[#E2E2E2] rounded-[10px] mb-6">
+                    <i class="fas fa-hourglass-half text-3xl text-[#E2E2E2] mb-2.5 block"></i>
+                    <div class="text-sm font-semibold text-[#0B0B0B] mb-1">No Approved BOMs Yet</div>
+                    <div class="text-xs text-[#9A9A9A]">BOMs will appear here once approved in the Bill of Materials
+                        stage.</div>
                 </div>
             <?php else: ?>
 
                 <?php
                 $osColors = [
-                    'pending' => ['bg' => '#fef3c7', 'color' => '#92400e', 'border' => '#fde68a', 'label' => 'Not Yet Ordered', 'icon' => 'fa-clock'],
-                    'ordered' => ['bg' => '#d1fae5', 'color' => '#065f46', 'border' => '#a7f3d0', 'label' => 'Ordered', 'icon' => 'fa-check-circle'],
-                    'partially_ordered' => ['bg' => '#dbeafe', 'color' => '#1e40af', 'border' => '#bfdbfe', 'label' => 'Partially Ordered', 'icon' => 'fa-adjust'],
+                    'pending' => ['bg' => 'bg-amber-50', 'color' => 'text-amber-700', 'border' => 'border-amber-200', 'label' => 'Not Yet Ordered', 'icon' => 'fa-clock'],
+                    'ordered' => ['bg' => 'bg-emerald-50', 'color' => 'text-emerald-700', 'border' => 'border-emerald-200', 'label' => 'Ordered', 'icon' => 'fa-check-circle'],
+                    'partially_ordered' => ['bg' => 'bg-sky-50', 'color' => 'text-sky-700', 'border' => 'border-sky-200', 'label' => 'Partially Ordered', 'icon' => 'fa-adjust'],
                 ];
                 ?>
 
@@ -1288,18 +648,20 @@ function fileIcon($ext)
                     $hasPos = !empty($linkedPos);
                     $osc = $osColors[$bom['order_status']] ?? $osColors['pending'];
                     ?>
-                    <div style="margin-bottom:18px;">
+                    <div class="mb-4">
                         <!-- BOM Card -->
-                        <div class="file-card"
-                            style="background:#f0fdf4;border-left:3px solid #10b981;border-radius:<?= $hasPos ? '10px 10px 0 0' : '10px' ?>;margin-bottom:0;<?= $hasPos ? 'border-bottom:1px dashed #a7f3d0;' : '' ?>">
-                            <div class="file-row">
-                                <i class="fas <?= $bomIcon ?> file-icon" style="color:<?= $bomColor ?>;"></i>
-                                <div class="file-body">
+                        <div
+                            class="bg-emerald-50 border border-emerald-200 border-l-2 border-l-emerald-500 p-4 sm:p-5 <?= $hasPos ? 'rounded-t-[10px] border-b-0' : 'rounded-[10px]' ?>">
+                            <div class="flex gap-3.5 items-start">
+                                <i class="fas <?= $bomIcon ?> text-2xl flex-shrink-0 mt-0.5" style="color:<?= $bomColor ?>;"></i>
+                                <div class="flex-1 min-w-0">
                                     <?php if ($bom['label']): ?>
-                                        <div class="file-label-tag" style="color:#065f46;"><?= htmlspecialchars($bom['label']) ?></div>
+                                        <div class="text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-0.5">
+                                            <?= htmlspecialchars($bom['label']) ?>
+                                        </div>
                                     <?php endif; ?>
-                                    <div class="file-name"><?= htmlspecialchars($bom['file_name']) ?></div>
-                                    <div class="file-meta">
+                                    <div class="text-sm font-semibold truncate"><?= htmlspecialchars($bom['file_name']) ?></div>
+                                    <div class="text-[11px] text-[#9A9A9A] flex flex-wrap gap-2.5 mt-1">
                                         <span><i class="fas fa-user"></i> <?= htmlspecialchars($bom['uploaded_by_name']) ?></span>
                                         <span><i class="fas fa-calendar"></i>
                                             <?= date('M d, Y', strtotime($bom['uploaded_at'])) ?></span>
@@ -1307,20 +669,21 @@ function fileIcon($ext)
                                             KB</span>
                                     </div>
                                 </div>
-                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
-                                    <span class="fstatus approved"><i class="fas fa-check-circle"></i> Approved BOM</span>
+                                <div class="flex flex-col items-end gap-2 flex-shrink-0">
                                     <span
-                                        style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;background:<?= $osc['bg'] ?>;color:<?= $osc['color'] ?>;border:1px solid <?= $osc['border'] ?>;">
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase <?= fstatusClasses('approved') ?>"><i
+                                            class="fas fa-check-circle"></i> Approved BOM</span>
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold <?= $osc['bg'] ?> <?= $osc['color'] ?> border <?= $osc['border'] ?>">
                                         <i class="fas <?= $osc['icon'] ?>"></i> <?= $osc['label'] ?>
                                     </span>
-                                    <div style="display:flex;gap:6px;align-items:center;">
-                                        <a href="<?= BASE_URL . htmlspecialchars($bom['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $bom['file_path']) ? filemtime(ROOT_PATH . $bom['file_path']) : time() ?>"
-                                            target="_blank" class="btn btn-view">
-                                            <i class="fas fa-eye"></i> View BOM
-                                        </a>
-                                    </div>
+                                    <a href="<?= BASE_URL . htmlspecialchars($bom['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $bom['file_path']) ? filemtime(ROOT_PATH . $bom['file_path']) : time() ?>"
+                                        target="_blank"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors">
+                                        <i class="fas fa-eye"></i> View BOM
+                                    </a>
                                     <span
-                                        style="font-size:11px;font-weight:700;color:<?= $hasPos ? '#065f46' : '#9ca3af' ?>;display:flex;align-items:center;gap:4px;">
+                                        class="text-[11px] font-bold flex items-center gap-1 <?= $hasPos ? 'text-emerald-700' : 'text-[#9A9A9A]' ?>">
                                         <i class="fas fa-file-invoice-dollar"></i>
                                         <?= count($linkedPos) ?> PO<?= count($linkedPos) !== 1 ? 's' : '' ?> submitted
                                     </span>
@@ -1330,10 +693,9 @@ function fileIcon($ext)
 
                         <!-- POs nested under this BOM -->
                         <?php if ($hasPos): ?>
-                            <div
-                                style="background:#f0fdf4;border:1px solid #a7f3d0;border-top:none;border-radius:0 0 10px 10px;padding:10px 16px 14px 16px;">
+                            <div class="bg-emerald-50/60 border border-emerald-200 border-t-0 rounded-b-[10px] px-4 pt-2.5 pb-3.5">
                                 <div
-                                    style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#065f46;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                                    class="text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-2.5 flex items-center gap-1.5">
                                     <i class="fas fa-file-invoice-dollar"></i> Purchase Orders for this BOM
                                 </div>
                                 <?php foreach ($linkedPos as $po):
@@ -1368,13 +730,12 @@ function fileIcon($ext)
 
                                     $reqPoRoles = $requiredApproversList['Purchase Order (Submit to accounting)'] ?? [];
                                     ?>
-                                    <div
-                                        style="background:#fff;border:1px solid #a7f3d0;border-radius:8px;padding:12px 16px;margin-bottom:8px;">
+                                    <div class="bg-white border border-emerald-200 rounded-lg px-4 py-3 mb-2">
 
                                         <!-- My review banner for this PO -->
                                         <?php if ($canApprove && $myPoReview): ?>
-                                            <div class="reviewed-banner <?= $myPoStatus === 'rejected' ? 'rejected-banner' : '' ?>"
-                                                style="margin-bottom:10px;">
+                                            <div
+                                                class="rounded-md px-3 py-2 text-xs font-semibold flex items-center gap-1.5 mb-2.5 <?= $myPoStatus === 'rejected' ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-emerald-50 border border-emerald-200 text-emerald-700' ?>">
                                                 <i class="fas <?= $myPoStatus === 'approved' ? 'fa-check-double' : 'fa-times-circle' ?>"></i>
                                                 You <?= $myPoStatus === 'approved' ? 'approved' : 'rejected' ?> this PO.
                                                 <?php if ($myPoStatus === 'rejected' && $myPoReview['review_note']): ?>
@@ -1382,28 +743,24 @@ function fileIcon($ext)
                                                 <?php endif; ?>
                                             </div>
                                         <?php elseif ($canApprove && $poGmOmAlreadyHandled): ?>
-                                            <div class="reviewed-banner" style="margin-bottom:10px;">
+                                            <div
+                                                class="rounded-md px-3 py-2 text-xs font-semibold flex items-center gap-1.5 mb-2.5 bg-emerald-50 border border-emerald-200 text-emerald-700">
                                                 <i class="fas fa-check-double"></i>
                                                 Already approved by <?= getRoleDisplayName($otherGmOm2) ?>. No further action needed.
                                             </div>
                                         <?php endif; ?>
 
-                                        <div style="display:flex;gap:12px;align-items:flex-start;">
-                                            <i class="fas <?= $poIcon ?>"
-                                                style="color:<?= $poColor ?>;font-size:20px;flex-shrink:0;margin-top:2px;"></i>
-                                            <div style="flex:1;min-width:0;">
+                                        <div class="flex gap-3 items-start">
+                                            <i class="fas <?= $poIcon ?> text-xl flex-shrink-0 mt-0.5" style="color:<?= $poColor ?>;"></i>
+                                            <div class="flex-1 min-w-0">
                                                 <?php if ($po['label']): ?>
-                                                    <div
-                                                        style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#065f46;margin-bottom:2px;">
+                                                    <div class="text-[10px] font-bold uppercase tracking-wide text-emerald-700 mb-0.5">
                                                         <?= htmlspecialchars($po['label']) ?>
                                                     </div>
                                                 <?php endif; ?>
-                                                <div
-                                                    style="font-size:13px;font-weight:600;color:#1c1007;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                                                    <?= htmlspecialchars($po['file_name']) ?>
+                                                <div class="text-[13px] font-semibold truncate"><?= htmlspecialchars($po['file_name']) ?>
                                                 </div>
-                                                <div
-                                                    style="font-size:11px;color:#9c7b6a;display:flex;gap:10px;flex-wrap:wrap;margin-top:3px;">
+                                                <div class="text-[11px] text-[#9A9A9A] flex gap-2.5 flex-wrap mt-0.5">
                                                     <span><i class="fas fa-user"></i>
                                                         <?= htmlspecialchars($po['uploaded_by_name']) ?></span>
                                                     <span><i class="fas fa-calendar"></i>
@@ -1413,7 +770,7 @@ function fileIcon($ext)
                                                 </div>
 
                                                 <!-- Approval badges for PO -->
-                                                <div class="approval-badges" style="margin-top:8px;">
+                                                <div class="flex flex-wrap gap-1.5 mt-2">
                                                     <?php foreach ($reqPoRoles as $role):
                                                         if (in_array($role, ['general_manager', 'operational_manager']))
                                                             continue;
@@ -1422,12 +779,13 @@ function fileIcon($ext)
                                                         $bi = $bc === 'approved' ? 'fa-check-circle' : ($bc === 'rejected' ? 'fa-times-circle' : 'fa-clock');
                                                         $isMine = ($role === $admin_role);
                                                         ?>
-                                                        <span class="apbadge <?= $bc ?> <?= $isMine ? 'mine' : '' ?>">
+                                                        <span
+                                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase <?= apbadgeClasses($bc) ?> <?= $isMine ? 'ring-2 ring-[#c49a78]' : '' ?>">
                                                             <i class="fas <?= $bi ?>"></i> <?= getRoleDisplayName($role) ?>
                                                             <?php if ($isMine): ?><em
-                                                                    style="font-size:9px;opacity:.7;">(You)</em><?php endif; ?>
+                                                                    class="text-[9px] opacity-70 not-italic">(You)</em><?php endif; ?>
                                                             <?php if ($rev && !empty($rev['reviewed_at'])): ?>
-                                                                <span class="apbadge-date">&middot;
+                                                                <span class="text-[9px] font-medium opacity-80 ml-0.5">&middot;
                                                                     <?= date('M d, Y g:i A', strtotime($rev['reviewed_at'])) ?></span>
                                                             <?php endif; ?>
                                                         </span>
@@ -1450,20 +808,19 @@ function fileIcon($ext)
                                                         $ci3 = 'fa-clock';
                                                     }
                                                     $isMineGmOm3 = in_array($admin_role, ['general_manager', 'operational_manager']);
-                                                    ?>
-                                                    <?php
                                                     $gmOmActedRev3 = null;
                                                     if ($gmStatus3 === 'approved' || $gmStatus3 === 'rejected')
                                                         $gmOmActedRev3 = $gmRev3;
                                                     elseif ($omStatus3 === 'approved' || $omStatus3 === 'rejected')
                                                         $gmOmActedRev3 = $omRev3;
                                                     ?>
-                                                    <span class="apbadge <?= $cs3 ?> <?= $isMineGmOm3 ? 'mine' : '' ?>">
+                                                    <span
+                                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase <?= apbadgeClasses($cs3) ?> <?= $isMineGmOm3 ? 'ring-2 ring-[#c49a78]' : '' ?>">
                                                         <i class="fas <?= $ci3 ?>"></i> <?= $cl3 ?>
                                                         <?php if ($isMineGmOm3 && ($gmRev3 || $omRev3)): ?><em
-                                                                style="font-size:9px;opacity:.7;">(You)</em><?php endif; ?>
+                                                                class="text-[9px] opacity-70 not-italic">(You)</em><?php endif; ?>
                                                         <?php if ($gmOmActedRev3 && !empty($gmOmActedRev3['reviewed_at'])): ?>
-                                                            <span class="apbadge-date">&middot;
+                                                            <span class="text-[9px] font-medium opacity-80 ml-0.5">&middot;
                                                                 <?= date('M d, Y g:i A', strtotime($gmOmActedRev3['reviewed_at'])) ?></span>
                                                         <?php endif; ?>
                                                     </span>
@@ -1472,7 +829,7 @@ function fileIcon($ext)
                                                 <!-- Rejection notes for this PO -->
                                                 <?php foreach ($po['role_reviews'] as $rKey => $rev):
                                                     if ($rev['review_status'] === 'rejected' && $rev['review_note']): ?>
-                                                        <div class="reject-note" style="margin-top:6px;">
+                                                        <div class="bg-red-50 border border-red-200 rounded-md px-3 py-2 text-xs text-red-700 mt-1.5">
                                                             <i class="fas fa-comment-alt"></i>
                                                             <strong><?= getRoleDisplayName($rKey) ?>:</strong>
                                                             <?= htmlspecialchars($rev['review_note']) ?>
@@ -1484,29 +841,35 @@ function fileIcon($ext)
                                                 <!-- Step 1 pending notice -->
                                                 <?php if ($canApprove && in_array($admin_role, ['general_manager', 'operational_manager']) && !$poGmOmCanActNow && $poStatus === 'pending'): ?>
                                                     <div
-                                                        style="background:#fef3c7;border:1px solid #fde68a;border-radius:7px;padding:8px 12px;font-size:12px;color:#92400e;margin-top:6px;display:flex;align-items:center;gap:6px;">
-                                                        <i class="fas fa-hourglass-half" style="color:#d97706;flex-shrink:0;"></i>
+                                                        class="bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-xs text-amber-800 mt-1.5 flex items-center gap-1.5">
+                                                        <i class="fas fa-hourglass-half text-amber-500 flex-shrink-0"></i>
                                                         <span>Waiting for <strong>Accounting</strong> to approve first.</span>
                                                     </div>
                                                 <?php endif; ?>
                                             </div>
 
-                                            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0;">
-                                                <span class="fstatus <?= $poStatus ?>">
+                                            <div class="flex flex-col items-end gap-1.5 flex-shrink-0">
+                                                <span
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase <?= fstatusClasses($poStatus) ?>">
                                                     <?php if ($poStatus === 'approved'): ?><i class="fas fa-check-circle"></i>
                                                     <?php elseif ($poStatus === 'rejected'): ?><i class="fas fa-times-circle"></i>
                                                     <?php else: ?><i class="fas fa-clock"></i><?php endif; ?>
                                                     <?= ucfirst($poStatus) ?>
                                                 </span>
                                                 <a href="<?= BASE_URL . htmlspecialchars($po['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $po['file_path']) ? filemtime(ROOT_PATH . $po['file_path']) : time() ?>"
-                                                    target="_blank" class="btn btn-view">
+                                                    target="_blank"
+                                                    class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors">
                                                     <i class="fas fa-eye"></i> View
                                                 </a>
                                                 <?php if ($canApprove && !$myPoReview && $poGmOmCanActNow && !$poGmOmAlreadyHandled && $poStatus === 'pending'): ?>
-                                                    <button class="btn btn-approve" onclick="approveFile(<?= $po['id'] ?>)">
+                                                    <button
+                                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                                                        onclick="approveFile(<?= $po['id'] ?>)">
                                                         <i class="fas fa-check"></i> Approve
                                                     </button>
-                                                    <button class="btn btn-reject" onclick="showRejectForm('po-<?= $po['id'] ?>')">
+                                                    <button
+                                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+                                                        onclick="showRejectForm('po-<?= $po['id'] ?>')">
                                                         <i class="fas fa-times"></i> Reject
                                                     </button>
                                                 <?php endif; ?>
@@ -1514,18 +877,22 @@ function fileIcon($ext)
                                         </div>
 
                                         <!-- Inline reject form for this PO -->
-                                        <div class="reject-form" id="reject-form-po-<?= $po['id'] ?>">
-                                            <div style="font-size:13px;font-weight:700;color:#991b1b;margin-bottom:8px;"><i
+                                        <div class="hidden mt-3 bg-red-50 border border-red-200 rounded-lg p-3.5" id="reject-form-po-<?= $po['id'] ?>">
+                                            <div class="text-[13px] font-bold text-red-700 mb-2"><i
                                                     class="fas fa-times-circle"></i> Rejection Note</div>
-                                            <div class="btn-form-error" id="reject-err-po-<?= $po['id'] ?>">Please enter a rejection reason.
-                                            </div>
+                                            <div class="hidden text-xs text-red-600 mb-2" id="reject-err-po-<?= $po['id'] ?>">Please
+                                                enter a rejection reason.</div>
                                             <textarea id="reject-note-po-<?= $po['id'] ?>"
+                                                class="w-full px-3 py-2 border border-red-300 rounded-md text-sm resize-y min-h-[80px] mb-2.5 focus:outline-none focus:border-red-500"
                                                 placeholder="Explain why this PO is being rejected..."></textarea>
-                                            <div class="reject-form-actions">
-                                                <button class="btn-cancel-reject"
+                                            <div class="flex gap-2 justify-end">
+                                                <button
+                                                    class="bg-[#F5F5F5] text-[#6B6B6B] px-3.5 py-1.5 rounded-md cursor-pointer font-semibold text-xs hover:bg-[#E2E2E2]"
                                                     onclick="cancelReject('po-<?= $po['id'] ?>')">Cancel</button>
-                                                <button class="btn-confirm-reject" onclick="submitReject(<?= $po['id'] ?>)"><i
-                                                        class="fas fa-times"></i> Confirm Rejection</button>
+                                                <button
+                                                    class="bg-red-500 text-white px-3.5 py-1.5 rounded-md cursor-pointer font-bold text-xs inline-flex items-center gap-1.5 hover:bg-red-600"
+                                                    onclick="submitReject(<?= $po['id'] ?>)"><i class="fas fa-times"></i> Confirm
+                                                    Rejection</button>
                                             </div>
                                         </div>
                                     </div>
@@ -1539,11 +906,13 @@ function fileIcon($ext)
 
         <!-- Category filter — hidden for Accounting and PO stage -->
         <?php if (!empty($categories) && !$isAccounting && $stage !== 'Purchase Order (Submit to accounting)'): ?>
-            <div class="cat-bar">
-                <button class="cat-btn active" onclick="filterCategory('all',this)"><i class="fas fa-th-large"></i>
-                    All</button>
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button
+                    class="cat-btn active inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-[#0B0B0B] text-white border border-[#0B0B0B]"
+                    onclick="filterCategory('all',this)"><i class="fas fa-th-large"></i> All</button>
                 <?php foreach ($categories as $cat): ?>
-                    <button class="cat-btn"
+                    <button
+                        class="cat-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-white text-[#6B6B6B] border border-[#E2E2E2] hover:border-[#0B0B0B]"
                         onclick="filterCategory('<?= htmlspecialchars(addslashes($cat)) ?>',this)"><?= htmlspecialchars($cat) ?></button>
                 <?php endforeach; ?>
             </div>
@@ -1553,10 +922,10 @@ function fileIcon($ext)
         <?php if ($isAccounting || $stage === 'Purchase Order (Submit to accounting)'): ?>
             <?php /* displayed in grouped sections above */ ?>
         <?php elseif (empty($files)): ?>
-            <div class="empty">
-                <i class="fas fa-file"></i>
-                <div class="empty-title">No files submitted yet</div>
-                <div class="empty-sub">Files submitted for this stage will appear here.</div>
+            <div class="text-center py-11 px-5 bg-white border-2 border-dashed border-[#E2E2E2] rounded-[10px]">
+                <i class="fas fa-file text-3xl text-[#E2E2E2] mb-2.5 block"></i>
+                <div class="text-sm font-semibold text-[#0B0B0B] mb-1">No files submitted yet</div>
+                <div class="text-xs text-[#9A9A9A]">Files submitted for this stage will appear here.</div>
             </div>
         <?php else:
             foreach ($files as $f):
@@ -1566,7 +935,6 @@ function fileIcon($ext)
                 $myReview = $f['role_reviews'][$admin_role] ?? null;
                 $myStatus = $myReview ? $myReview['review_status'] : null;
 
-                // For GM/OM: if the other one already approved or rejected, treat as if this user already reviewed
                 $gmOmAlreadyHandled = false;
                 if (in_array($admin_role, ['general_manager', 'operational_manager'])) {
                     $otherGmOm = ($admin_role === 'general_manager') ? 'operational_manager' : 'general_manager';
@@ -1576,11 +944,13 @@ function fileIcon($ext)
                     }
                 }
                 ?>
-                <div class="file-card <?= $fStatus ?>" data-category="<?= htmlspecialchars($f['label'] ?? '') ?>">
+                <div class="bg-white border border-[#E2E2E2] rounded-[10px] p-4 sm:p-5 mb-3 <?= fcardBorder($fStatus) ?>"
+                    data-category="<?= htmlspecialchars($f['label'] ?? '') ?>">
 
                     <!-- My review status banner -->
                     <?php if ($canApprove && $myReview): ?>
-                        <div class="reviewed-banner <?= $myStatus === 'rejected' ? 'rejected-banner' : '' ?>">
+                        <div
+                            class="rounded-md px-3 py-2 text-xs font-semibold flex items-center gap-1.5 mb-3 <?= $myStatus === 'rejected' ? 'bg-red-50 border border-red-200 text-red-700' : 'bg-emerald-50 border border-emerald-200 text-emerald-700' ?>">
                             <i class="fas <?= $myStatus === 'approved' ? 'fa-check-double' : 'fa-times-circle' ?>"></i>
                             You <?= $myStatus === 'approved' ? 'approved' : 'rejected' ?> this file.
                             <?php if ($myStatus === 'rejected' && $myReview['review_note']): ?>
@@ -1588,19 +958,22 @@ function fileIcon($ext)
                             <?php endif; ?>
                         </div>
                     <?php elseif ($canApprove && $gmOmAlreadyHandled): ?>
-                        <div class="reviewed-banner">
+                        <div
+                            class="rounded-md px-3 py-2 text-xs font-semibold flex items-center gap-1.5 mb-3 bg-emerald-50 border border-emerald-200 text-emerald-700">
                             <i class="fas fa-check-double"></i>
                             This file was already approved by <?= getRoleDisplayName($otherGmOm) ?>. No further action needed.
                         </div>
                     <?php endif; ?>
 
-                    <div class="file-row">
-                        <i class="fas <?= $fi ?> file-icon" style="color:<?= $fc ?>;"></i>
-                        <div class="file-body">
+                    <div class="flex gap-3.5 items-start">
+                        <i class="fas <?= $fi ?> text-2xl flex-shrink-0 mt-0.5" style="color:<?= $fc ?>;"></i>
+                        <div class="flex-1 min-w-0">
                             <?php if ($f['label']): ?>
-                                <div class="file-label-tag"><?= htmlspecialchars($f['label']) ?></div><?php endif; ?>
-                            <div class="file-name"><?= htmlspecialchars($f['file_name']) ?></div>
-                            <div class="file-meta">
+                                <div class="text-[10px] font-bold uppercase tracking-wide text-[#6B6B6B] mb-0.5">
+                                    <?= htmlspecialchars($f['label']) ?>
+                                </div><?php endif; ?>
+                            <div class="text-sm font-semibold truncate"><?= htmlspecialchars($f['file_name']) ?></div>
+                            <div class="text-[11px] text-[#9A9A9A] flex flex-wrap gap-2.5 mb-2 mt-1">
                                 <span><i class="fas fa-user"></i> <?= htmlspecialchars($f['uploaded_by_name']) ?></span>
                                 <span><i class="fas fa-calendar"></i>
                                     <?= date('M d, Y · g:i A', strtotime($f['uploaded_at'])) ?></span>
@@ -1613,9 +986,8 @@ function fileIcon($ext)
                                 $gmOmStages2 = ['Rough Estimation', 'Samples Submitted TDS/SDS', 'Quotation', 'Bill of Materials (BOM)', 'Purchase Order (Submit to accounting)', 'Production Data Submittals'];
                                 $reqRoles = $requiredApproversList[$stage];
                                 ?>
-                                <div class="approval-badges">
+                                <div class="flex flex-wrap gap-1.5 mb-2">
                                     <?php if (in_array($stage, $gmOmStages2)):
-                                        // Non-GM/OM roles first
                                         foreach ($reqRoles as $role):
                                             if (in_array($role, ['general_manager', 'operational_manager']))
                                                 continue;
@@ -1624,22 +996,21 @@ function fileIcon($ext)
                                             $bi = $bc === 'approved' ? 'fa-check-circle' : ($bc === 'rejected' ? 'fa-times-circle' : 'fa-clock');
                                             $isMine = ($role === $admin_role);
                                             ?>
-                                            <span class="apbadge <?= $bc ?> <?= $isMine ? 'mine' : '' ?>">
+                                            <span
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase <?= apbadgeClasses($bc) ?> <?= $isMine ? 'ring-2 ring-[#c49a78]' : '' ?>">
                                                 <i class="fas <?= $bi ?>"></i>
                                                 <?= getRoleDisplayName($role) ?>
-                                                <?php if ($isMine): ?><em style="font-size:9px;opacity:.7;">(You)</em><?php endif; ?>
+                                                <?php if ($isMine): ?><em class="text-[9px] opacity-70 not-italic">(You)</em><?php endif; ?>
                                                 <?php if ($rev && !empty($rev['reviewed_at'])): ?>
-                                                    <span class="apbadge-date">&middot;
+                                                    <span class="text-[9px] font-medium opacity-80 ml-0.5">&middot;
                                                         <?= date('M d, Y g:i A', strtotime($rev['reviewed_at'])) ?></span>
                                                 <?php endif; ?>
                                             </span>
                                         <?php endforeach;
-                                        // Combined GM/OM badge — check if either has reviewed
                                         $gmRev = $f['role_reviews']['general_manager'] ?? null;
                                         $omRev = $f['role_reviews']['operational_manager'] ?? null;
                                         $gmStatus = $gmRev ? $gmRev['review_status'] : null;
                                         $omStatus = $omRev ? $omRev['review_status'] : null;
-                                        // Determine combined display status
                                         if ($gmStatus === 'approved' || $omStatus === 'approved') {
                                             $combinedStatus = 'approved';
                                             $whoApproved = $gmStatus === 'approved'
@@ -1660,21 +1031,20 @@ function fileIcon($ext)
                                             $combinedIcon = 'fa-clock';
                                         }
                                         $isMineGmOm = in_array($admin_role, ['general_manager', 'operational_manager']);
-                                        ?>
-                                        <?php
                                         $gmOmActedRev = null;
                                         if ($gmStatus === 'approved' || $gmStatus === 'rejected')
                                             $gmOmActedRev = $gmRev;
                                         elseif ($omStatus === 'approved' || $omStatus === 'rejected')
                                             $gmOmActedRev = $omRev;
                                         ?>
-                                        <span class="apbadge <?= $combinedStatus ?> <?= $isMineGmOm ? 'mine' : '' ?>">
+                                        <span
+                                            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase <?= apbadgeClasses($combinedStatus) ?> <?= $isMineGmOm ? 'ring-2 ring-[#c49a78]' : '' ?>">
                                             <i class="fas <?= $combinedIcon ?>"></i>
                                             <?= $combinedLabel ?>
                                             <?php if ($isMineGmOm && ($gmRev || $omRev)): ?><em
-                                                    style="font-size:9px;opacity:.7;">(You)</em><?php endif; ?>
+                                                    class="text-[9px] opacity-70 not-italic">(You)</em><?php endif; ?>
                                             <?php if ($gmOmActedRev && !empty($gmOmActedRev['reviewed_at'])): ?>
-                                                <span class="apbadge-date">&middot;
+                                                <span class="text-[9px] font-medium opacity-80 ml-0.5">&middot;
                                                     <?= date('M d, Y g:i A', strtotime($gmOmActedRev['reviewed_at'])) ?></span>
                                             <?php endif; ?>
                                         </span>
@@ -1685,21 +1055,22 @@ function fileIcon($ext)
                                             $bi = $bc === 'approved' ? 'fa-check-circle' : ($bc === 'rejected' ? 'fa-times-circle' : 'fa-clock');
                                             $isMine = ($role === $admin_role);
                                             ?>
-                                            <span class="apbadge <?= $bc ?> <?= $isMine ? 'mine' : '' ?>">
+                                            <span
+                                                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase <?= apbadgeClasses($bc) ?> <?= $isMine ? 'ring-2 ring-[#c49a78]' : '' ?>">
                                                 <i class="fas <?= $bi ?>"></i>
                                                 <?= getRoleDisplayName($role) ?>
-                                                <?php if ($isMine): ?><em style="font-size:9px;opacity:.7;">(You)</em><?php endif; ?>
+                                                <?php if ($isMine): ?><em class="text-[9px] opacity-70 not-italic">(You)</em><?php endif; ?>
                                                 <?php if ($rev && !empty($rev['reviewed_at'])): ?>
-                                                    <span class="apbadge-date">&middot;
+                                                    <span class="text-[9px] font-medium opacity-80 ml-0.5">&middot;
                                                         <?= date('M d, Y g:i A', strtotime($rev['reviewed_at'])) ?></span>
                                                 <?php endif; ?>
                                             </span>
-                                        <?php endforeach; endif; /* end isAccounting check */ ?>
+                                        <?php endforeach; endif; ?>
                                 </div>
                                 <!-- Rejection notes from all roles -->
                                 <?php foreach ($f['role_reviews'] as $rKey => $rev):
                                     if ($rev['review_status'] === 'rejected' && $rev['review_note']): ?>
-                                        <div class="reject-note">
+                                        <div class="bg-red-50 border border-red-200 rounded-md px-3 py-2 text-xs text-red-700 mb-1.5">
                                             <i class="fas fa-comment-alt"></i>
                                             <strong><?= getRoleDisplayName($rKey) ?>:</strong>
                                             <?= htmlspecialchars($rev['review_note']) ?>
@@ -1732,8 +1103,8 @@ function fileIcon($ext)
                                     if (!$step1AllDone && $fStatus === 'pending'):
                                         ?>
                                         <div
-                                            style="background:#fef3c7;border:1px solid #fde68a;border-radius:7px;padding:8px 12px;font-size:12px;color:#92400e;margin-top:6px;display:flex;align-items:center;gap:6px;">
-                                            <i class="fas fa-hourglass-half" style="color:#d97706;flex-shrink:0;"></i>
+                                            class="bg-amber-50 border border-amber-200 rounded-md px-3 py-2 text-xs text-amber-800 mb-1.5 flex items-center gap-1.5">
+                                            <i class="fas fa-hourglass-half text-amber-500 flex-shrink-0"></i>
                                             <span>Waiting for <strong><?= implode(' and ', $missingStep1) ?></strong> to approve first
                                                 before you can review this file.</span>
                                         </div>
@@ -1743,7 +1114,6 @@ function fileIcon($ext)
 
                             <!-- Approve / Reject actions (only if canApprove AND not yet reviewed by me) -->
                             <?php
-                            // For GM/OM: hide approve/reject buttons if step 1 has not approved yet
                             $gmOmCanActNow = true;
                             if ($isApproval && in_array($admin_role, ['general_manager', 'operational_manager']) && in_array($stage, $gmOmStages2)) {
                                 $seqInfo2 = [
@@ -1765,14 +1135,21 @@ function fileIcon($ext)
                             }
                             ?>
                             <?php if ($canApprove && !$myReview && $gmOmCanActNow && !$gmOmAlreadyHandled): ?>
-                                <div class="file-actions">
+                                <div class="flex gap-1.5 flex-wrap items-center mt-2.5">
                                     <a href="<?= BASE_URL . htmlspecialchars($f['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $f['file_path']) ? filemtime(ROOT_PATH . $f['file_path']) : time() ?>"
-                                        target="_blank" class="btn btn-view"><i class="fas fa-eye"></i> View File</a>
-                                    <button class="btn btn-approve" onclick="approveFile(<?= $f['id'] ?>)"><i
-                                            class="fas fa-check-circle"></i> Approve</button>
-                                    <button class="btn btn-reject" onclick="showRejectForm(<?= $f['id'] ?>)"><i
-                                            class="fas fa-times-circle"></i> Reject</button>
-                                    <span class="fstatus <?= $fStatus ?>" style="margin-left:auto;">
+                                        target="_blank"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors"><i
+                                            class="fas fa-eye"></i> View File</a>
+                                    <button
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors"
+                                        onclick="approveFile(<?= $f['id'] ?>)"><i class="fas fa-check-circle"></i>
+                                        Approve</button>
+                                    <button
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-[13px] font-semibold bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors"
+                                        onclick="showRejectForm(<?= $f['id'] ?>)"><i class="fas fa-times-circle"></i>
+                                        Reject</button>
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase ml-auto <?= fstatusClasses($fStatus) ?>">
                                         <?php if ($fStatus === 'approved'): ?><i class="fas fa-check-circle"></i>
                                         <?php elseif ($fStatus === 'rejected'): ?><i class="fas fa-times-circle"></i>
                                         <?php else: ?><i class="fas fa-clock"></i><?php endif; ?>
@@ -1780,31 +1157,38 @@ function fileIcon($ext)
                                     </span>
                                 </div>
                                 <!-- Reject inline form -->
-                                <div class="reject-form" id="reject-form-<?= $f['id'] ?>">
-                                    <div style="font-size:13px;font-weight:700;color:#991b1b;margin-bottom:8px;"><i
+                                <div class="hidden mt-3 bg-red-50 border border-red-200 rounded-lg p-3.5" id="reject-form-<?= $f['id'] ?>">
+                                    <div class="text-[13px] font-bold text-red-700 mb-2"><i
                                             class="fas fa-times-circle"></i> Rejection Note</div>
-                                    <div class="btn-form-error" id="reject-err-<?= $f['id'] ?>">Please enter a rejection reason.
-                                    </div>
+                                    <div class="hidden text-xs text-red-600 mb-2" id="reject-err-<?= $f['id'] ?>">Please enter
+                                        a rejection reason.</div>
                                     <textarea id="reject-note-<?= $f['id'] ?>"
+                                        class="w-full px-3 py-2 border border-red-300 rounded-md text-sm resize-y min-h-[80px] mb-2.5 focus:outline-none focus:border-red-500"
                                         placeholder="Explain why this file is being rejected. The submitter will be notified."></textarea>
-                                    <div class="reject-form-actions">
-                                        <button class="btn-cancel-reject" onclick="cancelReject(<?= $f['id'] ?>)">Cancel</button>
-                                        <button class="btn-confirm-reject" onclick="submitReject(<?= $f['id'] ?>)"><i
-                                                class="fas fa-times"></i> Confirm Rejection</button>
+                                    <div class="flex gap-2 justify-end">
+                                        <button
+                                            class="bg-[#F5F5F5] text-[#6B6B6B] px-3.5 py-1.5 rounded-md cursor-pointer font-semibold text-xs hover:bg-[#E2E2E2]"
+                                            onclick="cancelReject(<?= $f['id'] ?>)">Cancel</button>
+                                        <button
+                                            class="bg-red-500 text-white px-3.5 py-1.5 rounded-md cursor-pointer font-bold text-xs inline-flex items-center gap-1.5 hover:bg-red-600"
+                                            onclick="submitReject(<?= $f['id'] ?>)"><i class="fas fa-times"></i> Confirm
+                                            Rejection</button>
                                     </div>
                                 </div>
                             <?php else: ?>
-                                <div class="file-actions">
+                                <div class="flex gap-1.5 flex-wrap items-center mt-2.5">
                                     <a href="<?= BASE_URL . htmlspecialchars($f['file_path']) ?>?v=<?= file_exists(ROOT_PATH . $f['file_path']) ? filemtime(ROOT_PATH . $f['file_path']) : time() ?>"
-                                        target="_blank" class="btn btn-view"><i class="fas fa-eye"></i> View File</a>
+                                        target="_blank"
+                                        class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors"><i
+                                            class="fas fa-eye"></i> View File</a>
                                     <?php if ($canApprove && ($myReview || $gmOmAlreadyHandled)): ?>
-                                        <span
-                                            style="font-size:11px;color:#059669;font-weight:600;display:flex;align-items:center;gap:4px;">
+                                        <span class="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
                                             <i class="fas fa-check-double"></i>
                                             <?= $myReview ? 'You reviewed this' : 'Handled by ' . getRoleDisplayName($otherGmOm) ?>
                                         </span>
                                     <?php endif; ?>
-                                    <span class="fstatus <?= $fStatus ?>" style="margin-left:auto;">
+                                    <span
+                                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase ml-auto <?= fstatusClasses($fStatus) ?>">
                                         <?php if ($fStatus === 'approved'): ?><i class="fas fa-check-circle"></i>
                                         <?php elseif ($fStatus === 'rejected'): ?><i class="fas fa-times-circle"></i>
                                         <?php else: ?><i class="fas fa-clock"></i><?php endif; ?>
@@ -1822,24 +1206,20 @@ function fileIcon($ext)
 
     <!-- Internal P.O — Approval Status + NTP Panel (Manager read-only view) -->
     <?php if ($isInternalPo): ?>
-        <div
-            style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-top:24px;margin-bottom:20px;box-shadow:var(--shadow);max-width:860px;margin-left:auto;margin-right:auto;">
-            <div
-                style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-lt);margin-bottom:14px;display:flex;align-items:center;gap:7px;">
-                <i class="fas fa-stamp"></i> Stage Approval Status
-            </div>
+        <div class="bg-white border border-[#E2E2E2] rounded-[10px] p-5 sm:p-6 mt-6 mb-5 max-w-4xl mx-auto">
+            <div class="adm-section-label flex items-center gap-2 text-xs font-semibold text-[#0B0B0B] mb-4"><i
+                    class="fas fa-stamp"></i> Stage Approval Status</div>
 
             <?php if (!$internalPoApproval): ?>
-                <div
-                    style="background:#faf8f5;border:2px dashed var(--border);border-radius:10px;padding:20px 22px;display:flex;align-items:center;gap:12px;">
+                <div class="bg-[#F5F5F5] border-2 border-dashed border-[#E2E2E2] rounded-[10px] px-5 py-5 flex items-center gap-3">
                     <div
-                        style="width:40px;height:40px;border-radius:10px;background:var(--brown-pale);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <i class="fas fa-paper-plane" style="color:var(--brown-md);font-size:16px;"></i>
+                        class="w-10 h-10 rounded-[10px] bg-white border border-[#E2E2E2] flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-paper-plane text-[#6B6B6B]"></i>
                     </div>
                     <div>
-                        <div style="font-size:14px;font-weight:700;color:var(--text-dk);">No approval requested yet</div>
-                        <div style="font-size:12px;color:var(--text-lt);margin-top:3px;">The assigned staff has not yet
-                            requested approval for this stage.</div>
+                        <div class="text-sm font-bold">No approval requested yet</div>
+                        <div class="text-xs text-[#9A9A9A] mt-0.5">The assigned staff has not yet requested approval for
+                            this stage.</div>
                     </div>
                 </div>
 
@@ -1847,25 +1227,25 @@ function fileIcon($ext)
                 $ipa = $internalPoApproval;
                 $overallStatus = $ipa['overall_status'];
                 $overallColors = [
-                    'pending' => ['bg' => '#fffbeb', 'border' => '#fde68a', 'color' => '#92400e', 'icon' => 'fa-clock'],
-                    'approved' => ['bg' => '#f0fdf4', 'border' => '#6ee7b7', 'color' => '#065f46', 'icon' => 'fa-check-circle'],
-                    'rejected' => ['bg' => '#fee2e2', 'border' => '#fca5a5', 'color' => '#991b1b', 'icon' => 'fa-times-circle'],
+                    'pending' => ['bg' => 'bg-amber-50', 'border' => 'border-amber-200', 'color' => 'text-amber-700', 'icon' => 'fa-clock'],
+                    'approved' => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-200', 'color' => 'text-emerald-700', 'icon' => 'fa-check-circle'],
+                    'rejected' => ['bg' => 'bg-red-50', 'border' => 'border-red-200', 'color' => 'text-red-700', 'icon' => 'fa-times-circle'],
                 ];
                 $oc = $overallColors[$overallStatus];
                 ?>
 
                 <!-- Overall status banner -->
                 <div
-                    style="background:<?= $oc['bg'] ?>;border:1px solid <?= $oc['border'] ?>;border-radius:8px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:9px;">
-                    <i class="fas <?= $oc['icon'] ?>" style="color:<?= $oc['color'] ?>;font-size:16px;flex-shrink:0;"></i>
+                    class="<?= $oc['bg'] ?> border <?= $oc['border'] ?> rounded-lg px-3.5 py-2.5 mb-3.5 flex items-center gap-2.5">
+                    <i class="fas <?= $oc['icon'] ?> <?= $oc['color'] ?> flex-shrink-0"></i>
                     <div>
-                        <div style="font-size:13px;font-weight:700;color:<?= $oc['color'] ?>;">
+                        <div class="text-[13px] font-bold <?= $oc['color'] ?>">
                             <?php if ($overallStatus === 'pending'): ?>Approval in progress
                             <?php elseif ($overallStatus === 'approved'): ?>Fully approved
                             <?php else: ?>Rejected — staff needs to fix and re-request
                             <?php endif; ?>
                         </div>
-                        <div style="font-size:11px;color:<?= $oc['color'] ?>;opacity:.8;margin-top:2px;">
+                        <div class="text-[11px] <?= $oc['color'] ?> opacity-80 mt-0.5">
                             Requested by <?= htmlspecialchars($ipa['requested_by_name']) ?> ·
                             <?= date('M d, Y g:i A', strtotime($ipa['requested_at'])) ?>
                         </div>
@@ -1886,43 +1266,41 @@ function fileIcon($ext)
                 $ntpStmt->execute();
                 $ntpFiles = $ntpStmt->get_result()->fetch_all(MYSQLI_ASSOC);
                 if (!empty($ntpFiles)): ?>
-                    <div style="margin-bottom:16px;">
-                        <div
-                            style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-lt);margin-bottom:10px;display:flex;align-items:center;gap:7px;">
-                            <i class="fas fa-file-signature" style="color:#0369a1;"></i> Notice to Proceed (NTP) Files
+                    <div class="mb-4">
+                        <div class="text-[11px] font-bold uppercase tracking-wide text-[#9A9A9A] mb-2.5 flex items-center gap-1.5">
+                            <i class="fas fa-file-signature text-sky-600"></i> Notice to Proceed (NTP) Files
                         </div>
                         <?php foreach ($ntpFiles as $ntp):
                             $ntpExt = strtolower(pathinfo($ntp['file_name'], PATHINFO_EXTENSION));
                             $ntpViewable = in_array($ntpExt, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg']) || $ntpExt === 'pdf';
                             ?>
-                            <div
-                                style="background:#f0f9ff;border:1px solid #7dd3fc;border-radius:8px;padding:12px 14px;margin-bottom:8px;">
-                                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                            <div class="bg-sky-50 border border-sky-200 rounded-lg px-3.5 py-3 mb-2">
+                                <div class="flex items-center justify-between flex-wrap gap-2">
                                     <div>
-                                        <div style="font-size:12px;font-weight:700;color:#0369a1;margin-bottom:3px;">
+                                        <div class="text-xs font-bold text-sky-700 mb-0.5">
                                             <i class="fas fa-file-signature"></i>
                                             NTP — <?= htmlspecialchars($ntp['payment_type'] ?? 'Payment') ?>
                                         </div>
-                                        <div style="font-size:11px;color:#6b7280;">
+                                        <div class="text-[11px] text-[#6B6B6B]">
                                             <i class="fas fa-user"></i> <?= htmlspecialchars($ntp['uploader_name']) ?>
                                             &bull; <?= date('M d, Y g:i A', strtotime($ntp['uploaded_at'])) ?>
                                         </div>
                                         <?php if (!empty($ntp['notes'])): ?>
-                                            <div
-                                                style="font-size:11px;color:#374151;background:#e0f2fe;border-radius:6px;padding:5px 8px;margin-top:5px;">
+                                            <div class="text-[11px] text-[#0B0B0B] bg-sky-100 rounded-md px-2 py-1 mt-1.5">
                                                 <i class="fas fa-sticky-note"></i> <?= htmlspecialchars($ntp['notes']) ?>
                                             </div>
                                         <?php endif; ?>
                                     </div>
-                                    <div style="display:flex;gap:6px;">
+                                    <div class="flex gap-1.5">
                                         <?php if ($ntpViewable): ?>
-                                            <a href="<?= BASE_URL . htmlspecialchars($ntp['file_path']) ?>" target="_blank" class="btn btn-view">
+                                            <a href="<?= BASE_URL . htmlspecialchars($ntp['file_path']) ?>" target="_blank"
+                                                class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-white text-[#0B0B0B] border border-[#E2E2E2] hover:border-[#0B0B0B] transition-colors">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
                                         <?php endif; ?>
                                         <a href="<?= BASE_URL . htmlspecialchars($ntp['file_path']) ?>"
-                                            download="<?= htmlspecialchars($ntp['file_name']) ?>" class="btn btn-view"
-                                            style="background:#dcfce7;color:#166534;border-color:#86efac;">
+                                            download="<?= htmlspecialchars($ntp['file_name']) ?>"
+                                            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors">
                                             <i class="fas fa-download"></i>
                                         </a>
                                     </div>
@@ -1933,40 +1311,38 @@ function fileIcon($ext)
                 <?php endif; ?>
 
                 <!-- Reviewer steps (read-only) -->
-                <div style="display:flex;flex-direction:column;gap:10px;">
+                <div class="flex flex-col gap-2.5">
 
                     <!-- Step 1: Accounting -->
                     <?php
                     $acStatus = $ipa['accounting_status'];
                     $acColors = [
-                        'pending' => ['#f3f4f6', '#9ca3af', '#e5e7eb', 'fa-clock'],
-                        'approved' => ['#d1fae5', '#065f46', '#10b981', 'fa-check-circle'],
-                        'rejected' => ['#fee2e2', '#991b1b', '#ef4444', 'fa-times-circle'],
+                        'pending' => ['bg' => 'bg-[#F5F5F5]', 'color' => 'text-[#9A9A9A]', 'border' => 'border-[#E2E2E2]', 'dot' => 'bg-[#9A9A9A]', 'icon' => 'fa-clock'],
+                        'approved' => ['bg' => 'bg-emerald-50', 'color' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500', 'icon' => 'fa-check-circle'],
+                        'rejected' => ['bg' => 'bg-red-50', 'color' => 'text-red-700', 'border' => 'border-red-200', 'dot' => 'bg-red-500', 'icon' => 'fa-times-circle'],
                     ];
                     $acc = $acColors[$acStatus];
                     ?>
-                    <div style="background:<?= $acc[0] ?>;border:1px solid <?= $acc[2] ?>;border-radius:8px;padding:12px 14px;">
-                        <div style="display:flex;align-items:center;gap:8px;">
+                    <div class="<?= $acc['bg'] ?> border <?= $acc['border'] ?> rounded-lg px-3.5 py-3">
+                        <div class="flex items-center gap-2">
                             <span
-                                style="background:<?= $acc[2] ?>;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</span>
+                                class="<?= $acc['dot'] ?> text-white rounded-full w-[22px] h-[22px] flex items-center justify-center text-[11px] font-bold flex-shrink-0">1</span>
                             <div>
-                                <div
-                                    style="font-size:12px;font-weight:700;color:<?= $acc[1] ?>;display:flex;align-items:center;gap:5px;">
-                                    <i class="fas <?= $acc[3] ?>"></i> Accounting
+                                <div class="text-xs font-bold <?= $acc['color'] ?> flex items-center gap-1.5">
+                                    <i class="fas <?= $acc['icon'] ?>"></i> Accounting
                                     <?php if ($acStatus === 'pending'): ?>
                                         <span
-                                            style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:1px 7px;border-radius:10px;font-size:10px;">Waiting</span>
+                                            class="bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full text-[10px]">Waiting</span>
                                     <?php endif; ?>
                                 </div>
                                 <?php if ($ipa['accounting_reviewed_at']): ?>
-                                    <div style="font-size:11px;color:var(--text-lt);margin-top:2px;">
+                                    <div class="text-[11px] text-[#9A9A9A] mt-0.5">
                                         <?= htmlspecialchars($ipa['accounting_reviewer_name']) ?> ·
                                         <?= date('M d, Y g:i A', strtotime($ipa['accounting_reviewed_at'])) ?>
                                     </div>
                                 <?php endif; ?>
                                 <?php if ($ipa['accounting_remark']): ?>
-                                    <div
-                                        style="font-size:12px;color:#991b1b;margin-top:5px;background:#fee2e2;border-radius:6px;padding:6px 10px;font-style:italic;">
+                                    <div class="text-xs text-red-700 mt-1.5 bg-red-50 rounded-md px-2.5 py-1.5 italic">
                                         <i class="fas fa-comment-alt"></i> "<?= htmlspecialchars($ipa['accounting_remark']) ?>"
                                     </div>
                                 <?php endif; ?>
@@ -1979,39 +1355,37 @@ function fileIcon($ext)
                     $dsStatus = $ipa['designer_status'];
                     $dsLocked = ($acStatus !== 'approved');
                     $dColors = [
-                        'pending' => ['#f3f4f6', '#9ca3af', '#e5e7eb', 'fa-clock'],
-                        'approved' => ['#d1fae5', '#065f46', '#10b981', 'fa-check-circle'],
-                        'rejected' => ['#fee2e2', '#991b1b', '#ef4444', 'fa-times-circle'],
+                        'pending' => ['bg' => 'bg-[#F5F5F5]', 'color' => 'text-[#9A9A9A]', 'border' => 'border-[#E2E2E2]', 'dot' => 'bg-[#9A9A9A]', 'icon' => 'fa-clock'],
+                        'approved' => ['bg' => 'bg-emerald-50', 'color' => 'text-emerald-700', 'border' => 'border-emerald-200', 'dot' => 'bg-emerald-500', 'icon' => 'fa-check-circle'],
+                        'rejected' => ['bg' => 'bg-red-50', 'color' => 'text-red-700', 'border' => 'border-red-200', 'dot' => 'bg-red-500', 'icon' => 'fa-times-circle'],
                     ];
                     $dc = $dColors[$dsStatus];
                     ?>
                     <div
-                        style="background:<?= $dc[0] ?>;border:1px solid <?= $dc[2] ?>;border-radius:8px;padding:12px 14px;<?= $dsLocked ? 'opacity:.5;' : '' ?>">
-                        <div style="display:flex;align-items:center;gap:8px;">
+                        class="<?= $dc['bg'] ?> border <?= $dc['border'] ?> rounded-lg px-3.5 py-3 <?= $dsLocked ? 'opacity-50' : '' ?>">
+                        <div class="flex items-center gap-2">
                             <span
-                                style="background:<?= $dc[2] ?>;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</span>
+                                class="<?= $dc['dot'] ?> text-white rounded-full w-[22px] h-[22px] flex items-center justify-center text-[11px] font-bold flex-shrink-0">2</span>
                             <div>
-                                <div
-                                    style="font-size:12px;font-weight:700;color:<?= $dc[1] ?>;display:flex;align-items:center;gap:5px;">
-                                    <i class="fas <?= $dc[3] ?>"></i> Head Designer
+                                <div class="text-xs font-bold <?= $dc['color'] ?> flex items-center gap-1.5">
+                                    <i class="fas <?= $dc['icon'] ?>"></i> Head Designer
                                     <?php if ($dsLocked): ?>
                                         <span
-                                            style="background:#e5e7eb;color:#6b7280;border:1px solid #d1d5db;padding:1px 7px;border-radius:10px;font-size:10px;"><i
+                                            class="bg-[#E2E2E2] text-[#6B6B6B] border border-[#9A9A9A]/30 px-1.5 py-0.5 rounded-full text-[10px]"><i
                                                 class="fas fa-lock"></i> Waiting for Accounting</span>
                                     <?php elseif ($dsStatus === 'pending'): ?>
                                         <span
-                                            style="background:#fef3c7;color:#92400e;border:1px solid #fde68a;padding:1px 7px;border-radius:10px;font-size:10px;">Waiting</span>
+                                            class="bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-full text-[10px]">Waiting</span>
                                     <?php endif; ?>
                                 </div>
                                 <?php if ($ipa['designer_reviewed_at']): ?>
-                                    <div style="font-size:11px;color:var(--text-lt);margin-top:2px;">
+                                    <div class="text-[11px] text-[#9A9A9A] mt-0.5">
                                         <?= htmlspecialchars($ipa['designer_reviewer_name']) ?> ·
                                         <?= date('M d, Y g:i A', strtotime($ipa['designer_reviewed_at'])) ?>
                                     </div>
                                 <?php endif; ?>
                                 <?php if ($ipa['designer_remark']): ?>
-                                    <div
-                                        style="font-size:12px;color:#991b1b;margin-top:5px;background:#fee2e2;border-radius:6px;padding:6px 10px;font-style:italic;">
+                                    <div class="text-xs text-red-700 mt-1.5 bg-red-50 rounded-md px-2.5 py-1.5 italic">
                                         <i class="fas fa-comment-alt"></i> "<?= htmlspecialchars($ipa['designer_remark']) ?>"
                                     </div>
                                 <?php endif; ?>
@@ -2024,7 +1398,11 @@ function fileIcon($ext)
         </div>
     <?php endif; ?>
 
-    <div id="toast" class="toast"><i class="fas fa-check-circle"></i><span id="toastMsg"></span></div>
+    <!-- Toast -->
+    <div id="toast"
+        class="fixed bottom-7 right-7 bg-[#0B0B0B] text-white px-5 py-3.5 rounded-[10px] text-[13px] font-semibold flex items-center gap-2.5 shadow-[0_8px_32px_rgba(11,11,11,.3)] translate-y-20 opacity-0 transition-all duration-300 ease-[cubic-bezier(.34,1.56,.64,1)] z-[9999] pointer-events-none">
+        <i class="fas fa-check-circle"></i><span id="toastMsg"></span>
+    </div>
 
     <?php include $includes ['esign-modal']; ?>
 
@@ -2051,13 +1429,13 @@ function fileIcon($ext)
 
         // Reject form
         function showRejectForm(id) {
-            document.getElementById('reject-form-' + id).style.display = 'block';
+            document.getElementById('reject-form-' + id).classList.remove('hidden');
             document.getElementById('reject-note-' + id).focus();
         }
         function cancelReject(id) {
-            document.getElementById('reject-form-' + id).style.display = 'none';
+            document.getElementById('reject-form-' + id).classList.add('hidden');
             document.getElementById('reject-note-' + id).value = '';
-            document.getElementById('reject-err-' + id).style.display = 'none';
+            document.getElementById('reject-err-' + id).classList.add('hidden');
         }
         async function submitReject(approvalId) {
             // Support both plain IDs and 'po-' prefixed IDs
@@ -2066,8 +1444,8 @@ function fileIcon($ext)
             const err = document.getElementById('reject-err-' + approvalId)
                 || document.getElementById('reject-err-po-' + approvalId);
             const note = noteEl ? noteEl.value.trim() : '';
-            if (!note) { err.style.display = 'block'; return; }
-            err.style.display = 'none';
+            if (!note) { err.classList.remove('hidden'); return; }
+            err.classList.add('hidden');
             try {
                 const res = await fetch('<?= BASE_URL ?>approve-reject-stage', {
                     method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -2083,23 +1461,24 @@ function fileIcon($ext)
 
         // Category filter
         function filterCategory(cat, btn) {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.file-card[data-category]').forEach(card => {
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('bg-[#0B0B0B]', 'text-white', 'border-[#0B0B0B]');
+                b.classList.add('bg-white', 'text-[#6B6B6B]', 'border-[#E2E2E2]');
+            });
+            btn.classList.remove('bg-white', 'text-[#6B6B6B]', 'border-[#E2E2E2]');
+            btn.classList.add('bg-[#0B0B0B]', 'text-white', 'border-[#0B0B0B]');
+            document.querySelectorAll('.file-card, [data-category]').forEach(card => {
+                if (!card.dataset || card.dataset.category === undefined) return;
                 card.style.display = (cat === 'all' || card.dataset.category === cat) ? '' : 'none';
             });
         }
 
-        // Modal close on overlay
-        document.querySelectorAll('.modal-overlay').forEach(m => {
-            m.addEventListener('click', e => { if (e.target === m) m.classList.remove('show'); });
-        });
-
         function toast(msg, err = false) {
             const el = document.getElementById('toast');
             document.getElementById('toastMsg').textContent = msg;
-            el.className = 'toast show' + (err ? ' error' : '');
-            setTimeout(() => el.classList.remove('show'), 3000);
+            el.classList.remove('translate-y-20', 'opacity-0', 'bg-[#0B0B0B]', 'bg-red-600');
+            el.classList.add(err ? 'bg-red-600' : 'bg-[#0B0B0B]');
+            setTimeout(() => el.classList.add('translate-y-20', 'opacity-0'), 3000);
         }
     </script>
 </body>

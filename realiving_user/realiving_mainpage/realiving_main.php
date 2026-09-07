@@ -52,6 +52,37 @@ if ($team_result) {
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
 
   <style>
+
+    html, body {
+    overflow-x: hidden;
+    }
+
+    /* ── Services grid — reacts to actual available width, not the
+       whole viewport, so an expanded sidebar doesn't cram 4 columns
+       into a narrow content area ─────────────────────────────── */
+    .services-container {
+      container-type: inline-size;
+      container-name: services;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+
+    @container services (min-width: 480px) {
+      .services-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @container services (min-width: 720px) {
+      .services-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.75rem; }
+    }
+
+    @container services (min-width: 980px) {
+      .services-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.75rem; }
+    }
+
     /* Ken Burns left-to-right pan — MOBILE ONLY, synced sa slide duration */
     @keyframes heroKenBurns {
       0% {
@@ -318,7 +349,7 @@ if ($team_result) {
        SERVICES SECTION
   ═══════════════════════════════ -->
     <section class="services py-20 bg-white" id="services">
-      <div class="max-w-7xl mx-auto px-4">
+      <div class="max-w-7xl mx-auto px-4 services-container">
 
         <!-- Section Header -->
         <div class="text-center mb-16">
@@ -332,7 +363,7 @@ if ($team_result) {
         </div>
 
         <!-- Cards Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-7 px-4 sm:px-8">
+        <div class="services-grid px-4 sm:px-8">
 
           <?php
           $services_query = "SELECT * FROM services_section WHERE is_active = 1 ORDER BY display_order ASC LIMIT 4";
@@ -448,7 +479,7 @@ if ($team_result) {
        MEET THE TEAM SECTION (slider)
   ═══════════════════════════════ -->
   <?php if (!empty($team_members)): ?>
-  <section class="w-full py-16 sm:py-20 bg-[#faf8f6]" id="team">
+  <section class="w-full py-16 sm:py-20 bg-[#faf8f6] overflow-x-hidden" id="team">
     <div class="max-w-7xl mx-auto px-4">
 
       <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">

@@ -678,11 +678,96 @@ function sb_is_active($slug, $current)
     padding: 18px 0 8px;
   }
 
+  .sb-nav-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
   .sb-nav {
     flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: 12px;
+    padding-bottom: 8px;
+  }
+
+  /* Fade hint — tells the user there's more to scroll below.
+     Auto-hides once they've scrolled to the last link. */
+  .sb-nav-fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 26px;
+    height: 28px;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity .25s ease;
+    background: linear-gradient(to bottom, rgba(20, 10, 0, 0) 0%, rgba(20, 10, 0, 0.55) 100%);
+  }
+
+  #sidebar.scrolled .sb-nav-fade {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.95) 100%);
+  }
+
+  .sb-nav-wrap.at-bottom .sb-nav-fade,
+  .sb-nav-wrap.not-scrollable .sb-nav-fade {
+    opacity: 0;
+  }
+
+  /* Bouncing "scroll for more" arrow — sits centered on top of the fade */
+  .sb-nav-scroll-hint {
+    flex-shrink: 0;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity .25s ease;
+  }
+
+  .sb-nav-scroll-hint i {
+    font-size: 18px;
+    color: rgba(255, 255, 255, 0.75);
+    animation: sbNavHintBounce 1.6s ease-in-out infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+  }
+
+  #sidebar.scrolled .sb-nav-scroll-hint i {
+    color: var(--sb-gold);
+    filter: none;
+  }
+
+  @keyframes sbNavHintBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+
+  .sb-nav-wrap.at-bottom .sb-nav-scroll-hint,
+  .sb-nav-wrap.not-scrollable .sb-nav-scroll-hint {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sb-nav-scroll-hint i { animation: none; }
+  }
+
+  /* Highlighted scrollbar — thicker + gold thumb so it reads as "there's
+     more here" rather than blending in as invisible browser chrome */
+  .sb-nav::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .sb-nav::-webkit-scrollbar-thumb {
+    background: var(--sb-gold);
+    border-radius: 4px;
+  }
+
+  .sb-nav::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   .sb-nav::-webkit-scrollbar {
@@ -1650,7 +1735,8 @@ function sb_is_active($slug, $current)
 
 <div class="sb-label">Menu</div>
 
-<nav class="sb-nav">
+<div class="sb-nav-wrap" id="sbNavWrap">
+<nav class="sb-nav" id="sbNav">
   <a href="<?= BASE_URL ?>" class="sb-link home-link <?= sb_is_active('', $sb_current_slug) ? 'active' : '' ?>"
     data-label="Home" aria-label="Home">
     <i class="ri-home-5-line"></i><span class="sb-text">Home</span>
@@ -1687,6 +1773,11 @@ function sb_is_active($slug, $current)
     <i class="ri-mail-line"></i><span class="sb-text">Contact</span>
   </a>
 </nav>
+  <div class="sb-nav-fade"></div>
+  <div class="sb-nav-scroll-hint" aria-hidden="true">
+    <i class="ri-arrow-down-s-line"></i>
+  </div>
+</div>
 
 <div class="sb-footer">
   <a href="<?= BASE_URL ?>appointment" id="bookBtn" class="sb-book-btn" aria-label="Book Now">
@@ -1870,6 +1961,24 @@ function sb_is_active($slug, $current)
     }
     updateHeroOffsetVar();
     window.addEventListener('resize', updateHeroOffsetVar);
+
+    /* Sidebar nav scroll-fade indicator — shows only when the link
+       list is actually taller than the visible sidebar, and hides
+       itself once the user scrolls down to the last item. */
+    const sbNav = document.getElementById('sbNav');
+    const sbNavWrap = document.getElementById('sbNavWrap');
+
+    function updateNavScrollState() {
+      if (!sbNav || !sbNavWrap) return;
+      const scrollable = sbNav.scrollHeight > sbNav.clientHeight + 2;
+      sbNavWrap.classList.toggle('not-scrollable', !scrollable);
+      if (!scrollable) return;
+      const atBottom = sbNav.scrollTop + sbNav.clientHeight >= sbNav.scrollHeight - 2;
+      sbNavWrap.classList.toggle('at-bottom', atBottom);
+    }
+    updateNavScrollState();
+    if (sbNav) sbNav.addEventListener('scroll', updateNavScrollState, { passive: true });
+    window.addEventListener('resize', updateNavScrollState);
 
     collapseBtn.addEventListener('click', function () {
       sidebar.classList.toggle('collapsed');

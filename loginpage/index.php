@@ -192,6 +192,23 @@ $conn->close();
             -webkit-box-shadow: 0 0 0 1000px rgba(255,255,255,0.5) inset;
             -webkit-text-fill-color: var(--rl-ink);
         }
+
+        /* Shrink the login card's spacing on short screens so the whole
+           thing fits without scrolling. Kicks in based on viewport
+           HEIGHT, not width, so it also helps landscape phones/tablets. */
+        @media (max-height: 720px) {
+            .mb-9  { margin-bottom: 1rem !important; }
+            .mt-7  { margin-top: 0.75rem !important; }
+            .mt-8  { margin-top: 1rem !important; }
+            .my-6  { margin-top: 0.75rem !important; margin-bottom: 0.75rem !important; }
+            .pt-6  { padding-top: 0.75rem !important; }
+            .p-8   { padding: 1.25rem !important; }
+            .space-y-5 > * + * { margin-top: 0.75rem !important; }
+            .h-12  { height: 2rem !important; }
+        }
+        @media (max-height: 720px) and (min-width: 640px) {
+            .sm\:p-12 { padding: 1.25rem !important; }
+        }
     </style>
 
     <script>
@@ -226,7 +243,7 @@ $conn->close();
     </script>
 </head>
 
-<body class="relative min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-hidden" style="background:#0d1114;">
+<body class="relative min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-y-auto overflow-x-hidden" style="background:#0d1114;">
 
     <!-- ═══════════════════════════════
          FULL-BLEED BACKGROUND

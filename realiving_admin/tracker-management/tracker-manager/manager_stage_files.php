@@ -1409,24 +1409,6 @@ function fcardBorder($status)
     <script>
         const STAGE_ID = <?= $stage_id ?>;
 
-        // Approve — opens e-sign modal
-        function approveFile(approvalId) {
-            _currentApprovalId = approvalId;
-            _signX = null; _signY = null; _signPage = 1;
-
-            document.getElementById('esignToggle').checked = false;
-            document.getElementById('esignIframeWrap').style.display = 'none';
-            document.getElementById('esignStatusBar').style.display = 'none';
-            document.getElementById('toggleSlider').style.background = '#ccc';
-            document.getElementById('toggleThumb').style.transform = 'translateX(0)';
-
-            const btn = document.getElementById('esignSubmitBtn');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Approval';
-
-            document.getElementById('esignModal').classList.add('show');
-        }
-
         // Reject form
         function showRejectForm(id) {
             document.getElementById('reject-form-' + id).classList.remove('hidden');

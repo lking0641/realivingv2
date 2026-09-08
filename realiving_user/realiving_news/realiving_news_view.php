@@ -296,8 +296,6 @@ if (!empty($news['sub_images'])) {
             </div>
         </section>
 
-    </div>
-
     <script>
         let sliderOffset = 0;
         let touchStartX = 0;
@@ -419,6 +417,8 @@ if (!empty($news['sub_images'])) {
     $conn->close();
     include $includes['footer'];
     ?>
+
+    </div><!-- /.main-content -->
 </body>
 
 </html>

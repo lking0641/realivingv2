@@ -122,12 +122,16 @@ class ComposerStaticInit6cc00e1dddb0f99cbead09d859ea2690
         'M' =>
         array (
             'Monolog\\' => 8,
+            'MaxMind\\WebService\\' => 19,
+            'MaxMind\\Exception\\' => 18,
+            'MaxMind\\Db\\' => 11,
             'Matrix\\' => 7,
             'Masterminds\\' => 12,
         ),
         'G' =>
         array (
             'GrahamCampbell\\ResultType\\' => 26,
+            'GeoIp2\\' => 7,
         ),
         'F' =>
         array (
@@ -141,6 +145,7 @@ class ComposerStaticInit6cc00e1dddb0f99cbead09d859ea2690
         'C' =>
         array (
             'Composer\\Pcre\\' => 14,
+            'Composer\\CaBundle\\' => 18,
             'Complex\\' => 8,
         ),
     );
@@ -198,6 +203,18 @@ class ComposerStaticInit6cc00e1dddb0f99cbead09d859ea2690
         array (
             0 => __DIR__ . '/..' . '/monolog/monolog/src/Monolog',
         ),
+        'MaxMind\\WebService\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/maxmind/web-service-common/src/WebService',
+        ),
+        'MaxMind\\Exception\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/maxmind/web-service-common/src/Exception',
+        ),
+        'MaxMind\\Db\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/maxmind-db/reader/src/MaxMind/Db',
+        ),
         'Matrix\\' =>
         array (
             0 => __DIR__ . '/..' . '/markbaker/matrix/classes/src',
@@ -209,6 +226,10 @@ class ComposerStaticInit6cc00e1dddb0f99cbead09d859ea2690
         'GrahamCampbell\\ResultType\\' =>
         array (
             0 => __DIR__ . '/..' . '/graham-campbell/result-type/src',
+        ),
+        'GeoIp2\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/geoip2/geoip2/src',
         ),
         'FontLib\\' =>
         array (
@@ -225,6 +246,10 @@ class ComposerStaticInit6cc00e1dddb0f99cbead09d859ea2690
         'Composer\\Pcre\\' =>
         array (
             0 => __DIR__ . '/..' . '/composer/pcre/src',
+        ),
+        'Composer\\CaBundle\\' =>
+        array (
+            0 => __DIR__ . '/..' . '/composer/ca-bundle/src',
         ),
         'Complex\\' =>
         array (

@@ -24,6 +24,8 @@ if (!defined('BASE_URL')) {
     define('ADMIN_PATH', ROOT_PATH . 'realiving_admin/');
 
     define('LOGINPAGE_PATH', ROOT_PATH . 'loginpage/');
+
+    require_once ROOT_PATH . 'connection/geo_block.php';
 }
 
 if (!isset($GLOBALS['includes'])) {

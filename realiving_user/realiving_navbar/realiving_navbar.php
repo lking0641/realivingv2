@@ -1698,6 +1698,7 @@ function sb_is_active($slug, $current)
 
 <head>
   <link rel="stylesheet" href="<?= BASE_ASSET ?>assets/css/output.css?v=<?= CSS_VERSION ?>">
+  <link rel="icon" type="image/png" href="<?= CLIENT_ASSET ?>/images/logo/favicon.png">
 </head>
 <script>
   try {

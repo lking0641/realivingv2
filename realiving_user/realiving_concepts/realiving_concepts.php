@@ -14,7 +14,7 @@
     $old_input = $_SESSION['concept_old_input'] ?? [];
     unset($_SESSION['concept_errors'], $_SESSION['concept_old_input']);
 
-    include $includes['header'];
+    
     ?>
     <!DOCTYPE html>
     <html lang="en">
@@ -23,6 +23,8 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Realiving Design Center</title>
+
+        <link rel="icon" type="image/png" href="<?= CLIENT_ASSET ?>/images/logo/favicon.png">
 
         <link
             href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Work+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
@@ -185,6 +187,8 @@
     </head>
 
     <body class="bg-[#F7F2E9] no-hero">
+
+    <?php include $includes['header']; ?>
         <script>
             document.addEventListener('DOMContentLoaded', () => {
                 const urlParams = new URLSearchParams(window.location.search);

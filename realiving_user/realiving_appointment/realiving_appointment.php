@@ -12,6 +12,8 @@ include $includes['connection'];
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book an Appointment — Realiving Design Center</title>
 
+    <link rel="icon" type="image/png" href="<?= CLIENT_ASSET ?>/images/logo/favicon.png">
+
     <!-- Preconnects: fonts + CDNs resolve DNS/TLS in parallel instead of blocking mid-parse -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

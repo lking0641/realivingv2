@@ -3,7 +3,6 @@
 session_name("Realivinguser");
 session_start();
 include $includes['connection'];
-include $includes['header'];
 ?>
 
 <!DOCTYPE html>
@@ -153,6 +152,8 @@ include $includes['header'];
 </head>
 
 <body class="bg-white no-hero">
+
+<?php include $includes['header']; ?>
 
   <div class="main-content">
 

@@ -53,6 +53,7 @@ if (empty($latest_news) && !empty($all_news)) {
         rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
+    <link rel="icon" type="image/png" href="<?= CLIENT_ASSET ?>/images/logo/favicon.png">
 </head>
 
 <body class="bg-[#faf8f4] text-[#241205] no-hero" style="font-family:'Montserrat',sans-serif;">

@@ -1,3 +1,5 @@
 node_modules/
 vendor/composer/installed.php
 config/google_oauth_config.php
+realiving_user/images/
+uploads/

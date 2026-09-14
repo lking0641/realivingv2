@@ -15,7 +15,8 @@ require_once __DIR__ . '/mainbody_data.php';
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin - Realiving Design Center</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <script>
     window.onload = function () {
       const ls = document.getElementById("loadingScreen");
@@ -59,27 +60,26 @@ require_once __DIR__ . '/mainbody_data.php';
         <div class="flex items-center space-x-5">
           <!-- Notification Bell -->
           <?php if (in_array($user_role, ['general_manager', 'operational_manager', 'designer', 'technical_designer', 'accounting', 'superadmin', 'project_coordinator', 'sales'])): ?>
-          <div class="relative">
-            <button id="notifBellButton"
-              class="relative w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-50 rounded-full transition-colors">
-              <i class="ri-notification-3-line text-xl"></i>
-              <span id="notifBellBadge"
-                class="nav-badge hidden" style="top:2px; right:2px;">0</span>
-            </button>
-            <div id="notifDropdown"
-              class="hidden absolute right-0 mt-3 w-96 bg-white rounded-lg shadow-dropdown z-50 border border-gray-100 overflow-hidden">
-              <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
-                <span class="font-semibold text-gray-800 text-sm">Notifications</span>
-                <span id="notifDropdownCount" class="text-xs text-gray-500">0 pending</span>
-              </div>
-              <div id="notifList" class="max-h-96 overflow-y-auto divide-y divide-gray-100">
-                <div class="px-4 py-8 text-center text-gray-400 text-sm">
-                  <i class="ri-notification-off-line text-2xl block mb-2"></i>
-                  Loading...
+            <div class="relative">
+              <button id="notifBellButton"
+                class="relative w-10 h-10 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-gray-50 rounded-full transition-colors">
+                <i class="ri-notification-3-line text-xl"></i>
+                <span id="notifBellBadge" class="nav-badge hidden" style="top:2px; right:2px;">0</span>
+              </button>
+              <div id="notifDropdown"
+                class="hidden absolute right-0 mt-3 w-96 bg-white rounded-lg shadow-dropdown z-50 border border-gray-100 overflow-hidden">
+                <div class="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+                  <span class="font-semibold text-gray-800 text-sm">Notifications</span>
+                  <span id="notifDropdownCount" class="text-xs text-gray-500">0 pending</span>
+                </div>
+                <div id="notifList" class="max-h-96 overflow-y-auto divide-y divide-gray-100">
+                  <div class="px-4 py-8 text-center text-gray-400 text-sm">
+                    <i class="ri-notification-off-line text-2xl block mb-2"></i>
+                    Loading...
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           <?php endif; ?>
 
           <!-- Profile Dropdown -->
@@ -137,6 +137,17 @@ require_once __DIR__ . '/mainbody_data.php';
   </header>
 
   <?php require __DIR__ . '/mainbody_scripts.php'; ?>
+
+  <?php if (in_array($user_role, ['general_manager', 'operational_manager', 'designer', 'technical_designer', 'accounting', 'superadmin', 'project_coordinator', 'sales'])): ?>
+    <script>
+      window.PUSH_CONFIG = {
+        vapidPublicKey: <?= json_encode('BDxGPsBpYqKAxNHPmd04mhAwcgWDCfQuZjaYL5_1z6mG0GxWMA6UJsON5dRLIy9L_45JpCcHdrih2-7TCP_iSq8') ?>,
+        swPath: <?= json_encode(BASE_URL . 'sw.js') ?>,
+        saveSubscriptionUrl: <?= json_encode(BASE_URL . 'save-push-subscription') ?>
+      };
+    </script>
+    <script src="<?= BASE_URL ?>assets/js/push-subscribe.js"></script>
+  <?php endif; ?>
 
 </body>
 

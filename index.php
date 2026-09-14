@@ -313,6 +313,7 @@ $routes = [
   'admin-permissions' => 'realiving_admin/super-admin/role-permission/admin-permissions.php',
   'get-admin-status' => 'realiving_admin/super-admin/admin-management/get_admin_status.php',
   'heartbeat' => 'config/heartbeat.php',
+  'save-push-subscription' => 'realiving_admin/push-notifications/save_push_subscription.php',
   'delete-admin' => 'realiving_admin/super-admin/admin-management/delete_admin.php',
   'admin-view' => 'realiving_admin/super-admin/admin-management/admin-view.php',
   'admin-site-visits' => 'realiving_admin/super-admin/admin-management/admin_site_visits.php',

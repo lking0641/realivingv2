@@ -5,8 +5,8 @@
 // with unfinished tasks still pending.
 
 require_once __DIR__ . '/config/app_config.php';
-require_once __DIR__ . '/notification_counts.php';
-require_once __DIR__ . '/push_functions.php';
+require_once __DIR__ . '/config/notification_counts.php';
+require_once __DIR__ . '/config/push_functions.php';
 
 include $includes['connection'];
 

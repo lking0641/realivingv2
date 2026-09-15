@@ -49,6 +49,15 @@ function send_push_notification($conn, $admin_id, $title, $body, $url = null)
     foreach ($webPush->flush() as $report) {
         if (!$report->isSuccess()) {
             $success = false;
+
+            // ── Auto-cleanup: if the subscription is no longer valid, remove it ──
+            $statusCode = $report->getResponse() ? $report->getResponse()->getStatusCode() : null;
+            if (in_array($statusCode, [404, 410])) {
+                $deadEndpoint = $report->getRequest()->getUri()->__toString();
+                $delStmt = $conn->prepare("DELETE FROM push_subscriptions WHERE endpoint = ?");
+                $delStmt->bind_param("s", $deadEndpoint);
+                $delStmt->execute();
+            }
         }
     }
 

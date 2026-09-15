@@ -2,7 +2,7 @@
 // push_functions.php
 // Reusable function for sending a web push notification to one admin user.
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Minishlink\WebPush\WebPush;
 use Minishlink\WebPush\Subscription;

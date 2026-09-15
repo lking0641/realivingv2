@@ -9,7 +9,7 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
-require_once __DIR__ . '/../../config/notification_counts.php';
+require_once __DIR__ . '/../../notification_counts.php';
 
 $admin_id = $_SESSION['admin_id'];
 

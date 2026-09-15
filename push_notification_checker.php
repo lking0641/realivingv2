@@ -4,7 +4,7 @@
 // sends a push if it went up, or a reminder push if 3+ hours have passed
 // with unfinished tasks still pending.
 
-require_once __DIR__ . '/app_config.php';
+require_once __DIR__ . '/config/app_config.php';
 require_once __DIR__ . '/notification_counts.php';
 require_once __DIR__ . '/push_functions.php';
 

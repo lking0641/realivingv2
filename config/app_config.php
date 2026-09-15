@@ -2,14 +2,20 @@
 // config/app_config.php
 if (!defined('BASE_URL')) {
 
-    $is_local = ($_SERVER['HTTP_HOST'] === 'localhost' || str_contains($_SERVER['HTTP_HOST'], '127.0.0.1'));
-
-    if ($is_local) {
-        define('BASE_URL', 'http://localhost/realivingv2/');
-        define('ROOT_PATH', 'C:/xampp/htdocs/realivingv2/');
-    } else {
+    // ── CLI mode (cron jobs) has no HTTP_HOST/DOCUMENT_ROOT — hardcode instead ──
+    if (php_sapi_name() === 'cli') {
         define('BASE_URL', 'https://test.realivingdesigncenter.com/');
-        define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+        define('ROOT_PATH', '/home/u565655483/domains/test.realivingdesigncenter.com/public_html/');
+    } else {
+        $is_local = ($_SERVER['HTTP_HOST'] === 'localhost' || str_contains($_SERVER['HTTP_HOST'], '127.0.0.1'));
+
+        if ($is_local) {
+            define('BASE_URL', 'http://localhost/realivingv2/');
+            define('ROOT_PATH', 'C:/xampp/htdocs/realivingv2/');
+        } else {
+            define('BASE_URL', 'https://test.realivingdesigncenter.com/');
+            define('ROOT_PATH', $_SERVER['DOCUMENT_ROOT'] . '/');
+        }
     }
 
     define('BASE_ASSET', BASE_URL . '');

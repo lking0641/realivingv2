@@ -156,7 +156,8 @@ while ($user = $usersResult->fetch_assoc()) {
         $title = $notifyReason === 'new' ? 'New activity' : 'Pending tasks reminder';
         $body = "You have {$totalPending} pending item" . ($totalPending == 1 ? '' : 's') . " that need your attention.";
 
-        send_push_notification($conn, $admin_id, $title, $body);
+        $redirectUrl = BASE_URL . 'login';
+        send_push_notification($conn, $admin_id, $title, $body, $redirectUrl);
 
         // Update last_notified_at since we just sent a push
         $updateStmt = $conn->prepare("
